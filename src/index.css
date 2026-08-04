@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── AIMS Global Base ── */
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    @apply font-sans text-on-surface bg-aims-mint antialiased;
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* Scrollbar — thin, corporate */
+  ::-webkit-scrollbar        { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track  { background: #f1f6f1; }
+  ::-webkit-scrollbar-thumb  { background: #cbd5e1; border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: #a8c4aa; }
+
+  /* Selection */
+  ::selection { background-color: #d4e3ff; color: #001c39; }
+}
+
+/* ── Utility layer extras ── */
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Status chips */
+  .chip-pending   { @apply bg-[rgba(235,59,20,0.10)] text-aims-orange; }
+  .chip-completed { @apply bg-[rgba(40,107,37,0.10)] text-forest-green; }
+  .chip-info      { @apply bg-primary-fixed text-primary; }
+  .chip-review    { @apply bg-surface-container-high text-primary; }
+
+  /* Level 1 card shadow */
+  .card { @apply bg-surface-container-lowest rounded-xl shadow-level-1 border border-outline-variant; }
+
+  /* Tonal elevation */
+  .tonal-1 { box-shadow: 0px 1px 3px rgba(0,0,0,0.05), 0px 10px 15px -3px rgba(0,0,0,0.05); }
+  .tonal-2 { box-shadow: 0px 20px 25px -5px rgba(0,0,0,0.1); }
+
+  /* Nav link states */
+  .nav-active {
+    @apply bg-secondary-container text-on-secondary-container rounded-lg translate-x-1;
+  }
+  .nav-item {
+    @apply text-on-surface-variant hover:bg-surface-container rounded-lg transition-all;
+  }
+}
+
+/* ── Google Material Symbols via CDN (font-face reference) ── */
+/* Loaded in index.html via <link> */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
+}
