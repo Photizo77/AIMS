@@ -4,11 +4,11 @@ import { useNotifications } from '@/context/NotificationContext';
 import type { Requisition, ApprovalStatus } from '@/types';
 
 const MOCK_REQUISITIONS: Requisition[] = [
-  { id: 'req-1', title: 'Office Laptops (x5)', description: 'New laptops for the research team', amount: 350000, category: 'Equipment', department: 'Research', requestedBy: 'user-innov-001', status: 'approved', priority: 'high', createdAt: '2026-07-20', updatedAt: '2026-07-22', approvedBy: 'user-ed-001', approvedAt: '2026-07-22' },
-  { id: 'req-2', title: 'Conference Travel Budget', description: 'Travel expenses for the Nairobi innovation summit', amount: 120000, category: 'Travel', department: 'Innovation', requestedBy: 'user-innov-001', status: 'pending', priority: 'medium', createdAt: '2026-08-01', updatedAt: '2026-08-01' },
-  { id: 'req-3', title: 'Office Supplies Restock', description: 'Paper, toner, and stationery for Q3', amount: 45000, category: 'Operations', department: 'Administration', requestedBy: 'user-admin-001', status: 'pending', priority: 'low', createdAt: '2026-08-03', updatedAt: '2026-08-03' },
-  { id: 'req-4', title: 'Software Licenses Renewal', description: 'Annual renewal for design and dev tools', amount: 89000, category: 'Operations', department: 'IT', requestedBy: 'user-sysadmin-001', status: 'draft', priority: 'medium', createdAt: '2026-08-04', updatedAt: '2026-08-04' },
-  { id: 'req-5', title: 'Team Building Event', description: 'Quarterly team building activity', amount: 75000, category: 'Operations', department: 'Administration', requestedBy: 'user-admin-001', status: 'rejected', priority: 'low', createdAt: '2026-07-15', updatedAt: '2026-07-18' },
+  { id: 'req-1', title: 'Office Laptops (x5)', description: 'New laptops for the research team', amount: 12500000, category: 'Equipment', department: 'Research', requestedBy: 'user-innov-001', status: 'approved', priority: 'high', createdAt: '2026-07-20', updatedAt: '2026-07-22', approvedBy: 'user-ed-001', approvedAt: '2026-07-22' },
+  { id: 'req-2', title: 'Conference Travel Budget', description: 'Travel expenses for the Kampala innovation summit', amount: 4500000, category: 'Travel', department: 'Innovation', requestedBy: 'user-innov-001', status: 'pending', priority: 'medium', createdAt: '2026-08-01', updatedAt: '2026-08-01' },
+  { id: 'req-3', title: 'Office Supplies Restock', description: 'Paper, toner, and stationery for Q3', amount: 850000, category: 'Operations', department: 'Administration', requestedBy: 'user-admin-001', status: 'pending', priority: 'low', createdAt: '2026-08-03', updatedAt: '2026-08-03' },
+  { id: 'req-4', title: 'Software Licenses Renewal', description: 'Annual renewal for design and dev tools', amount: 3200000, category: 'Operations', department: 'IT', requestedBy: 'user-sysadmin-001', status: 'draft', priority: 'medium', createdAt: '2026-08-04', updatedAt: '2026-08-04' },
+  { id: 'req-5', title: 'Team Building Event', description: 'Quarterly team building activity in Gulu', amount: 2500000, category: 'Operations', department: 'Administration', requestedBy: 'user-admin-001', status: 'rejected', priority: 'low', createdAt: '2026-07-15', updatedAt: '2026-07-18' },
 ];
 
 const STATUS_STYLES: Record<ApprovalStatus, string> = {
@@ -44,7 +44,7 @@ export function RequisitionsTab() {
 
   const handlePushToED = (req: Requisition) => {
     setRequisitions((prev) => prev.map((r) => (r.id === req.id ? { ...r, status: 'pending' as ApprovalStatus, updatedAt: new Date().toISOString().split('T')[0] } : r)));
-    addNotification({ userId: 'user-ed-001', title: 'Requisition Approval Required', message: `"${req.title}" (KES ${req.amount.toLocaleString()}) is awaiting your approval.`, type: 'approval', actionUrl: '/approvals' });
+    addNotification({ userId: 'user-ed-001', title: 'Requisition Approval Required', message: `"${req.title}" (UGX ${req.amount.toLocaleString()}) is awaiting your approval.`, type: 'approval', actionUrl: '/approvals' });
     showToast({ title: 'Pushed to ED', message: `"${req.title}" has been sent for approval.`, type: 'success' });
   };
 
@@ -114,7 +114,7 @@ export function RequisitionsTab() {
                   <p className="font-medium text-gray-800">{req.title}</p>
                   <p className="text-xs text-gray-400">{req.category} • {req.department}</p>
                 </td>
-                <td className="px-4 py-3 text-gray-600">KES {req.amount.toLocaleString()}</td>
+                <td className="px-4 py-3 text-gray-600">UGX {req.amount.toLocaleString()}</td>
                 <td className="px-4 py-3">
                   <span className={cn('px-2 py-1 rounded-full text-xs font-medium capitalize', PRIORITY_STYLES[req.priority])}>{req.priority}</span>
                 </td>
@@ -162,8 +162,8 @@ function AddRequisitionModal({ onSave, onClose }: { onSave: () => void; onClose:
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Amount (KES)</label>
-              <input type="number" placeholder="e.g. 50000" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Amount (UGX)</label>
+              <input type="number" placeholder="e.g. 5000000" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>

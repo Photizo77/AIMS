@@ -9,7 +9,7 @@ export function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-100">
       <TopNavBar />
 
       <div className="hidden md:block fixed left-0 top-16 h-[calc(100vh-64px)] z-20">
@@ -29,7 +29,7 @@ export function AppShell() {
       )}
 
       <button
-        className="md:hidden fixed top-3.5 left-4 z-[60] p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+        className="md:hidden fixed top-3.5 left-4 z-[60] p-2 rounded-lg text-slate-700 hover:bg-slate-200 transition-colors"
         onClick={() => setSidebarOpen((o) => !o)}
         aria-label="Toggle sidebar"
       >

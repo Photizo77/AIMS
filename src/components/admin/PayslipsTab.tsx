@@ -4,9 +4,9 @@ import { useNotifications } from '@/context/NotificationContext';
 import type { Payslip, ApprovalStatus } from '@/types';
 
 const MOCK_PAYSLIPS: Payslip[] = [
-  { id: 'pay-1', employeeId: 'user-emp-001', employeeName: 'Lucy Wanjiku', period: 'July 2026', baseSalary: 45000, allowances: 5000, deductions: 3200, netPay: 46800, status: 'approved', generatedBy: 'user-admin-001', approvedBy: 'user-ed-001', generatedAt: '2026-07-28', approvedAt: '2026-07-30' },
-  { id: 'pay-2', employeeId: 'user-finance-001', employeeName: 'James Odhiambo', period: 'July 2026', baseSalary: 55000, allowances: 7000, deductions: 4100, netPay: 57900, status: 'approved', generatedBy: 'user-admin-001', approvedBy: 'user-ed-001', generatedAt: '2026-07-28', approvedAt: '2026-07-30' },
-  { id: 'pay-3', employeeId: 'user-grant-001', employeeName: 'Fatima Hassan', period: 'August 2026', baseSalary: 50000, allowances: 6000, deductions: 3800, netPay: 52200, status: 'pending', generatedBy: 'user-admin-001', generatedAt: '2026-08-03' },
+  { id: 'pay-1', employeeId: 'user-emp-001', employeeName: 'Janet Apio', period: 'July 2026', baseSalary: 1500000, allowances: 200000, deductions: 150000, netPay: 1550000, status: 'approved', generatedBy: 'user-admin-001', approvedBy: 'user-ed-001', generatedAt: '2026-07-28', approvedAt: '2026-07-30' },
+  { id: 'pay-2', employeeId: 'user-finance-001', employeeName: 'Amos Ojok', period: 'July 2026', baseSalary: 2200000, allowances: 300000, deductions: 250000, netPay: 2250000, status: 'approved', generatedBy: 'user-admin-001', approvedBy: 'user-ed-001', generatedAt: '2026-07-28', approvedAt: '2026-07-30' },
+  { id: 'pay-3', employeeId: 'user-grant-001', employeeName: 'Sarah Aciro', period: 'August 2026', baseSalary: 1800000, allowances: 250000, deductions: 180000, netPay: 1870000, status: 'pending', generatedBy: 'user-admin-001', generatedAt: '2026-08-03' },
 ];
 
 const STATUS_STYLES: Record<ApprovalStatus, string> = {
@@ -94,7 +94,7 @@ export function PayslipsTab() {
               <tr key={payslip.id} className="border-b border-gray-50 hover:bg-gray-50">
                 <td className="px-4 py-3 font-medium text-gray-800">{payslip.employeeName}</td>
                 <td className="px-4 py-3 text-gray-600">{payslip.period}</td>
-                <td className="px-4 py-3 text-gray-600">KES {payslip.netPay.toLocaleString()}</td>
+                <td className="px-4 py-3 text-gray-600">UGX {payslip.netPay.toLocaleString()}</td>
                 <td className="px-4 py-3">
                   <span className={cn('px-2 py-1 rounded-full text-xs font-medium capitalize', STATUS_STYLES[payslip.status])}>
                     {payslip.status}

@@ -1,20 +1,11 @@
-// src/context/AuthContext.tsx
-// ============================================================
-// AIMS — Authentication Context
-// Login-first architecture (no default user)
-// ============================================================
-
 import { createContext, useContext, useState, type ReactNode } from 'react';
 import type { User, Role } from '@/types';
 import { ROLE_LABELS } from '@/config/roles';
 
-// ─────────────────────────────────────────────
-// MOCK USERS (Replace with real API later)
-// ─────────────────────────────────────────────
 const MOCK_USERS: Record<string, User> = {
   'cd@aims.org': {
     id: 'user-cd-001',
-    name: 'Amara Okafor',
+    name: 'Nassir Mwanje',
     email: 'cd@aims.org',
     role: 'CD',
     department: 'Executive',
@@ -23,7 +14,7 @@ const MOCK_USERS: Record<string, User> = {
   },
   'ed@aims.org': {
     id: 'user-ed-001',
-    name: 'David Mwangi',
+    name: 'Peter Byamugisha',
     email: 'ed@aims.org',
     role: 'ED',
     department: 'Executive',
@@ -32,7 +23,7 @@ const MOCK_USERS: Record<string, User> = {
   },
   'sysadmin@aims.org': {
     id: 'user-sysadmin-001',
-    name: 'Tech Admin',
+    name: 'Okello Komakech',
     email: 'sysadmin@aims.org',
     role: 'SYS_ADMIN',
     department: 'IT',
@@ -41,7 +32,7 @@ const MOCK_USERS: Record<string, User> = {
   },
   'admin@aims.org': {
     id: 'user-admin-001',
-    name: 'Sarah Kimani',
+    name: 'Grace Aceng',
     email: 'admin@aims.org',
     role: 'COMPANY_ADMIN',
     department: 'Administration',
@@ -50,7 +41,7 @@ const MOCK_USERS: Record<string, User> = {
   },
   'finance@aims.org': {
     id: 'user-finance-001',
-    name: 'James Odhiambo',
+    name: 'Amos Ojok',
     email: 'finance@aims.org',
     role: 'FINANCE',
     department: 'Finance',
@@ -59,7 +50,7 @@ const MOCK_USERS: Record<string, User> = {
   },
   'grants@aims.org': {
     id: 'user-grant-001',
-    name: 'Fatima Hassan',
+    name: 'Sarah Aciro',
     email: 'grants@aims.org',
     role: 'GRANT_WRITER',
     department: 'Grants',
@@ -68,7 +59,7 @@ const MOCK_USERS: Record<string, User> = {
   },
   'innovation@aims.org': {
     id: 'user-innov-001',
-    name: 'Kevin Njoroge',
+    name: 'Pius Odong',
     email: 'innovation@aims.org',
     role: 'INNOVATOR',
     department: 'Innovation',
@@ -77,9 +68,6 @@ const MOCK_USERS: Record<string, User> = {
   },
 };
 
-// ─────────────────────────────────────────────
-// CONTEXT TYPE
-// ─────────────────────────────────────────────
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
@@ -90,11 +78,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// ─────────────────────────────────────────────
-// PROVIDER
-// ─────────────────────────────────────────────
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // Start with NO user — must login first
   const [user, setUser] = useState<User | null>(null);
 
   const login = (email: string, _password: string): boolean => {
@@ -127,9 +111,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// ─────────────────────────────────────────────
-// CUSTOM HOOK
-// ─────────────────────────────────────────────
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
   if (context === undefined) {

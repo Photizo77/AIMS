@@ -1,9 +1,3 @@
-// src/components/documents/MeetingMinutes.tsx
-// ============================================================
-// AIMS — Meeting Minutes (Restricted Access)
-// Only accessible by Company Admin, ED, and CD
-// ============================================================
-
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useNotifications } from '@/context/NotificationContext';
@@ -23,15 +17,15 @@ const MOCK_MINUTES: MeetingMinute[] = [
     id: 'min-1',
     title: 'Q3 2026 Strategy Meeting',
     date: '2026-08-01',
-    attendees: ['Amara Okafor', 'David Mwangi', 'Sarah Kimani'],
+    attendees: ['Nassir Mwanje', 'Peter Byamugisha', 'Grace Aceng'],
     status: 'approved',
-    summary: 'Discussed Q3 targets, approved budget allocation for new grants, and reviewed HR expansion plans.',
+    summary: 'Discussed Q3 targets, approved budget allocation for new grants, and reviewed HR expansion plans in the Northern region.',
   },
   {
     id: 'min-2',
     title: 'Board of Directors Meeting',
     date: '2026-07-15',
-    attendees: ['Amara Okafor', 'David Mwangi', 'Board Members'],
+    attendees: ['Nassir Mwanje', 'Peter Byamugisha', 'Board Members'],
     status: 'approved',
     summary: 'Annual review of grant performance, approval of new ArdhiLand initiatives, and strategic partnerships.',
   },
@@ -39,7 +33,7 @@ const MOCK_MINUTES: MeetingMinute[] = [
     id: 'min-3',
     title: 'Executive Committee Weekly',
     date: '2026-08-05',
-    attendees: ['David Mwangi', 'Sarah Kimani', 'James Odhiambo'],
+    attendees: ['Peter Byamugisha', 'Grace Aceng', 'Amos Ojok'],
     status: 'draft',
     summary: 'Weekly sync on operational issues, requisition approvals, and departmental updates.',
   },

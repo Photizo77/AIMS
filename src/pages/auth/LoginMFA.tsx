@@ -32,12 +32,14 @@ export function LoginMFA() {
       <div className="w-full max-w-md">
         {/* Logo / Branding */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-aims-mint rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-white text-2xl font-bold">A</span>
-          </div>
-          <h1 className="text-2xl font-bold text-gray-800">AIMS</h1>
-          <p className="text-sm text-gray-500 mt-1">Ardhi Integrated Management System</p>
-        </div>
+  <img 
+    src="https://i.postimg.cc/N0G2CsXY/Screenshot-2026-08-01-134115.png" 
+    alt="Ardhi Logo" 
+    className="h-20 w-auto mx-auto mb-4 object-contain"
+  />
+  <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">ARDHI</h1>
+  <p className="text-sm text-gray-600 font-medium mt-1">Integrated Management System</p>
+</div>
 
         {/* Login Form */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">

@@ -1,8 +1,3 @@
-// src/components/rbac/RoleManager.tsx
-// ============================================================
-// AIMS — Role-Based Access Control Manager (System Admin)
-// ============================================================
-
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useNotifications } from '@/context/NotificationContext';
@@ -10,13 +5,13 @@ import { ROLE_LABELS, ROLE_HIERARCHY } from '@/config/roles';
 import type { Role } from '@/types';
 
 const MOCK_USERS = [
-  { id: 'user-cd-001', name: 'Amara Okafor', email: 'cd@aims.org', role: 'CD' as Role, department: 'Executive', status: 'active' },
-  { id: 'user-ed-001', name: 'David Mwangi', email: 'ed@aims.org', role: 'ED' as Role, department: 'Executive', status: 'active' },
-  { id: 'user-sysadmin-001', name: 'Tech Admin', email: 'sysadmin@aims.org', role: 'SYS_ADMIN' as Role, department: 'IT', status: 'active' },
-  { id: 'user-admin-001', name: 'Sarah Kimani', email: 'admin@aims.org', role: 'COMPANY_ADMIN' as Role, department: 'Administration', status: 'active' },
-  { id: 'user-finance-001', name: 'James Odhiambo', email: 'finance@aims.org', role: 'FINANCE' as Role, department: 'Finance', status: 'active' },
-  { id: 'user-grant-001', name: 'Fatima Hassan', email: 'grants@aims.org', role: 'GRANT_WRITER' as Role, department: 'Grants', status: 'active' },
-  { id: 'user-innov-001', name: 'Kevin Njoroge', email: 'innovation@aims.org', role: 'INNOVATOR' as Role, department: 'Innovation', status: 'active' },
+  { id: 'user-cd-001', name: 'Nassir Mwanje', email: 'cd@aims.org', role: 'CD' as Role, department: 'Executive', status: 'active' },
+  { id: 'user-ed-001', name: 'Peter Byamugisha', email: 'ed@aims.org', role: 'ED' as Role, department: 'Executive', status: 'active' },
+  { id: 'user-sysadmin-001', name: 'Okello Komakech', email: 'sysadmin@aims.org', role: 'SYS_ADMIN' as Role, department: 'IT', status: 'active' },
+  { id: 'user-admin-001', name: 'Grace Aceng', email: 'admin@aims.org', role: 'COMPANY_ADMIN' as Role, department: 'Administration', status: 'active' },
+  { id: 'user-finance-001', name: 'Amos Ojok', email: 'finance@aims.org', role: 'FINANCE' as Role, department: 'Finance', status: 'active' },
+  { id: 'user-grant-001', name: 'Sarah Aciro', email: 'grants@aims.org', role: 'GRANT_WRITER' as Role, department: 'Grants', status: 'active' },
+  { id: 'user-innov-001', name: 'Pius Odong', email: 'innovation@aims.org', role: 'INNOVATOR' as Role, department: 'Innovation', status: 'active' },
 ];
 
 const ROLE_COLORS: Record<Role, string> = {
@@ -28,7 +23,7 @@ const ROLE_COLORS: Record<Role, string> = {
   GRANT_WRITER: 'bg-yellow-100 text-yellow-700',
   INNOVATOR: 'bg-orange-100 text-orange-700',
 };
-  
+
 export function RoleManager() {
   const { showToast } = useNotifications();
   const [users, setUsers] = useState(MOCK_USERS);

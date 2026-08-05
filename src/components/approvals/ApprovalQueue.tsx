@@ -16,9 +16,9 @@ interface ApprovalItem {
 }
 
 const MOCK_PENDING_APPROVALS: ApprovalItem[] = [
-  { id: 'appr-req-1', type: 'requisition', title: 'Conference Travel Budget', description: 'Travel expenses for the Nairobi innovation summit', amount: 120000, requestedBy: 'user-innov-001', requestedByName: 'Kevin Njoroge', department: 'Innovation', submittedAt: '2026-08-01', priority: 'medium' },
-  { id: 'appr-req-2', type: 'requisition', title: 'Office Supplies Restock', description: 'Paper, toner, and stationery for Q3', amount: 45000, requestedBy: 'user-admin-001', requestedByName: 'Sarah Kimani', department: 'Administration', submittedAt: '2026-08-03', priority: 'low' },
-  { id: 'appr-pay-1', type: 'payslip', title: 'Payslip — Fatima Hassan', description: 'August 2026 payslip pending approval', amount: 52200, requestedBy: 'user-admin-001', requestedByName: 'Sarah Kimani', department: 'HR', submittedAt: '2026-08-03', priority: 'high' },
+  { id: 'appr-req-1', type: 'requisition', title: 'Conference Travel Budget', description: 'Travel expenses for the Kampala innovation summit', amount: 4500000, requestedBy: 'user-innov-001', requestedByName: 'Pius Odong', department: 'Innovation', submittedAt: '2026-08-01', priority: 'medium' },
+  { id: 'appr-req-2', type: 'requisition', title: 'Office Supplies Restock', description: 'Paper, toner, and stationery for Q3', amount: 850000, requestedBy: 'user-admin-001', requestedByName: 'Grace Aceng', department: 'Administration', submittedAt: '2026-08-03', priority: 'low' },
+  { id: 'appr-pay-1', type: 'payslip', title: 'Payslip — Sarah Aciro', description: 'August 2026 payslip pending approval', amount: 1870000, requestedBy: 'user-admin-001', requestedByName: 'Grace Aceng', department: 'HR', submittedAt: '2026-08-03', priority: 'high' },
 ];
 
 export function ApprovalQueue() {
@@ -73,7 +73,7 @@ export function ApprovalQueue() {
                   <h3 className="text-sm font-semibold text-gray-800">{item.title}</h3>
                   <p className="text-xs text-gray-500 mt-1">{item.description}</p>
                   <div className="flex items-center gap-4 mt-3">
-                    <span className="text-sm font-bold text-gray-800">KES {item.amount.toLocaleString()}</span>
+                    <span className="text-sm font-bold text-gray-800">UGX {item.amount.toLocaleString()}</span>
                     <span className="text-xs text-gray-400">by {item.requestedByName} • {item.department}</span>
                   </div>
                 </div>

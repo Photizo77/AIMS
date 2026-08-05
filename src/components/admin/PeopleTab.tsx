@@ -3,13 +3,13 @@ import type { User } from '@/types';
 import { ROLE_LABELS } from '@/config/roles';
 
 const MOCK_EMPLOYEES: User[] = [
-  { id: 'user-cd-001', name: 'Amara Okafor', email: 'cd@aims.org', role: 'CD', department: 'Executive', status: 'active', createdAt: '2025-01-15' },
-  { id: 'user-ed-001', name: 'David Mwangi', email: 'ed@aims.org', role: 'ED', department: 'Executive', status: 'active', createdAt: '2025-01-15' },
-  { id: 'user-admin-001', name: 'Sarah Kimani', email: 'admin@aims.org', role: 'COMPANY_ADMIN', department: 'Administration', status: 'active', createdAt: '2025-02-01' },
-  { id: 'user-finance-001', name: 'James Odhiambo', email: 'finance@aims.org', role: 'FINANCE', department: 'Finance', status: 'active', createdAt: '2025-03-10' },
-  { id: 'user-grant-001', name: 'Fatima Hassan', email: 'grants@aims.org', role: 'GRANT_WRITER', department: 'Grants', status: 'active', createdAt: '2025-04-20' },
-  { id: 'user-innov-001', name: 'Kevin Njoroge', email: 'innovation@aims.org', role: 'INNOVATOR', department: 'Innovation', status: 'active', createdAt: '2025-05-05' },
-  { id: 'user-emp-001', name: 'Lucy Wanjiku', email: 'employee@aims.org', role: 'INNOVATOR', department: 'Research', status: 'active', createdAt: '2025-06-15' },
+  { id: 'user-cd-001', name: 'Nassir Mwanje', email: 'cd@aims.org', role: 'CD', department: 'Executive', status: 'active', createdAt: '2025-01-15' },
+  { id: 'user-ed-001', name: 'Peter Byamugisha', email: 'ed@aims.org', role: 'ED', department: 'Executive', status: 'active', createdAt: '2025-01-15' },
+  { id: 'user-admin-001', name: 'Grace Aceng', email: 'admin@aims.org', role: 'COMPANY_ADMIN', department: 'Administration', status: 'active', createdAt: '2025-02-01' },
+  { id: 'user-finance-001', name: 'Amos Ojok', email: 'finance@aims.org', role: 'FINANCE', department: 'Finance', status: 'active', createdAt: '2025-03-10' },
+  { id: 'user-grant-001', name: 'Sarah Aciro', email: 'grants@aims.org', role: 'GRANT_WRITER', department: 'Grants', status: 'active', createdAt: '2025-04-20' },
+  { id: 'user-innov-001', name: 'Pius Odong', email: 'innovation@aims.org', role: 'INNOVATOR', department: 'Innovation', status: 'active', createdAt: '2025-05-05' },
+  { id: 'user-emp-001', name: 'Janet Apio', email: 'janet@aims.org', role: 'INNOVATOR', department: 'Research', status: 'active', createdAt: '2025-06-15' },
 ];
 
 export function PeopleTab() {
