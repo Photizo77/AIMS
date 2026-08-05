@@ -123,7 +123,7 @@ function ExecutiveDashboard() {
 function AdminDashboard() {
   return (
     <div className="space-y-6">
-      <DashHeader gradient="bg-grad-green" title="Operations & HR Hub" subtitle="Workforce administration, attendance & resource oversight" />
+      <DashHeader gradient="bg-grad-navy" title="Operations & HR Hub" subtitle="Workforce administration, attendance & resource oversight" />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <StatCard title="Active Staff" value="142" icon="people" color="navy" />
@@ -176,7 +176,7 @@ function AdminDashboard() {
 function SysAdminDashboard() {
   return (
     <div className="space-y-6">
-      <DashHeader gradient="bg-grad-dark" title="System Telemetry" subtitle="Platform stability, security & configuration" />
+      <DashHeader gradient="bg-grad-navy" title="System Telemetry" subtitle="Platform stability, security & configuration" />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <StatCard title="System Uptime" value="99.9%" icon="check_circle" color="green" />
@@ -220,7 +220,7 @@ function GrantDashboard() {
 
   return (
     <div className="space-y-6">
-      <DashHeader gradient="bg-grad-orange" title="Grants & Proposals" subtitle="AI-assisted drafting & deadline tracking" />
+      <DashHeader gradient="bg-grad-navy" title="Grants & Proposals" subtitle="AI-assisted drafting & deadline tracking" />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <StatCard title="Active Grants" value="4" icon="edit_note" color="navy" />
@@ -257,7 +257,7 @@ function GrantDashboard() {
 function InnovatorDashboard() {
   return (
     <div className="space-y-6">
-      <DashHeader gradient="bg-grad-innov" title="Innovation Pipeline" subtitle="Research execution, prototyping & production" />
+      <DashHeader gradient="bg-grad-navy" title="Innovation Pipeline" subtitle="Research execution, prototyping & production" />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <StatCard title="Concept Phase" value="3" icon="lightbulb" color="orange" />
@@ -303,7 +303,7 @@ function InnovatorDashboard() {
 function FinanceDashboard() {
   return (
     <div className="space-y-6">
-      <DashHeader gradient="bg-grad-finance" title="Financial Command" subtitle="Cash flow, procurement & requisition workflows" />
+      <DashHeader gradient="bg-grad-navy" title="Financial Command" subtitle="Cash flow, procurement & requisition workflows" />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <StatCard title="Income (MTD)" value="UGX 450M" icon="trending_up" color="green" />
@@ -430,7 +430,7 @@ function QueueItem({ type, title, by, amount }: { type: string; title: string; b
     <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-slate-50 border border-slate-100">
       <div className="min-w-0">
         <div className="flex items-center gap-2">
-          <span className={cn('px-1.5 py-0.5 rounded text-[10px] font-bold uppercase', type === 'Payslip' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700')}>
+          <span className={cn('px-1.5 py-0.5 rounded text-[10px] font-bold uppercase', type === 'Payslip' ? 'bg-purple-100 text-purple-700' : 'bg-aims-navy text-white')}>
             {type}
           </span>
           <span className="text-sm font-bold text-slate-900 truncate">{title}</span>
@@ -520,7 +520,7 @@ function GrantCard({ id, title, pillar, amount, deadline, color }: { id: string;
     <div className={cn('bg-white rounded-xl border border-slate-200 border-t-4 p-4 shadow-sm', ACCENT[color])}>
       <div className="flex items-center justify-between mb-2">
         <span className="text-[10px] font-mono font-semibold text-slate-400">{id}</span>
-        <span className={cn('px-2 py-0.5 rounded-full text-[10px] font-extrabold', urgent ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700')}>
+        <span className={cn('px-2 py-0.5 rounded-full text-[10px] font-extrabold', )}>urgent ? 'bg-aims-orange text-white' : 'bg-aims-green text-white'
           {days}d left
         </span>
       </div>

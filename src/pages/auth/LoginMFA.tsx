@@ -1,6 +1,6 @@
 // src/pages/auth/LoginMFA.tsx
 // ============================================================
-// AIMS — Login Page (Functional)
+// AIMS — Login Page (Minimal, border-defined, no colored background)
 // ============================================================
 
 import { useState } from 'react';
@@ -17,9 +17,7 @@ export function LoginMFA() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-
     const success = login(email, password);
-
     if (success) {
       navigate('/dashboard', { replace: true });
     } else {
@@ -28,22 +26,21 @@ export function LoginMFA() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Logo / Branding */}
+        {/* Logo */}
         <div className="text-center mb-8">
-  <img 
-    src="https://i.postimg.cc/N0G2CsXY/Screenshot-2026-08-01-134115.png" 
-    alt="Ardhi Logo" 
-    className="h-20 w-auto mx-auto mb-4 object-contain"
-  />
-  <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">ARDHI</h1>
-  <p className="text-sm text-gray-600 font-medium mt-1">Integrated Management System</p>
-</div>
+          <img
+            src="https://i.postimg.cc/N0G2CsXY/Screenshot-2026-08-01-134115.png"
+            alt="Ardhi"
+            className="h-24 w-auto mx-auto object-contain"
+          />
+        </div>
 
-        {/* Login Form */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-          <h2 className="text-lg font-semibold text-gray-800 mb-6">Sign In</h2>
+        {/* Sign-in card — defined by a subtle border */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
+          <h2 className="text-xl font-bold text-slate-900 mb-1">Sign In</h2>
+          <p className="text-sm text-slate-500 mb-6">Access the Ardhi Internal Management System</p>
 
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-3 mb-4">
@@ -53,51 +50,56 @@ export function LoginMFA() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <label className="block text-sm font-semibold text-slate-700 mb-1.5">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@aims.org"
                 required
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-aims-mint/50"
+                className="w-full px-4 py-3 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-aims-green focus:border-aims-green"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <label className="block text-sm font-semibold text-slate-700 mb-1.5">Password</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-aims-mint/50"
+                className="w-full px-4 py-3 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-aims-green focus:border-aims-green"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full py-3 bg-aims-mint text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity"
+              className="w-full py-3 bg-aims-green text-white rounded-xl text-sm font-bold hover:opacity-90 transition-opacity"
             >
               Sign In
             </button>
           </form>
 
-          {/* Demo Credentials */}
-          <div className="mt-6 pt-6 border-t border-gray-100">
-            <p className="text-xs font-medium text-gray-500 mb-3">Demo Accounts (use any password):</p>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <span className="text-gray-400">cd@aims.org</span>
-              <span className="text-gray-400">ed@aims.org</span>
-              <span className="text-gray-400">sysadmin@aims.org</span>
-              <span className="text-gray-400">admin@aims.org</span>
-              <span className="text-gray-400">finance@aims.org</span>
-              <span className="text-gray-400">grants@aims.org</span>
-              <span className="text-gray-400">innovation@aims.org</span>
+          {/* Demo accounts — separated by a light divider */}
+          <div className="mt-6 pt-6 border-t border-slate-100">
+            <p className="text-xs font-bold text-slate-500 mb-3 uppercase tracking-wide">Demo Accounts (Any Password)</p>
+            <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 font-medium">
+              <span>cd@aims.org</span>
+              <span>ed@aims.org</span>
+              <span>sysadmin@aims.org</span>
+              <span>admin@aims.org</span>
+              <span>finance@aims.org</span>
+              <span>grants@aims.org</span>
+              <span>innovation@aims.org</span>
             </div>
           </div>
         </div>
+
+        {/* Minimal footer note */}
+        <p className="text-center text-xs text-slate-400 mt-6">
+          © 2026 Ardhi. All rights reserved.
+        </p>
       </div>
     </div>
   );

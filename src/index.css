@@ -5,7 +5,7 @@
 @tailwind utilities;
 
 :root {
-  --brand-navy: #1e3a8a;
+  --brand-navy: #053664;   /* Ardhi Navy Blue */
   --brand-mint: #c1dbc3;
   --brand-green: #286b25;
   --brand-orange: #eb3b14;
@@ -18,28 +18,25 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
-
   body {
     @apply bg-slate-100 text-slate-900;
-    font-weight: 500; /* baseline heavier weight = less faint */
+    font-weight: 500;
   }
-
   h1, h2, h3, h4, h5, h6 {
     @apply text-slate-900 font-bold tracking-tight;
   }
-
   p, label, td, th, li {
     @apply text-slate-800;
   }
 }
 
-/* ── Brand color utilities ── */
+/* Brand color utilities */
 .bg-aims-mint { background-color: var(--brand-mint); }
 .bg-aims-navy { background-color: var(--brand-navy); }
 .bg-aims-green { background-color: var(--brand-green); }
 .bg-aims-orange { background-color: var(--brand-orange); }
 
-.text-aims-mint { color: var(--brand-green); } /* dark green for legibility */
+.text-aims-mint { color: var(--brand-green); }
 .text-aims-navy { color: var(--brand-navy); }
 .text-aims-green { color: var(--brand-green); }
 .text-aims-orange { color: var(--brand-orange); }
@@ -49,16 +46,15 @@
 .border-aims-green { border-color: var(--brand-green); }
 .border-aims-orange { border-color: var(--brand-orange); }
 
-/* Top accent borders (for card color-coding) */
 .border-t-aims-green { border-top-color: var(--brand-green); }
 .border-t-aims-navy { border-top-color: var(--brand-navy); }
 .border-t-aims-orange { border-top-color: var(--brand-orange); }
 .border-t-aims-mint { border-top-color: var(--brand-green); }
 
-/* ── Brand color gradients (mix & match) ── */
-.bg-grad-navy { background: linear-gradient(135deg, #1e3a8a 0%, #2b4fb3 100%); }
+/* ── Gradients (all blue stops now use Ardhi Navy) ── */
+.bg-grad-navy { background: linear-gradient(135deg, #053664 0%, #0b4070 100%); }
 .bg-grad-green { background: linear-gradient(135deg, #286b25 0%, #3f8f3a 100%); }
 .bg-grad-orange { background: linear-gradient(135deg, #eb3b14 0%, #f2662e 100%); }
-.bg-grad-finance { background: linear-gradient(135deg, #1e3a8a 0%, #286b25 100%); }
-.bg-grad-innov { background: linear-gradient(135deg, #286b25 0%, #1e3a8a 100%); }
-.bg-grad-dark { background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); }
+.bg-grad-finance { background: linear-gradient(135deg, #053664 0%, #286b25 100%); }
+.bg-grad-innov { background: linear-gradient(135deg, #286b25 0%, #053664 100%); }
+.bg-grad-dark { background: linear-gradient(135deg, #0f172a 0%, #053664 100%); }
