@@ -1,99 +1,67 @@
-import { NavLink, useNavigate } from 'react-router-dom'
-import { cn } from '@/lib/utils'
+// src/components/layout/SideNavBar.tsx
+// ============================================================
+// AIMS — Side Navigation Bar (Phase 1 — RBAC Aware)
+// Renders only the nav items the current user's role can access
+// ============================================================
 
-interface NavItem {
-  icon: string
-  label: string
-  to: string
-}
-
-const mainNav: NavItem[] = [
-  { icon: 'dashboard',      label: 'Dashboard',    to: '/dashboard' },
-  { icon: 'calendar_today', label: 'Attendance',   to: '/attendance' },
-  { icon: 'assignment',     label: 'Tasks',        to: '/tasks' },
-  { icon: 'description',    label: 'Documents',    to: '/documents' },
-  { icon: 'group',          label: 'HR',           to: '/hr' },
-  { icon: 'payments',       label: 'Finance',      to: '/finance' },
-  { icon: 'shopping_cart',  label: 'Procurement',  to: '/procurement' },
-  { icon: 'science',        label: 'Research',     to: '/research' },
-  { icon: 'handshake',      label: 'CRM',          to: '/crm' },
-  { icon: 'analytics',      label: 'Analytics',    to: '/analytics' },
-  { icon: 'forum',          label: 'Chat',         to: '/chat' },
-  { icon: 'savings',        label: 'Grants',       to: '/grants' },
-  { icon: 'inventory_2',    label: 'Inventory',    to: '/inventory' },
-  { icon: 'menu_book',      label: 'Knowledge',    to: '/knowledge' },
-]
-
-const bottomNav: NavItem[] = [
-  { icon: 'shield_person',  label: 'RBAC / Roles', to: '/rbac' },
-  { icon: 'settings',       label: 'Settings',     to: '/settings' },
-]
+import { Link, useLocation } from 'react-router-dom';
+import { cn } from '@/lib/utils';
+import { useAuth } from '@/context/AuthContext';
+import { getVisibleNavItems } from '@/config/navigation';
 
 export function SideNavBar() {
-  const navigate = useNavigate()
+  const location = useLocation();
+  const { user } = useAuth();
+
+  // If no user is logged in, don't render navigation
+  if (!user) return null;
+
+  // Get only the nav items this role is allowed to see
+  const visibleItems = getVisibleNavItems(user.role);
 
   return (
-    <aside className="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 z-40 flex flex-col py-md bg-surface-container-lowest border-r border-outline-variant shadow-sm">
-      {/* New Request CTA */}
-      <div className="px-md mb-lg">
-        <button
-          onClick={() => navigate('/approvals')}
-          className="w-full bg-primary-container text-white py-sm rounded-xl font-label-md flex items-center justify-center gap-sm shadow-md hover:opacity-90 active:scale-95 transition-all"
-        >
-          <span className="material-symbols-outlined text-[20px]">add</span>
-          New Request
-        </button>
+    <aside className="w-64 h-full bg-white border-r border-gray-200 overflow-y-auto">
+      {/* User Info Section */}
+      <div className="p-4 border-b border-gray-100">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-full bg-aims-mint flex items-center justify-center text-white font-bold text-sm">
+            {user.name.charAt(0)}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-gray-800 truncate">
+              {user.name}
+            </p>
+            <p className="text-xs text-gray-500 truncate">
+              {user.role.replace('_', ' ')}
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* Main nav links */}
-      <nav className="flex-1 overflow-y-auto scrollbar-hide space-y-0.5 px-xs">
-        {mainNav.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            className={({ isActive }) =>
-              cn(
-                'flex items-center gap-md px-md py-sm mx-2 rounded-lg transition-all duration-150',
+      {/* Navigation Links */}
+      <nav className="p-3 flex flex-col gap-0.5">
+        {visibleItems.map((item) => {
+          const isActive = location.pathname === item.href;
+
+          return (
+            <Link
+              key={item.href}
+              to={item.href}
+              className={cn(
+                'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 text-sm',
                 isActive
-                  ? 'bg-secondary-container text-on-secondary-container font-semibold translate-x-1'
-                  : 'text-on-surface-variant hover:bg-surface-container'
-              )
-            }
-          >
-            <span className="material-symbols-outlined text-[22px]">{item.icon}</span>
-            <span className="text-label-md">{item.label}</span>
-          </NavLink>
-        ))}
+                  ? 'bg-aims-mint text-white font-medium shadow-sm'
+                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+              )}
+            >
+              <span className="material-symbols-outlined text-[20px]">
+                {item.icon}
+              </span>
+              <span>{item.title}</span>
+            </Link>
+          );
+        })}
       </nav>
-
-      {/* Bottom links */}
-      <div className="pt-md border-t border-outline-variant mt-auto">
-        {bottomNav.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            className={({ isActive }) =>
-              cn(
-                'flex items-center gap-md px-md py-sm mx-2 rounded-lg transition-all duration-150',
-                isActive
-                  ? 'bg-secondary-container text-on-secondary-container font-semibold translate-x-1'
-                  : 'text-on-surface-variant hover:bg-surface-container'
-              )
-            }
-          >
-            <span className="material-symbols-outlined text-[22px]">{item.icon}</span>
-            <span className="text-label-md">{item.label}</span>
-          </NavLink>
-        ))}
-
-        <button
-          onClick={() => navigate('/login')}
-          className="w-full flex items-center gap-md px-md py-sm mx-2 rounded-lg text-error hover:bg-error-container/30 transition-all text-label-md"
-        >
-          <span className="material-symbols-outlined text-[22px]">logout</span>
-          <span>Logout</span>
-        </button>
-      </div>
     </aside>
-  )
+  );
 }

@@ -1,4 +1,5 @@
-export { AppShell }         from './AppShell'
-export { TopNavBar }        from './TopNavBar'
-export { SideNavBar }       from './SideNavBar'
-export { ArdhiLogo }        from './ArdhiLogo'
+export { AppShell } from './AppShell';
+export { SideNavBar } from './SideNavBar';
+export { TopNavBar } from './TopNavBar';
+export { ArdhiLogo } from './ArdhiLogo';
+export { NotificationBell } from './NotificationBell';
