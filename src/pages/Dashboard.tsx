@@ -515,7 +515,7 @@ function LogRow({ type, text, time }: { type: 'ok' | 'warn' | 'err'; text: strin
 
 function GrantCard({ id, title, pillar, amount, deadline, color }: { id: string; title: string; pillar: string; amount: number; deadline: string; color: ColorKey }) {
   const days = daysUntil(deadline);
-  const urgent = days <= 14;
+  
   return (
     <div className={cn('bg-white rounded-xl border border-slate-200 border-t-4 p-4 shadow-sm', ACCENT[color])}>
       <div className="flex items-center justify-between mb-2">

@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
-import type { Department, FeedPost } from '@/types';
+import type {FeedPost } from '@/types';
 
 // ─────────────────────────────────────────────
 // DATE HELPERS (Short lines to avoid paste breaks)
