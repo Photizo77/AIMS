@@ -81,7 +81,7 @@ const MOCK_GRANTS: Grant[] = [
     title: 'Climate-Smart Farming Initiative',
     pillar: 'ArdhiAgric',
     description: 'Training 200 smallholder farmers in drought-resistant crop varieties and water-efficient irrigation techniques across semi-arid regions.',
-    amount: 250000,
+    amount: 250000000,
     assignedWriterId: 'user-grant-001',
     status: 'submitted',
     deadline: '2026-09-15',
@@ -94,7 +94,7 @@ const MOCK_GRANTS: Grant[] = [
     title: 'Urban Vertical Farming Hubs',
     pillar: 'ArdhiAgric',
     description: 'Establishing 10 urban vertical farming hubs to provide fresh produce to food-insecure neighborhoods while creating youth employment.',
-    amount: 180000,
+    amount: 180000000,
     assignedWriterId: 'user-grant-001',
     status: 'drafting',
     deadline: '2026-10-30',
@@ -109,7 +109,7 @@ const MOCK_GRANTS: Grant[] = [
     title: 'Community Recycling Centers',
     pillar: 'ArdhiWaste',
     description: 'Building 5 community recycling centers and training 50 waste collectors in proper sorting and processing techniques.',
-    amount: 320000,
+    amount: 320000000,
     assignedWriterId: 'user-grant-001',
     status: 'awarded',
     deadline: '2026-08-20',
@@ -122,7 +122,7 @@ const MOCK_GRANTS: Grant[] = [
     title: 'Plastic-to-Biofuel Conversion',
     pillar: 'ArdhiWaste',
     description: 'Research and pilot project for converting plastic waste into biofuel for rural communities.',
-    amount: 150000,
+    amount: 150000000,
     assignedWriterId: 'user-grant-001',
     status: 'idea',
     deadline: '2026-12-01',
@@ -137,7 +137,7 @@ const MOCK_GRANTS: Grant[] = [
     title: 'Flood Early Warning System',
     pillar: 'ArdhiDisasters',
     description: 'Deploying IoT-based flood monitoring sensors across 15 vulnerable river basins with SMS-based community alert systems.',
-    amount: 280000,
+    amount: 280000000,
     assignedWriterId: 'user-grant-001',
     status: 'submitted',
     deadline: '2026-09-30',
@@ -150,7 +150,7 @@ const MOCK_GRANTS: Grant[] = [
     title: 'Emergency Response Kits Program',
     pillar: 'ArdhiDisasters',
     description: 'Distributing 500 pre-positioned emergency response kits to disaster-prone communities with trained first responders.',
-    amount: 95000,
+    amount: 95000000,
     assignedWriterId: 'user-grant-001',
     status: 'drafting',
     deadline: '2026-11-15',
@@ -165,7 +165,7 @@ const MOCK_GRANTS: Grant[] = [
     title: 'Mobile Maternal Health Clinics',
     pillar: 'ArdhiHealth',
     description: 'Operating 3 mobile health clinics providing prenatal and postnatal care to 5,000 women in remote areas annually.',
-    amount: 420000,
+    amount: 420000000,
     assignedWriterId: 'user-grant-001',
     status: 'awarded',
     deadline: '2026-08-15',
@@ -178,7 +178,7 @@ const MOCK_GRANTS: Grant[] = [
     title: 'Community Health Worker Training',
     pillar: 'ArdhiHealth',
     description: 'Training 150 community health workers in disease prevention, basic diagnostics, and health education.',
-    amount: 180000,
+    amount: 180000000,
     assignedWriterId: 'user-grant-001',
     status: 'submitted',
     deadline: '2026-10-01',
@@ -193,7 +193,7 @@ const MOCK_GRANTS: Grant[] = [
     title: 'Community Land Rights Documentation',
     pillar: 'ArdhiLand',
     description: 'Supporting 8 indigenous communities in formally documenting and securing their ancestral land rights through legal processes.',
-    amount: 220000,
+    amount: 220000000,
     assignedWriterId: 'user-grant-001',
     status: 'drafting',
     deadline: '2026-11-30',
@@ -206,7 +206,7 @@ const MOCK_GRANTS: Grant[] = [
     title: 'Degraded Land Restoration Project',
     pillar: 'ArdhiLand',
     description: 'Restoring 500 hectares of degraded land through community-led reforestation and soil conservation techniques.',
-    amount: 350000,
+    amount: 350000000,
     assignedWriterId: 'user-grant-001',
     status: 'idea',
     deadline: '2027-01-15',
@@ -275,7 +275,7 @@ export function GrantsManager() {
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-3">
           <p className="text-xs text-gray-500">Total Value</p>
-          <p className="text-xl font-bold text-gray-800">${(stats.totalValue / 1000).toFixed(0)}K</p>
+          <p className="text-xl font-bold text-gray-800">UGX {(stats.totalValue / 1000000000).toFixed(1)}B</p>
         </div>
       </div>
 
@@ -345,7 +345,7 @@ export function GrantsManager() {
               <p className="text-xs text-gray-500 mb-3 line-clamp-2">{grant.description}</p>
 
               <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                <span className="text-sm font-bold text-gray-800">${grant.amount.toLocaleString()}</span>
+                <span className="text-sm font-bold text-gray-800">UGX {grant.amount.toLocaleString()}</span>
                 <div className="text-right">
                   <p className="text-[10px] text-gray-400">Deadline</p>
                   <p className="text-xs font-medium text-gray-700">{grant.deadline}</p>
@@ -406,7 +406,7 @@ function GrantDetailView({ grant, onBack }: { grant: Grant; onBack: () => void }
           <div className="grid grid-cols-3 gap-3">
             <div className="bg-white rounded-xl border border-gray-200 p-4 text-center">
               <p className="text-xs text-gray-500">Amount</p>
-              <p className="text-lg font-bold text-gray-800">${grant.amount.toLocaleString()}</p>
+              <p className="text-lg font-bold text-gray-800">UGX {grant.amount.toLocaleString()}</p>
             </div>
             <div className="bg-white rounded-xl border border-gray-200 p-4 text-center">
               <p className="text-xs text-gray-500">Deadline</p>
@@ -431,9 +431,9 @@ function GrantDetailView({ grant, onBack }: { grant: Grant; onBack: () => void }
           </div>
         </div>
 
-        {/* Right: AI Writing Assistant */}
+        {/* Right: AI Writing Assistant - FIXED: Now passing grant prop */}
         <div className="lg:col-span-1">
-          <AIWritingAssistant />
+          <AIWritingAssistant grant={grant} />
         </div>
       </div>
     </div>
