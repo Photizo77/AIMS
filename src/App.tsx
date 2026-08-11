@@ -4,6 +4,7 @@
 // Phase 1: Protected Routes with RBAC
 // Phase 2: Feed replaces Chat
 // Phase 5: Tasks route renamed to Innovations
+// Phase 6: AI Assistant full-page route added
 // ============================================================
 
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
@@ -14,23 +15,24 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { LoginMFA } from '@/pages/auth/LoginMFA';
 
 // ─── App Pages ───
-import { Dashboard }   from '@/pages/Dashboard';
-import { Feed }        from '@/pages/Feed';
-import { Tasks }       from '@/pages/Tasks';
-import { Attendance }  from '@/pages/Attendance';
-import { HR }          from '@/pages/HR';
-import { Grants }      from '@/pages/Grants';
-import { Finance }     from '@/pages/Finance';
-import { Procurement } from '@/pages/Procurement';
-import { Approvals }   from '@/pages/Approvals';
-import { Documents }   from '@/pages/Documents';
-import { Inventory }   from '@/pages/Inventory';
-import { Analytics }   from '@/pages/Analytics';
-import { Research }    from '@/pages/Research';
-import { Knowledge }   from '@/pages/Knowledge';
-import { CRM }         from '@/pages/CRM';
-import { RBAC }        from '@/pages/RBAC';
-import { Settings }    from '@/pages/Settings';
+import { Dashboard }     from '@/pages/Dashboard';
+import { Feed }          from '@/pages/Feed';
+import { Tasks }         from '@/pages/Tasks';
+import { Attendance }    from '@/pages/Attendance';
+import { HR }            from '@/pages/HR';
+import { Grants }        from '@/pages/Grants';
+import { Finance }       from '@/pages/Finance';
+import { Procurement }   from '@/pages/Procurement';
+import { Approvals }     from '@/pages/Approvals';
+import { Documents }     from '@/pages/Documents';
+import { Inventory }     from '@/pages/Inventory';
+import { Analytics }     from '@/pages/Analytics';
+import { Research }      from '@/pages/Research';
+import { Knowledge }     from '@/pages/Knowledge';
+import { CRM }           from '@/pages/CRM';
+import { RBAC }          from '@/pages/RBAC';
+import { Settings }      from '@/pages/Settings';
+import { AIAssistant }   from '@/pages/AIAssistant';
 
 // ─── Main App Component ───
 export function App() {
@@ -110,6 +112,16 @@ export function App() {
             element={
               <ProtectedRoute module="grants">
                 <Grants />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* ─── AI Assistant (Full Page) ─── */}
+          <Route
+            path="/ai-assistant"
+            element={
+              <ProtectedRoute module="grants">
+                <AIAssistant />
               </ProtectedRoute>
             }
           />

@@ -1,3 +1,8 @@
+// src/components/layout/TopNavBar.tsx
+// ============================================================
+// AIMS — Top Navigation Bar (with Avatar Photos)
+// ============================================================
+
 import { useNavigate } from 'react-router-dom';
 import { ArdhiLogo } from './ArdhiLogo';
 import { NotificationBell } from './NotificationBell';
@@ -14,7 +19,7 @@ export function TopNavBar() {
 
   return (
     <header className="fixed top-0 left-0 right-0 h-16 bg-white border-b border-slate-200 z-50 flex items-center px-4 md:px-6 shadow-sm">
-      {/* Left: logo (tagline cropped) */}
+      {/* Left: logo */}
       <div className="flex items-center shrink-0">
         <ArdhiLogo />
       </div>
@@ -31,9 +36,17 @@ export function TopNavBar() {
         <NotificationBell />
         {user && (
           <div className="flex items-center gap-2 ml-1 pl-3 border-l border-slate-200">
-            <div className="w-8 h-8 rounded-full bg-aims-green flex items-center justify-center text-white text-sm font-bold">
-              {user.name.charAt(0)}
-            </div>
+            {user.avatarUrl ? (
+              <img
+                src={user.avatarUrl}
+                alt={user.name}
+                className="w-8 h-8 rounded-full border border-slate-200 object-cover"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-aims-green flex items-center justify-center text-white text-sm font-bold">
+                {user.name.charAt(0)}
+              </div>
+            )}
             <div className="hidden md:block">
               <p className="text-sm font-bold text-slate-900 leading-tight">{user.name}</p>
               <p className="text-[10px] font-semibold text-slate-500 leading-tight">{user.role.replace('_', ' ')}</p>

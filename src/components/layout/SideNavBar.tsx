@@ -1,3 +1,8 @@
+// src/components/layout/SideNavBar.tsx
+// ============================================================
+// AIMS — Side Navigation Bar (with Avatar Photo)
+// ============================================================
+
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
@@ -13,9 +18,17 @@ export function SideNavBar() {
     <aside className="w-64 h-full bg-white border-r border-slate-200 overflow-y-auto">
       <div className="p-4 border-b border-slate-100">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-aims-green flex items-center justify-center text-white font-bold text-sm">
-            {user.name.charAt(0)}
-          </div>
+          {user.avatarUrl ? (
+            <img
+              src={user.avatarUrl}
+              alt={user.name}
+              className="w-9 h-9 rounded-full border border-slate-200 object-cover"
+            />
+          ) : (
+            <div className="w-9 h-9 rounded-full bg-aims-green flex items-center justify-center text-white font-bold text-sm">
+              {user.name.charAt(0)}
+            </div>
+          )}
           <div className="flex-1 min-w-0">
             <p className="text-sm font-bold text-slate-900 truncate">{user.name}</p>
             <p className="text-xs font-semibold text-slate-500 truncate">{user.role.replace('_', ' ')}</p>
