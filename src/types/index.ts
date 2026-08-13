@@ -1,82 +1,88 @@
 // src/types/index.ts
-export type Role = 'CD' | 'ED' | 'SYS_ADMIN' | 'COMPANY_ADMIN' | 'FINANCE' | 'GRANT_WRITER' | 'INNOVATOR';
+export type Role = 'CD' | 'ED' | 'SYS_ADMIN' | 'COMPANY_ADMIN' | 'FINANCE' | 'GRANTS_MANAGER' | 'GRANT_WRITER' | 'INNOVATOR';
 export type Department = 'Executive' | 'Administration' | 'Finance' | 'HR' | 'Grants' | 'Research' | 'Innovation' | 'Procurement' | 'IT';
 
 export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: Role;
-  department: Department;
-  avatarUrl?: string;
-  status: 'active' | 'inactive' | 'pending';
-  createdAt: string;
-  lastLogin?: string;
+  id: string; name: string; email: string; role: Role; department: Department;
+  avatarUrl?: string; status: 'active' | 'inactive' | 'pending';
+  createdAt: string; lastLogin?: string;
 }
 
-export type ApprovalStatus = 'draft' | 'pending' | 'approved' | 'rejected' | 'edited';
+export type GrantReviewStatus = 'draft' | 'team_review' | 'ed_review' | 'approved' | 'rejected';
+export interface Grant {
+  id: string; uniqueId: string; title: string; pillar: string; description: string;
+  amount: number; assignedWriterId: string; status: GrantReviewStatus; deadline: string;
+  rfpDocumentUrl?: string; externalLink?: string; teamLeadNotes?: string; edNotes?: string;
+  reminderSent?: boolean; createdAt: string; updatedAt: string;
+}
 
+export type NotificationType = 'info' | 'success' | 'warning' | 'error' | 'approval' | 'deadline' | 'email';
+export interface Notification {
+  id: string; userId: string; title: string; message: string;
+  type: NotificationType; read: boolean; createdAt: string; actionUrl?: string;
+}
+
+export type BudgetStatus = 'draft' | 'submitted' | 'approved' | 'rejected' | 'withheld';
+export interface BudgetSubmission {
+  id: string; department: Department; submittedBy: string; submittedByName: string;
+  period: string; totalAmount: number; status: BudgetStatus;
+  edNotes?: string; createdAt: string; updatedAt: string; lineItems: { category: string; amount: number }[];
+}
+
+export interface ExpenseRecord {
+  id: string; date: string; category: string; description: string;
+  amount: number; department: Department; approvedBy?: string; status: 'pending' | 'approved' | 'flagged';
+}
+
+export interface MeetingMinute {
+  id: string; title: string; date: string; attendees: string[];
+  status: 'draft' | 'approved'; summary: string; fullContent: string;
+}
+
+export interface Policy {
+  id: string; title: string; category: 'internal' | 'external';
+  department: string; lastUpdated: string; downloadUrl: string; content: string;
+}
+
+export interface CRMContact {
+  id: string; name: string; organization: string; email: string; phone: string;
+  type: 'donor' | 'partner' | 'government' | 'vendor'; lastContact: string; notes: string;
+}
+
+export interface KnowledgeResource {
+  id: string; title: string; type: 'document' | 'video' | 'audio' | 'photo';
+  category: string; uploadedBy: string; uploadedAt: string; url: string; description: string;
+}
+
+// Preserved types
+export type ApprovalStatus = 'draft' | 'pending' | 'approved' | 'rejected' | 'edited';
 export interface Requisition {
   id: string; title: string; description: string; amount: number; category: string;
   department: Department; requestedBy: string; status: ApprovalStatus;
   priority: 'low' | 'medium' | 'high' | 'urgent'; createdAt: string; updatedAt: string;
   approvedBy?: string; approvedAt?: string; notes?: string;
 }
-
 export interface Payslip {
   id: string; employeeId: string; employeeName: string; period: string;
   baseSalary: number; allowances: number; deductions: number; netPay: number;
-  status: ApprovalStatus; generatedBy: string; approvedBy?: string;
-  generatedAt: string; approvedAt?: string;
+  status: ApprovalStatus; generatedBy: string; approvedBy?: string; generatedAt: string; approvedAt?: string;
 }
-
-export type ContractType = 'permanent' | 'contract' | 'intern' | 'consultant';
 export interface Contract {
-  id: string; employeeId: string; employeeName: string; type: ContractType;
+  id: string; employeeId: string; employeeName: string; type: 'permanent' | 'contract' | 'intern' | 'consultant';
   startDate: string; endDate?: string; salary: number;
   status: 'active' | 'expiring' | 'expired' | 'terminated';
-  terms?: string; createdAt: string; updatedAt: string;
+  scannedUrl?: string; createdAt: string; updatedAt: string;
 }
-
-export interface KPI { id: string; name: string; target: number; achieved: number; weight: number; }
-export interface Appraisal {
-  id: string; employeeId: string; employeeName: string; reviewPeriod: string;
-  kpis: KPI[]; overallRating: number; reviewerComments?: string;
-  status: 'draft' | 'submitted' | 'acknowledged'; reviewerId: string; submittedAt?: string;
-}
-
 export type AttendanceStatus = 'present' | 'late' | 'absent' | 'leave' | 'remote';
 export interface AttendanceRecord {
   id: string; employeeId: string; employeeName: string; date: string;
   checkIn?: string; checkOut?: string; status: AttendanceStatus;
-  locationType?: 'onsite' | 'remote'; coordinates?: string; hoursWorked?: number; notes?: string;
+  locationType?: 'onsite' | 'remote'; coordinates?: string; hoursWorked?: number;
+  position?: string; department?: Department;
 }
-
-export type GrantPillar = string;
-export type GrantStatus = 'idea' | 'drafting' | 'submitted' | 'awarded' | 'rejected';
-export interface Grant {
-  id: string; uniqueId: string; title: string; pillar: GrantPillar; description: string;
-  amount: number; assignedWriterId: string; status: GrantStatus;
-  deadline: string; createdAt: string; updatedAt: string;
-}
-
-export type InnovationStatus = 'concept' | 'research' | 'prototype' | 'testing' | 'deployed';
-export interface Innovation {
-  id: string; title: string; description: string; assignedTo: string[];
-  status: InnovationStatus; priority: 'low' | 'medium' | 'high';
-  createdAt: string; updatedAt: string;
-}
-
 export interface FeedComment { id: string; authorId: string; authorName: string; content: string; createdAt: string; }
 export interface FeedPost {
   id: string; authorId: string; authorName: string; department: Department;
   content: string; createdAt: string; likes: number; comments: FeedComment[];
 }
-
-export type NotificationType = 'info' | 'success' | 'warning' | 'error' | 'approval';
-export interface Notification {
-  id: string; userId: string; title: string; message: string;
-  type: NotificationType; read: boolean; createdAt: string; actionUrl?: string;
-}
-
 export interface NavItem { title: string; href: string; icon: string; roles: Role[] | 'ALL'; }
