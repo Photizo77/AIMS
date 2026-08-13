@@ -1,8 +1,5 @@
 // src/components/layout/TopNavBar.tsx
-// ============================================================
-// AIMS — Top Navigation Bar (with Avatar Photos)
-// ============================================================
-
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArdhiLogo } from './ArdhiLogo';
 import { NotificationBell } from './NotificationBell';
@@ -10,54 +7,92 @@ import { useAuth } from '@/context/AuthContext';
 
 export function TopNavBar() {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, updateAvatar } = useAuth();
+  const [showMenu, setShowMenu] = useState(false);
+  const [imgError, setImgError] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login', { replace: true });
+  const handleLogout = () => { logout(); navigate('/login', { replace: true }); };
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert('Image is too large. Please select an image under 2MB.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        updateAvatar(reader.result as string);
+        setImgError(false);
+      };
+      reader.readAsDataURL(file);
+    }
+    setShowMenu(false);
   };
 
   return (
     <header className="fixed top-0 left-0 right-0 h-16 bg-white border-b border-slate-200 z-50 flex items-center px-4 md:px-6 shadow-sm">
-      {/* Left: logo */}
-      <div className="flex items-center shrink-0">
+      
+      {/* LEFT: Logo (Fixed width, prevents overlap) */}
+      <div className="w-48 shrink-0 flex items-center">
         <ArdhiLogo />
       </div>
 
-      {/* Center: bold system name */}
-      <div className="absolute left-1/2 -translate-x-1/2 hidden sm:block">
-        <span className="text-sm md:text-base font-black tracking-wide text-aims-navy whitespace-nowrap">
+      {/* CENTER: Title (Takes remaining space, centers content) */}
+      <div className="flex-1 flex justify-center hidden md:flex">
+        <span className="text-sm lg:text-base font-black tracking-wide text-aims-navy whitespace-nowrap">
           ARDHI INTERNAL MANAGEMENT SYSTEM
         </span>
       </div>
 
-      {/* Right: controls */}
-      <div className="ml-auto flex items-center gap-2 shrink-0">
+      {/* RIGHT: Controls (Fixed width, pushes to right) */}
+      <div className="w-48 shrink-0 flex items-center justify-end gap-2">
         <NotificationBell />
         {user && (
-          <div className="flex items-center gap-2 ml-1 pl-3 border-l border-slate-200">
-            {user.avatarUrl ? (
-              <img
-                src={user.avatarUrl}
-                alt={user.name}
-                className="w-8 h-8 rounded-full border border-slate-200 object-cover"
-              />
-            ) : (
-              <div className="w-8 h-8 rounded-full bg-aims-green flex items-center justify-center text-white text-sm font-bold">
-                {user.name.charAt(0)}
+          <div className="relative flex items-center gap-2 ml-1 pl-3 border-l border-slate-200">
+            <button onClick={() => setShowMenu(!showMenu)} className="flex items-center gap-2 focus:outline-none">
+              {user.avatarUrl && !imgError ? (
+                <img 
+                  src={user.avatarUrl} 
+                  alt={user.name} 
+                  className="w-8 h-8 rounded-full border border-slate-200 object-cover" 
+                  onError={() => setImgError(true)}
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-aims-green flex items-center justify-center text-white text-sm font-bold">
+                  {user.name.charAt(0)}
+                </div>
+              )}
+              <div className="hidden lg:block text-left">
+                <p className="text-sm font-bold text-slate-900 leading-tight">{user.name}</p>
+                <p className="text-[10px] font-semibold text-slate-500 leading-tight">{user.role.replace('_', ' ')}</p>
               </div>
-            )}
-            <div className="hidden md:block">
-              <p className="text-sm font-bold text-slate-900 leading-tight">{user.name}</p>
-              <p className="text-[10px] font-semibold text-slate-500 leading-tight">{user.role.replace('_', ' ')}</p>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="ml-1 p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
-              title="Logout"
-            >
-              <span className="material-symbols-outlined text-[18px]">logout</span>
             </button>
+
+            {showMenu && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
+                <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg border border-slate-200 shadow-lg z-20 overflow-hidden">
+                  <button 
+                    onClick={() => fileInputRef.current?.click()} 
+                    className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">photo_camera</span>
+                    Upload Photo
+                  </button>
+                  <button 
+                    onClick={handleLogout} 
+                    className="w-full text-left px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 flex items-center gap-2 border-t border-slate-100"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">logout</span>
+                    Sign Out
+                  </button>
+                </div>
+              </>
+            )}
+            
+            <input type="file" ref={fileInputRef} onChange={handlePhotoUpload} accept="image/*" className="hidden" />
           </div>
         )}
       </div>
