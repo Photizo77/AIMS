@@ -22,3 +22,31 @@ export const ROLE_HIERARCHY: Record<Role, number> = {
   GRANT_WRITER: 50,
   INNOVATOR: 40,
 };
+
+// Module access map: which roles can access which modules
+const MODULE_ACCESS: Record<string, Role[]> = {
+  dashboard: ['CD', 'ED', 'SYS_ADMIN', 'COMPANY_ADMIN', 'FINANCE', 'GRANTS_MANAGER', 'GRANT_WRITER', 'INNOVATOR'],
+  feed: ['CD', 'ED', 'SYS_ADMIN', 'COMPANY_ADMIN', 'FINANCE', 'GRANTS_MANAGER', 'GRANT_WRITER', 'INNOVATOR'],
+  attendance: ['CD', 'ED', 'SYS_ADMIN', 'COMPANY_ADMIN', 'FINANCE', 'GRANTS_MANAGER', 'GRANT_WRITER', 'INNOVATOR'],
+  hr_admin: ['CD', 'ED', 'SYS_ADMIN', 'COMPANY_ADMIN'],
+  grants: ['CD', 'ED', 'SYS_ADMIN', 'COMPANY_ADMIN', 'GRANTS_MANAGER', 'GRANT_WRITER'],
+  innovations: ['CD', 'ED', 'SYS_ADMIN', 'COMPANY_ADMIN', 'INNOVATOR'],
+  finance: ['CD', 'ED', 'SYS_ADMIN', 'FINANCE'],
+  procurement: ['CD', 'ED', 'SYS_ADMIN', 'FINANCE'],
+  approvals: ['CD', 'ED'],
+  documents: ['CD', 'ED', 'SYS_ADMIN', 'COMPANY_ADMIN', 'FINANCE', 'GRANTS_MANAGER', 'GRANT_WRITER', 'INNOVATOR'],
+  knowledge: ['CD', 'ED', 'SYS_ADMIN', 'COMPANY_ADMIN', 'FINANCE', 'GRANTS_MANAGER', 'GRANT_WRITER', 'INNOVATOR'],
+  crm: ['CD', 'ED', 'COMPANY_ADMIN'],
+  analytics: ['CD', 'ED', 'SYS_ADMIN', 'COMPANY_ADMIN', 'FINANCE', 'GRANTS_MANAGER', 'GRANT_WRITER', 'INNOVATOR'],
+  rbac: ['SYS_ADMIN'],
+  settings: ['CD', 'ED', 'SYS_ADMIN', 'COMPANY_ADMIN', 'FINANCE', 'GRANTS_MANAGER', 'GRANT_WRITER', 'INNOVATOR'],
+};
+
+/**
+ * Check if a role has access to a specific module
+ */
+export function hasModuleAccess(role: Role, module: string): boolean {
+  const allowedRoles = MODULE_ACCESS[module];
+  if (!allowedRoles) return false;
+  return allowedRoles.includes(role);
+}
