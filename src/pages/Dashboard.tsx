@@ -3,6 +3,8 @@ import { type ReactNode } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
 import { useNotifications } from '@/context/NotificationContext';
+import { CheckInCard } from '@/components/dashboard/CheckInCard';
+import { PayslipReviewPanel } from '@/components/admin/PayslipReviewPanel';
 
 type ColorKey = 'green' | 'navy' | 'orange' | 'mint';
 
@@ -28,7 +30,7 @@ const FILL: Record<ColorKey, string> = {
 };
 
 // ═══════════════════════════════════════════
-// SHARED UI COMPONENTS (defined first)
+// SHARED UI COMPONENTS
 // ═══════════════════════════════════════════
 
 function DashHeader({ gradient, title, subtitle }: { gradient: string; title: string; subtitle: string }) {
@@ -95,21 +97,6 @@ function ContractRow({ name, role, type, salary, onAction }: { name: string; rol
   );
 }
 
-function PayslipRow({ name, amount, period, onAction }: { name: string; amount: string; period: string; onAction: (msg: string) => void }) {
-  return (
-    <div className="flex items-center justify-between p-3 bg-orange-50/50 rounded-lg border border-orange-100">
-      <div>
-        <p className="text-sm font-bold text-slate-900">{name}</p>
-        <p className="text-xs font-extrabold text-slate-700">{amount} • {period}</p>
-      </div>
-      <div className="flex gap-2">
-        <button onClick={() => onAction(`${name}'s payslip approved`)} className="px-2.5 py-1 text-[10px] font-bold bg-aims-green text-white rounded hover:opacity-90">Approve</button>
-        <button onClick={() => onAction(`${name}'s payslip rejected`)} className="px-2.5 py-1 text-[10px] font-bold bg-red-500 text-white rounded hover:opacity-90">Reject</button>
-      </div>
-    </div>
-  );
-}
-
 // ═══════════════════════════════════════════
 // MAIN DASHBOARD ROUTER
 // ═══════════════════════════════════════════
@@ -143,6 +130,8 @@ function ExecutiveDashboard() {
   return (
     <div className="space-y-6">
       <DashHeader gradient="bg-grad-navy" title="Executive Command Center" subtitle="Strategic oversight, approvals & operational control" />
+
+      <CheckInCard />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <StatCard title="Total Income (MTD)" value="UGX 1.2B" icon="trending_up" color="green" />
@@ -187,14 +176,7 @@ function ExecutiveDashboard() {
             </div>
           </div>
           <div>
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Pending Payslips (Authorize)</h4>
-              <span className="text-xs font-bold text-aims-orange">2 pending</span>
-            </div>
-            <div className="space-y-2">
-              <PayslipRow name="Grace Aceng" amount="UGX 2,450,000" period="August 2026" onAction={handleAction} />
-              <PayslipRow name="Amos Ojok" amount="UGX 2,250,000" period="August 2026" onAction={handleAction} />
-            </div>
+            <PayslipReviewPanel />
           </div>
         </div>
       </Section>
@@ -246,6 +228,7 @@ function AdminDashboard() {
   return (
     <div className="space-y-6">
       <DashHeader gradient="bg-grad-navy" title="Operations & HR Hub" subtitle="Workforce administration and resource oversight" />
+      <CheckInCard />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <StatCard title="Active Staff" value="142" icon="people" color="navy" />
         <StatCard title="Present Today" value="128" icon="check_circle" color="green" />
@@ -264,6 +247,7 @@ function FinanceDashboard() {
   return (
     <div className="space-y-6">
       <DashHeader gradient="bg-grad-navy" title="Financial Command" subtitle="Cash flow, procurement & requisition workflows" />
+      <CheckInCard />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <StatCard title="Income (MTD)" value="UGX 1.2B" icon="trending_up" color="green" />
         <StatCard title="Expenditure" value="UGX 850M" icon="trending_down" color="orange" />
@@ -282,6 +266,7 @@ function GrantDashboard() {
   return (
     <div className="space-y-6">
       <DashHeader gradient="bg-grad-navy" title="Grants & Proposals" subtitle="AI-assisted drafting & deadline tracking" />
+      <CheckInCard />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <StatCard title="Active Grants" value="4" icon="edit_note" color="navy" />
         <StatCard title="Deadlines < 30d" value="2" icon="event_busy" color="orange" />
@@ -300,6 +285,7 @@ function InnovatorDashboard() {
   return (
     <div className="space-y-6">
       <DashHeader gradient="bg-grad-navy" title="Innovation Pipeline" subtitle="Research execution, prototyping & production" />
+      <CheckInCard />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <StatCard title="Concept Phase" value="3" icon="lightbulb" color="orange" />
         <StatCard title="Prototype" value="2" icon="science" color="navy" />
@@ -318,6 +304,7 @@ function SysAdminDashboard() {
   return (
     <div className="space-y-6">
       <DashHeader gradient="bg-grad-navy" title="System Telemetry" subtitle="Platform stability, security & configuration" />
+      <CheckInCard />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <StatCard title="Uptime" value="99.9%" icon="check_circle" color="green" />
         <StatCard title="Error Rate" value="0.4%" icon="bug_report" color="orange" />
@@ -329,5 +316,10 @@ function SysAdminDashboard() {
 }
 
 function DefaultDashboard() {
-  return <div className="p-8 text-center text-slate-500">Welcome to Ardhi.</div>;
+  return (
+    <div className="space-y-6">
+      <CheckInCard />
+      <div className="p-8 text-center text-slate-500">Welcome to Ardhi.</div>
+    </div>
+  );
 }
