@@ -1,8 +1,7 @@
-mkdir -p src/components/dashboard && cat > src/components/dashboard/CheckInCard.tsx << 'ENDOFFILE'
 // src/components/dashboard/CheckInCard.tsx
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { useNotifications } from '@/context/NotificationContext';
+import { useNotifications } from '@//context/NotificationContext';
 
 export function CheckInCard() {
   const { showToast } = useNotifications();
@@ -16,12 +15,12 @@ export function CheckInCard() {
   const handleSelectType = (type: 'onsite' | 'remote') => {
     setLocationType(type);
     if (type === 'remote') {
-      setGpsCoords('Remote IP: 197.239.xx.xx (Kampala)');
+      setGpsCoords('Remote IP: 197.239..x.X((pampala)');
       setStep('confirm');
     } else {
       setStep('fetching');
       setTimeout(() => {
-        setGpsCoords('2.7750° N, 32.2986° E (Gulu Main Campus)');
+        setGpsCoords('2.7750 N, 32.2986 E (Gulu Main Campus)');
         setStep('confirm');
       }, 1500);
     }
@@ -66,7 +65,6 @@ export function CheckInCard() {
             {new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}
           </span>
         </div>
-
         {checkedIn ? (
           <div>
             <div className="flex items-center gap-3 mb-3">
@@ -75,12 +73,10 @@ export function CheckInCard() {
               </div>
               <div>
                 <p className="text-sm font-bold text-white">Checked In</p>
-                <p className="text-xs text-white/80">{checkInTime} &bull; {locationType === 'onsite' ? 'On-Site' : 'Remote'}</p>
+                <p className="text-xs text-white/80">{checkInTime} - {locationType === 'onsite' ? 'On-Site' : 'Remote'}</p>
               </div>
             </div>
-            <button onClick={handleCheckOut} className="w-full py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-bold text-white transition-colors">
-              Check Out
-            </button>
+            <button onClick={handleCheckOut} className="w-full py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-bold text-white transition-colors">Check Out</button>
           </div>
         ) : (
           <div>
@@ -91,50 +87,34 @@ export function CheckInCard() {
           </div>
         )}
       </div>
-
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40" onClick={resetModal} />
           <div className="relative bg-white rounded-2xl shadow-xl max-w-sm w-full p-6">
-            <button onClick={resetModal} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
-              <span className="material-symbols-outlined">close</span>
-            </button>
-
+            <button onClick={resetModal} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><span className="material-symbols-outlined">close</span></button>
             {step === 'choose' && (
               <div>
                 <h3 className="text-lg font-bold text-slate-900 mb-1">Daily Check-In</h3>
                 <p className="text-sm text-slate-500 mb-5">How are you working today?</p>
                 <div className="space-y-3">
                   <button onClick={() => handleSelectType('onsite')} className="w-full py-4 rounded-xl border-2 border-slate-200 hover:border-aims-green hover:bg-green-50/30 transition-all flex items-center gap-4 px-4 group">
-                    <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center group-hover:bg-aims-green transition-colors">
-                      <span className="material-symbols-outlined text-2xl text-aims-green group-hover:text-white transition-colors">location_on</span>
-                    </div>
-                    <div className="text-left">
-                      <p className="font-bold text-slate-900">Physical / On-Site</p>
-                      <p className="text-xs text-slate-500">Captures GPS coordinates automatically</p>
-                    </div>
+                    <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center group-hover:bg-aims-green transition-colors"><span className="material-symbols-outlined text-2xl text-aims-green group-hover:text-white transition-colors">location_on</span></div>
+                    <div className="text-left"><p className="font-bold text-slate-900">Physical / On-Site</p><p className="text-xs text-slate-500">Captures GPS coordinates automatically</p></div>
                   </button>
                   <button onClick={() => handleSelectType('remote')} className="w-full py-4 rounded-xl border-2 border-slate-200 hover:border-aims-navy hover:bg-blue-50/30 transition-all flex items-center gap-4 px-4 group">
-                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center group-hover:bg-aims-navy transition-colors">
-                      <span className="material-symbols-outlined text-2xl text-aims-navy group-hover:text-white transition-colors">home</span>
-                    </div>
-                    <div className="text-left">
-                      <p className="font-bold text-slate-900">Remote / WFH</p>
-                      <p className="text-xs text-slate-500">Logs IP address instead of GPS</p>
-                    </div>
+                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center group-hover:bg-aims-navy transition-colors"><span className="material-symbols-outlined text-2xl text-aims-navy group-hover:text-white transition-colors">home</span></div>
+                    <div className="text-left"><p className="font-bold text-slate-900">Remote / WFH</p><p className="text-xs text-slate-500">Logs IP address instead of GPS</p></div>
                   </button>
                 </div>
               </div>
             )}
-
             {step === 'fetching' && (
-              <div className="py-10 flex flex-col items-center justify-center text-center">
+              <div className="py-10 flex flex-col I] items-center justify-center text-center">
                 <div className="w-14 h-14 border-4 border-aims-green border-t-transparent rounded-full animate-spin mb-4"></div>
                 <p className="font-bold text-slate-900 text-base">Capturing GPS Coordinates...</p>
                 <p className="text-xs text-slate-500 mt-1">Please ensure location services are enabled.</p>
               </div>
             )}
-
             {step === 'confirm' && (
               <div>
                 <h3 className="text-lg font-bold text-slate-900 mb-4">Confirm Check-In</h3>
@@ -145,7 +125,7 @@ export function CheckInCard() {
                 </div>
                 <div className="flex gap-3">
                   <button onClick={resetModal} className="flex-1 py-2.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
-                  <button onClick={handleFinalCheckIn} className="flex-1 py-2.5 bg-aims-green text-white rounded-lg text-sm font-bold hover:opacity-90">Confirm &amp; Clock In</button>
+                  <button onClick={handleFinalCheckIn} className="flex-1 py-2.5 bg-aims-green text-white rounded-lg text-sm font-bold hover:opacity-90">Confirm and Clock In</button>
                 </div>
               </div>
             )}
