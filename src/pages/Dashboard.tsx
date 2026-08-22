@@ -1,5 +1,5 @@
 // src/pages/Dashboard.tsx
-import { type ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
 import { useNotifications } from '@/context/NotificationContext';
@@ -37,7 +37,7 @@ function DashHeader({ gradient, title, subtitle }: { gradient: string; title: st
   return (
     <div className={cn('rounded-2xl p-7 text-white shadow-lg', gradient)}>
       <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">{title}</h1>
-      <p className="text-base font-medium text-white/85">{subtitle}</p>
+      <p className="text-base font-medium text-white">{subtitle}</p>
     </div>
   );
 }
@@ -98,6 +98,260 @@ function ContractRow({ name, role, type, salary, onAction }: { name: string; rol
 }
 
 // ═══════════════════════════════════════════
+// ADVANCED FILTER BAR
+// ═══════════════════════════════════════════
+
+interface FilterPreset { id: string; name: string; }
+
+interface AdvancedFilterBarProps {
+  dateLabel?: string;
+  statusOptions: string[];
+  ownerOptions: string[];
+  showAmountRange?: boolean;
+  presets?: FilterPreset[];
+  onFilterChange?: (filters: Record<string, string>) => void;
+  onExport?: (format: 'csv' | 'pdf') => void;
+  onSavePreset?: (name: string) => void;
+}
+
+function AdvancedFilterBar({
+  dateLabel = 'Date',
+  statusOptions,
+  ownerOptions,
+  showAmountRange = false,
+  presets = [],
+  onFilterChange,
+  onExport,
+  onSavePreset,
+}: AdvancedFilterBarProps) {
+  const [showPresets, setShowPresets] = useState(false);
+  const [presetName, setPresetName] = useState('');
+
+  return (
+    <div className="mb-4 space-y-3">
+      <div className="flex flex-wrap gap-2 items-end">
+        <div className="flex-1 min-w-[180px]">
+          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Search</label>
+          <input type="text" placeholder="Title, description, ID…" className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-aims-navy/30" onChange={(e) => onFilterChange?.({ keyword: e.target.value })} />
+        </div>
+        <div className="min-w-[140px]">
+          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{dateLabel}</label>
+          <select className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-aims-navy/30">
+            <option value="">All time</option>
+            <option value="today">Today</option>
+            <option value="7d">Last 7 days</option>
+            <option value="30d">Last 30 days</option>
+            <option value="90d">Last 90 days</option>
+            <option value="custom">Custom range…</option>
+          </select>
+        </div>
+        <div className="min-w-[130px]">
+          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Status</label>
+          <select className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-aims-navy/30">
+            <option value="">All statuses</option>
+            {statusOptions.map((s) => (<option key={s} value={s}>{s}</option>))}
+          </select>
+        </div>
+        <div className="min-w-[130px]">
+          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Owner / Dept</label>
+          <select className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-aims-navy/30">
+            <option value="">All</option>
+            {ownerOptions.map((o) => (<option key={o} value={o}>{o}</option>))}
+          </select>
+        </div>
+        {showAmountRange && (
+          <div className="min-w-[120px]">
+            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Amount</label>
+            <select className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-aims-navy/30">
+              <option value="">Any amount</option>
+              <option value="lt-1m">&lt; UGX 1M</option>
+              <option value="1m-5m">UGX 1M – 5M</option>
+              <option value="5m-20m">UGX 5M – 20M</option>
+              <option value="gt-20m">&gt; UGX 20M</option>
+            </select>
+          </div>
+        )}
+      </div>
+      <div className="flex items-center gap-2 flex-wrap">
+        {presets.length > 0 && (
+          <div className="relative">
+            <button onClick={() => setShowPresets(!showPresets)} className="text-[10px] font-bold text-aims-navy hover:underline flex items-center gap-1">
+              <span className="material-symbols-outlined text-[12px]">bookmark</span>Presets ({presets.length})
+            </button>
+            {showPresets && (
+              <div className="absolute top-full left-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg p-2 z-10 min-w-[180px]">
+                {presets.map((p) => (<button key={p.id} className="block w-full text-left text-xs px-2 py-1.5 hover:bg-slate-50 rounded text-slate-700">{p.name}</button>))}
+              </div>
+            )}
+          </div>
+        )}
+        <div className="flex items-center gap-1">
+          <input type="text" placeholder="Save filter as…" value={presetName} onChange={(e) => setPresetName(e.target.value)} className="text-[10px] border border-slate-200 rounded px-2 py-1 w-32 focus:outline-none focus:ring-1 focus:ring-aims-navy/30" />
+          <button onClick={() => { if (presetName.trim()) { onSavePreset?.(presetName); setPresetName(''); } }} className="text-[10px] font-bold text-aims-green hover:underline">Save</button>
+        </div>
+        <div className="ml-auto flex items-center gap-2">
+          <span className="text-[10px] text-slate-400 italic">Filters combine with AND</span>
+          <button onClick={() => onExport?.('csv')} className="text-[10px] font-bold text-aims-navy hover:underline flex items-center gap-0.5"><span className="material-symbols-outlined text-[12px]">download</span>CSV</button>
+          <button onClick={() => onExport?.('pdf')} className="text-[10px] font-bold text-aims-navy hover:underline flex items-center gap-0.5"><span className="material-symbols-outlined text-[12px]">picture_as_pdf</span>PDF</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════
+// APPROVAL ACTION PANEL (ED Only)
+// ═══════════════════════════════════════════
+
+function ApprovalActionPanel({
+  itemName,
+  itemType,
+  onViewFull,
+  onApprove,
+  onReject,
+}: {
+  itemName: string;
+  itemType: string;
+  onViewFull: () => void;
+  onApprove: (comment: string) => void;
+  onReject: (comment: string) => void;
+}) {
+  const [comment, setComment] = useState('');
+  const [hasViewedDetails, setHasViewedDetails] = useState(false);
+
+  const handleViewDetails = () => {
+    setHasViewedDetails(true);
+    onViewFull();
+  };
+
+  const canAct = hasViewedDetails && comment.trim().length >= 5;
+
+  return (
+    <div className="mt-3 pt-3 border-t border-slate-200 space-y-3">
+      <div className="flex items-center gap-2 text-[10px]">
+        <span className={cn('font-bold', hasViewedDetails ? 'text-aims-green' : 'text-slate-400')}>✓ View Details</span>
+        <span className="text-slate-300">→</span>
+        <span className={cn('font-bold', comment.trim().length >= 5 ? 'text-aims-green' : 'text-slate-400')}>✓ Add Comment (min 5 chars)</span>
+        <span className="text-slate-300">→</span>
+        <span className={cn('font-bold', canAct ? 'text-aims-navy' : 'text-slate-400')}>Approve / Reject</span>
+      </div>
+
+      {!hasViewedDetails && (
+        <button onClick={handleViewDetails} className="w-full py-2 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90 transition-colors flex items-center justify-center gap-1.5">
+          <span className="material-symbols-outlined text-[16px]">visibility</span>
+          View Full {itemType} Details
+        </button>
+      )}
+
+      {hasViewedDetails && (
+        <>
+          <div>
+            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Your Decision Comment (Required)</label>
+            <textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder={`Explain your decision on ${itemName}…`}
+              rows={2}
+              className={cn('w-full text-xs border rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 resize-none', comment.trim().length < 5 ? 'border-slate-200 focus:ring-aims-orange/30' : 'border-aims-green/40 focus:ring-aims-green/30')}
+            />
+            {comment.trim().length > 0 && comment.trim().length < 5 && (
+              <p className="text-[10px] text-aims-orange mt-1">Comment must be at least 5 characters.</p>
+            )}
+          </div>
+          <div className="flex gap-2 justify-end">
+            <button disabled={!canAct} onClick={() => onReject(comment)} className={cn('px-4 py-2 text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5', canAct ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-slate-100 text-slate-400 cursor-not-allowed')}>
+              <span className="material-symbols-outlined text-[16px]">close</span>Reject
+            </button>
+            <button disabled={!canAct} onClick={() => onApprove(comment)} className={cn('px-4 py-2 text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5', canAct ? 'bg-aims-green text-white hover:bg-aims-green/90' : 'bg-slate-100 text-slate-400 cursor-not-allowed')}>
+              <span className="material-symbols-outlined text-[16px]">check</span>Approve
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════
+// BRIEFING STRIPS
+// ═══════════════════════════════════════════
+
+function CDBriefingStrip() {
+  const { user } = useAuth();
+  const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+  return (
+    <div className="bg-grad-navy rounded-2xl p-5 text-white shadow-lg">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <p className="text-sm font-medium text-white">Good morning,</p>
+          <h2 className="text-xl font-extrabold tracking-tight text-white">{user?.name ?? 'Chairman'}</h2>
+        </div>
+        <p className="text-sm font-semibold text-white">{today}</p>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+        <div className="bg-white rounded-lg px-3 py-2.5 shadow-sm"><p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Cash Position</p><p className="text-lg font-extrabold text-slate-900">UGX 350M</p></div>
+        <div className="bg-white rounded-lg px-3 py-2.5 shadow-sm"><p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Active Grants</p><p className="text-lg font-extrabold text-slate-900">10</p></div>
+        <div className="bg-white rounded-lg px-3 py-2.5 shadow-sm"><p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Org Health</p><p className="text-lg font-extrabold text-aims-green">94%</p></div>
+        <div className="bg-white rounded-lg px-3 py-2.5 shadow-sm"><p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Attention Items</p><p className="text-lg font-extrabold text-aims-orange">2</p></div>
+      </div>
+      <div className="flex items-start gap-2 bg-aims-orange/20 rounded-lg px-3 py-2 border border-aims-orange/30">
+        <span className="material-symbols-outlined text-aims-orange text-[18px] mt-0.5">psychology</span>
+        <div><p className="text-xs font-bold text-aims-orange">AI Insight</p><p className="text-xs text-white">Expenditure trending 12% above forecast this quarter. Review procurement approvals.</p></div>
+      </div>
+    </div>
+  );
+}
+
+function EDBriefingStrip() {
+  const { user } = useAuth();
+  const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+  return (
+    <div className="bg-grad-navy rounded-2xl p-5 text-white shadow-lg">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <p className="text-sm font-medium text-white">Good morning,</p>
+          <h2 className="text-xl font-extrabold tracking-tight text-white">{user?.name ?? 'Director'}</h2>
+        </div>
+        <p className="text-sm font-semibold text-white">{today}</p>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-4">
+        <div className="bg-white rounded-lg px-3 py-2.5 shadow-sm">
+          <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Your Pending Approvals</p>
+          <p className="text-lg font-extrabold text-aims-orange">5</p>
+          <p className="text-[9px] font-bold text-red-500 mt-0.5">2 over 5 days</p>
+        </div>
+        <div className="bg-white rounded-lg px-3 py-2.5 shadow-sm">
+          <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Present Today</p>
+          <p className="text-lg font-extrabold text-aims-green">90%</p>
+          <p className="text-[9px] font-bold text-aims-orange mt-0.5">3 unexpected absent</p>
+        </div>
+        <div className="bg-white rounded-lg px-3 py-2.5 shadow-sm">
+          <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Grant Deadlines</p>
+          <p className="text-lg font-extrabold text-slate-900">2</p>
+          <p className="text-[9px] font-bold text-slate-500 mt-0.5">within 14 days</p>
+        </div>
+        <div className="bg-white rounded-lg px-3 py-2.5 shadow-sm">
+          <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">CD Flags for You</p>
+          <p className="text-lg font-extrabold text-aims-navy">1</p>
+          <p className="text-[9px] font-bold text-aims-orange mt-0.5">awaiting your response</p>
+        </div>
+        <div className="bg-white rounded-lg px-3 py-2.5 shadow-sm">
+          <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Onboarding</p>
+          <p className="text-lg font-extrabold text-slate-900">3</p>
+          <p className="text-[9px] font-bold text-slate-500 mt-0.5">pending credentials</p>
+        </div>
+      </div>
+      <div className="flex items-start gap-2 bg-aims-orange/20 rounded-lg px-3 py-2 border border-aims-orange/30">
+        <span className="material-symbols-outlined text-aims-orange text-[18px] mt-0.5">psychology</span>
+        <div><p className="text-xs font-bold text-aims-orange">AI Insight</p><p className="text-xs text-white">Payslip batch PAY-089 has 3 anomalous deductions vs. prior months. Flagged for your review before approval.</p></div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════
 // MAIN DASHBOARD ROUTER
 // ═══════════════════════════════════════════
 
@@ -105,7 +359,8 @@ export function Dashboard() {
   const { user } = useAuth();
   if (!user) return null;
   const role = user.role;
-  if (role === 'CD' || role === 'ED') return <ExecutiveDashboard />;
+  if (role === 'CD') return <CDDashboard />;
+  if (role === 'ED') return <EDDashboard />;
   if (role === 'COMPANY_ADMIN') return <AdminDashboard />;
   if (role === 'FINANCE') return <FinanceDashboard />;
   if (role === 'GRANT_WRITER' || role === 'GRANTS_MANAGER') return <GrantDashboard />;
@@ -115,105 +370,110 @@ export function Dashboard() {
 }
 
 // ═══════════════════════════════════════════
-// 1. EXECUTIVE DASHBOARD (CD / ED)
+// 1. COUNTRY DIRECTOR DASHBOARD (CD)
 // ═══════════════════════════════════════════
 
-function ExecutiveDashboard() {
+function CDDashboard() {
   const { showToast } = useNotifications();
   const handleAction = (msg: string) => showToast({ title: 'Action Logged', message: msg, type: 'success' });
 
-  const urgentGrants = [
-    { id: 'g3', title: 'Community Land Rights Documentation', uniqueId: 'GRANT-LAND-2026-001', days: 7, status: 'ED Review' },
-    { id: 'g1', title: 'Climate-Smart Farming Initiative', uniqueId: 'GRANT-AGRIC-2026-001', days: 15, status: 'Team Lead Review' },
-  ].filter(g => g.days <= 14);
-
   return (
     <div className="space-y-6">
-      <DashHeader gradient="bg-grad-navy" title="Executive Command Center" subtitle="Strategic oversight, approvals & operational control" />
-
+      <CDBriefingStrip />
+      <DashHeader gradient="bg-grad-navy" title="Country Director Dashboard" subtitle="Strategic oversight, governance & organizational leadership" />
       <CheckInCard />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <StatCard title="Total Income (MTD)" value="UGX 1.2B" icon="trending_up" color="green" />
+        <StatCard title="Total Expenditure (MTD)" value="UGX 850M" icon="trending_down" color="orange" />
         <StatCard title="Active Grants" value="10" icon="volunteer_activism" color="navy" />
-        <StatCard title="Pending Approvals" value="3" icon="approval" color="orange" />
         <StatCard title="Org Health" value="94%" icon="monitor_heart" color="mint" />
       </div>
 
-      {urgentGrants.length > 0 && (
-        <div className="bg-aims-orange/10 border border-aims-orange/30 rounded-xl p-5">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="material-symbols-outlined text-aims-orange text-[22px]">alarm</span>
-            <h3 className="text-sm font-bold text-aims-orange">Grant Deadline Alerts</h3>
-          </div>
-          <div className="space-y-2">
-            {urgentGrants.map(g => (
-              <div key={g.id} className="flex items-center justify-between bg-white rounded-lg px-4 py-2.5 border border-orange-100">
-                <div>
-                  <p className="text-sm font-bold text-slate-900">{g.title}</p>
-                  <p className="text-[10px] text-slate-500">{g.uniqueId} • {g.status}</p>
-                </div>
-                <span className={cn('text-sm font-extrabold', g.days <= 7 ? 'text-aims-orange' : 'text-slate-600')}>{g.days}d left</span>
+      {/* CD sees third-person: "ED Review", "Awaiting Finance" */}
+      <Section title="Approvals in Progress" subtitle="Visibility into ED's review pipeline — read only">
+        <AdvancedFilterBar dateLabel="Submitted" statusOptions={['ED Review', 'Awaiting Finance', 'Awaiting HR', 'Disbursed']} ownerOptions={['Finance Dept', 'HR Admin', 'Grants Team', 'Procurement']} showAmountRange presets={[{ id: 'p1', name: 'Over 3 days' }, { id: 'p2', name: 'High value (>10M)' }]} onExport={(fmt) => handleAction(`Exporting approvals ${fmt.toUpperCase()}`)} onSavePreset={(name) => handleAction(`Saved preset: ${name}`)} />
+        <div className="space-y-2">
+          {[
+            { id: 'req-041', title: 'Q3 Field Equipment Procurement', type: 'Requisition', amount: 'UGX 12.4M', status: 'ED Review', daysInQueue: 2 },
+            { id: 'pay-089', title: 'August Payroll Batch', type: 'Payslip Batch', amount: 'UGX 186M', status: 'ED Review', daysInQueue: 1 },
+            { id: 'req-038', title: 'Community Workshop Venue Rental', type: 'Requisition', amount: 'UGX 3.2M', status: 'Awaiting Finance', daysInQueue: 4 },
+          ].map((item) => (
+            <div key={item.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
+              <div><p className="text-sm font-bold text-slate-900">{item.title}</p><p className="text-xs text-slate-500">{item.type} • {item.amount} • {item.id}</p></div>
+              <div className="text-right">
+                <span className={cn('inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide', item.daysInQueue >= 3 ? 'bg-aims-orange/15 text-aims-orange' : 'bg-aims-navy/10 text-aims-navy')}>{item.status}</span>
+                <p className="text-[10px] text-slate-400 mt-1">{item.daysInQueue}d in queue</p>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <Section title="Executive Control Panel" subtitle="Direct management of personnel, contracts, and payouts">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Contracts & Personnel</h4>
-              <button onClick={() => handleAction('Opening new contract form...')} className="text-xs font-bold text-aims-navy hover:underline flex items-center gap-1">
-                <span className="material-symbols-outlined text-[14px]">add</span>New Contract
-              </button>
             </div>
-            <div className="space-y-2">
-              <ContractRow name="Sarah Aciro" role="Grants Manager" type="Permanent" salary="UGX 2.4M" onAction={handleAction} />
-              <ContractRow name="Janet Apio" role="Grant Writer" type="1-Year" salary="UGX 1.8M" onAction={handleAction} />
-              <ContractRow name="Pius Odong" role="Innovator" type="Contract" salary="UGX 1.5M" onAction={handleAction} />
-            </div>
-          </div>
-          <div>
-            <PayslipReviewPanel />
-          </div>
+          ))}
         </div>
       </Section>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Section title="Financial Health" subtitle="Income vs. expenditure">
-          <div className="space-y-5">
-            <Bar label="Total Income" value={1200} max={1400} display="UGX 1.2B" color="green" />
-            <Bar label="Total Expenditure" value={850} max={1400} display="UGX 850M" color="orange" />
-          </div>
-          <div className="mt-5 pt-4 border-t border-slate-100 flex justify-between">
-            <span className="text-sm font-semibold text-slate-600">Net Surplus</span>
-            <span className="text-xl font-extrabold text-aims-green">UGX 350M</span>
-          </div>
-        </Section>
-        <Section title="Grant Portfolio" subtitle="Secured vs. pipeline">
+        <Section title="Grant Portfolio" subtitle="Secured funding vs. pipeline opportunities">
+          <AdvancedFilterBar dateLabel="Deadline" statusOptions={['Secured', 'Pipeline', 'Under Review', 'Rejected']} ownerOptions={['Grants Team', 'Sarah Aciro', 'Janet Apio']} showAmountRange presets={[{ id: 'gp1', name: 'Waste pillar grants' }, { id: 'gp2', name: 'USAID pipeline' }]} onExport={(fmt) => handleAction(`Exporting grants ${fmt.toUpperCase()}`)} onSavePreset={(name) => handleAction(`Saved preset: ${name}`)} />
           <div className="space-y-5">
             <Bar label="Secured Funding" value={850} max={1200} display="UGX 850M" color="navy" />
             <Bar label="Pipeline Opportunities" value={350} max={1200} display="UGX 350M" color="mint" />
           </div>
+          <div className="mt-5 pt-4 border-t border-slate-100 flex justify-between"><span className="text-sm font-semibold text-slate-600">Win Rate (YTD)</span><span className="text-xl font-extrabold text-aims-green">68%</span></div>
+        </Section>
+        <Section title="Financial Health" subtitle="Consolidated income vs. expenditure">
+          <div className="space-y-5">
+            <Bar label="Total Income" value={1200} max={1400} display="UGX 1.2B" color="green" />
+            <Bar label="Total Expenditure" value={850} max={1400} display="UGX 850M" color="orange" />
+          </div>
+          <div className="mt-5 pt-4 border-t border-slate-100 flex justify-between"><span className="text-sm font-semibold text-slate-600">Net Surplus</span><span className="text-xl font-extrabold text-aims-green">UGX 350M</span></div>
         </Section>
       </div>
 
-      <Section title="Performance Appraisals" subtitle="Staff evaluations and KPI tracking">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 bg-slate-50 rounded-lg border border-slate-100">
-            <p className="text-xs text-slate-500 mb-1">Completed (Q2)</p>
-            <p className="text-2xl font-extrabold text-slate-900">12</p>
+      <Section title="HR & Admin Summary" subtitle="Workforce indicators — no individual record access">
+        <AdvancedFilterBar dateLabel="Period" statusOptions={['Active', 'On Leave', 'Expiring', 'Terminated']} ownerOptions={['Grants', 'Finance', 'HR', 'Innovation', 'Research', 'Procurement']} presets={[{ id: 'hr1', name: 'Expiring this month' }]} onExport={(fmt) => handleAction(`Exporting HR summary ${fmt.toUpperCase()}`)} onSavePreset={(name) => handleAction(`Saved preset: ${name}`)} />
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="p-4 bg-slate-50 rounded-lg border border-slate-100"><p className="text-xs text-slate-500 mb-1">Total Headcount</p><p className="text-2xl font-extrabold text-slate-900">142</p></div>
+          <div className="p-4 bg-slate-50 rounded-lg border border-slate-100"><p className="text-xs text-slate-500 mb-1">Contracts Renewing (30d)</p><p className="text-2xl font-extrabold text-aims-orange">5</p></div>
+          <div className="p-4 bg-slate-50 rounded-lg border border-slate-100"><p className="text-xs text-slate-500 mb-1">Appraisals Completed (Q2)</p><p className="text-2xl font-extrabold text-aims-green">87%</p></div>
+          <div className="p-4 bg-slate-50 rounded-lg border border-slate-100"><p className="text-xs text-slate-500 mb-1">Present Today</p><p className="text-2xl font-extrabold text-aims-navy">128</p></div>
+        </div>
+      </Section>
+
+      <Section title="Flag for Executive Director" subtitle="Raise a concern or annotation — routed directly to ED's queue">
+        <div className="space-y-3">
+          <div className="flex gap-3">
+            <select className="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-aims-navy/30">
+              <option value="">Select record to flag…</option>
+              <option value="req-041">REQ-041: Q3 Field Equipment Procurement</option>
+              <option value="pay-089">PAY-089: August Payroll Batch</option>
+              <option value="grant-land">GRANT-LAND-2026-001: Community Land Rights</option>
+              <option value="contract-sarah">Contract: Sarah Aciro (Grants Manager)</option>
+            </select>
+            <select className="w-36 text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-aims-navy/30">
+              <option value="concern">Concern</option>
+              <option value="review">Needs Review</option>
+              <option value="urgent">Urgent</option>
+              <option value="clarification">Clarification</option>
+            </select>
           </div>
-          <div className="p-4 bg-slate-50 rounded-lg border border-slate-100">
-            <p className="text-xs text-slate-500 mb-1">Pending Review</p>
-            <p className="text-2xl font-extrabold text-aims-orange">3</p>
+          <textarea placeholder="Describe your concern or annotation for the ED…" rows={2} className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-aims-navy/30 resize-none" />
+          <div className="flex justify-end">
+            <button onClick={() => handleAction('Flag submitted to ED queue')} className="px-4 py-2 bg-aims-orange text-white text-xs font-bold rounded-lg hover:bg-aims-orange/90 transition-colors flex items-center gap-1.5"><span className="material-symbols-outlined text-[16px]">flag</span>Submit Flag</button>
           </div>
-          <div className="p-4 bg-slate-50 rounded-lg border border-slate-100">
-            <p className="text-xs text-slate-500 mb-1">Avg. Rating</p>
-            <p className="text-2xl font-extrabold text-aims-green">4.2 / 5.0</p>
-          </div>
+        </div>
+      </Section>
+
+      <Section title="Executive Feed" subtitle="Institutional announcements & governance communication">
+        <div className="space-y-3">
+          {[
+            { author: 'Board Secretariat', time: '2h ago', content: 'Q2 Board Meeting minutes approved and filed. Next session scheduled for September 15.' },
+            { author: 'Executive Director', time: '5h ago', content: 'All department heads have submitted Q3 budget proposals. Consolidated review underway.' },
+            { author: 'Grants Manager', time: '1d ago', content: 'Climate-Smart Farming grant proposal submitted to USAID. Decision expected within 30 days.' },
+          ].map((post, i) => (
+            <div key={i} className="p-3 bg-slate-50 rounded-lg border border-slate-100">
+              <div className="flex items-center justify-between mb-1"><p className="text-sm font-bold text-slate-900">{post.author}</p><p className="text-[10px] text-slate-400">{post.time}</p></div>
+              <p className="text-sm text-slate-600">{post.content}</p>
+            </div>
+          ))}
         </div>
       </Section>
     </div>
@@ -221,105 +481,278 @@ function ExecutiveDashboard() {
 }
 
 // ═══════════════════════════════════════════
-// 2. COMPANY ADMIN DASHBOARD
+// 2. EXECUTIVE DIRECTOR DASHBOARD (ED)
 // ═══════════════════════════════════════════
 
-function AdminDashboard() {
+function EDDashboard() {
+  const { showToast } = useNotifications();
+  const handleAction = (msg: string) => showToast({ title: 'Action Logged', message: msg, type: 'success' });
+  const [expandedApproval, setExpandedApproval] = useState<string | null>(null);
+  const [expandedGrant, setExpandedGrant] = useState<string | null>(null);
+  const [expandedContract, setExpandedContract] = useState<string | null>(null);
+
   return (
     <div className="space-y-6">
-      <DashHeader gradient="bg-grad-navy" title="Operations & HR Hub" subtitle="Workforce administration and resource oversight" />
+      <EDBriefingStrip />
+      <DashHeader gradient="bg-grad-navy" title="Executive Director Dashboard" subtitle="Operational execution, team leadership & daily management" />
       <CheckInCard />
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <StatCard title="Active Staff" value="142" icon="people" color="navy" />
-        <StatCard title="Present Today" value="128" icon="check_circle" color="green" />
-        <StatCard title="Pending Payslips" value="15" icon="payments" color="orange" />
-        <StatCard title="Expiring Contracts" value="3" icon="description" color="mint" />
+
+      {/* ── ED: First-person language throughout ── */}
+      <Section title="Your Pending Approvals" subtitle="Requisitions and payslips awaiting your decision — you are the sole approval authority">
+        <AdvancedFilterBar dateLabel="Submitted" statusOptions={['Awaiting Your Decision', 'Overdue', 'You Approved', 'You Rejected', 'Disbursed']} ownerOptions={['Finance Dept', 'HR Admin', 'Grants Team', 'Procurement', 'Innovation']} showAmountRange presets={[{ id: 'aq1', name: 'My overdue items' }, { id: 'aq2', name: 'Payslips only' }, { id: 'aq3', name: 'High value (>10M)' }]} onExport={(fmt) => handleAction(`Exporting approvals ${fmt.toUpperCase()}`)} onSavePreset={(name) => handleAction(`Saved preset: ${name}`)} />
+        <div className="space-y-3">
+          {[
+            { id: 'req-041', title: 'Q3 Field Equipment Procurement', type: 'Requisition', amount: 'UGX 12.4M', submittedBy: 'Finance Dept', submittedDate: 'Aug 18', days: 4, description: 'Field tablets (10x), GPS units (5x), solar chargers (10x) for land documentation fieldwork.', lineItems: [{ item: 'Samsung Galaxy Tab A9', qty: 10, unit: 'UGX 680K', total: 'UGX 6.8M' }, { item: 'Garmin GPSMAP 67i', qty: 5, unit: 'UGX 820K', total: 'UGX 4.1M' }, { item: 'Anker Solar Charger 24W', qty: 10, unit: 'UGX 150K', total: 'UGX 1.5M' }] },
+            { id: 'pay-089', title: 'August Payroll Batch', type: 'Payslip Batch', amount: 'UGX 186M', submittedBy: 'HR Admin', submittedDate: 'Aug 19', days: 3, description: 'Monthly payroll for 142 employees. Includes base salary, allowances, and statutory deductions.', lineItems: [{ item: 'Base Salaries', qty: 142, unit: '—', total: 'UGX 168M' }, { item: 'Transport Allowances', qty: 142, unit: '—', total: 'UGX 14.2M' }, { item: 'NSSF Contributions', qty: 142, unit: '—', total: 'UGX 3.8M' }] },
+            { id: 'req-042', title: 'Community Workshop Materials', type: 'Requisition', amount: 'UGX 4.8M', submittedBy: 'Grants Team', submittedDate: 'Aug 20', days: 2, description: 'Printing, stationery, and venue setup for 3-day community land rights workshop.', lineItems: [{ item: 'Workshop Printing', qty: 1, unit: '—', total: 'UGX 2.1M' }, { item: 'Venue Setup & Catering', qty: 3, unit: 'UGX 900K', total: 'UGX 2.7M' }] },
+            { id: 'req-038', title: 'Venue Rental — Land Rights Workshop', type: 'Requisition', amount: 'UGX 3.2M', submittedBy: 'Grants Team', submittedDate: 'Aug 15', days: 7, description: 'Gulu Conference Centre rental for 5 days including AV equipment.', lineItems: [{ item: 'Hall Rental (5 days)', qty: 5, unit: 'UGX 500K', total: 'UGX 2.5M' }, { item: 'AV Equipment Package', qty: 1, unit: '—', total: 'UGX 700K' }] },
+            { id: 'pay-090', title: 'Contractor Payment — Pius Odong', type: 'Payslip', amount: 'UGX 1.5M', submittedBy: 'HR Admin', submittedDate: 'Aug 21', days: 1, description: 'Monthly contractor payment for innovation prototyping work.', lineItems: [{ item: 'Prototyping Services', qty: 1, unit: '—', total: 'UGX 1.5M' }] },
+          ].map((item) => (
+            <div key={item.id} className={cn('rounded-lg border transition-all', expandedApproval === item.id ? 'border-aims-navy shadow-md bg-white' : 'border-slate-200 bg-slate-50')}>
+              <div className="flex items-center justify-between p-3 cursor-pointer" onClick={() => setExpandedApproval(expandedApproval === item.id ? null : item.id)}>
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-slate-400 text-[18px]">{expandedApproval === item.id ? 'expand_less' : 'expand_more'}</span>
+                  <div><p className="text-sm font-bold text-slate-900">{item.title}</p><p className="text-xs text-slate-500">{item.type} • {item.amount} • {item.id} • {item.submittedBy}</p></div>
+                </div>
+                <div className="text-right flex items-center gap-3">
+                  <span className={cn('inline-block px-2 py-0.5 rounded text-[10px] font-bold', item.days >= 5 ? 'bg-red-50 text-red-600' : item.days >= 3 ? 'bg-aims-orange/15 text-aims-orange' : 'bg-slate-100 text-slate-600')}>{item.days}d</span>
+                  <span className="text-xs font-bold text-aims-navy">{expandedApproval === item.id ? 'Close' : 'Review'}</span>
+                </div>
+              </div>
+              {expandedApproval === item.id && (
+                <div className="px-3 pb-3 space-y-3">
+                  <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Description</p>
+                    <p className="text-xs text-slate-700 mb-3">{item.description}</p>
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Line Items</p>
+                    <table className="w-full text-xs"><thead><tr className="border-b border-slate-200"><th className="pb-1 text-left text-slate-500">Item</th><th className="pb-1 text-right text-slate-500">Qty</th><th className="pb-1 text-right text-slate-500">Unit</th><th className="pb-1 text-right text-slate-500">Total</th></tr></thead>
+                      <tbody className="divide-y divide-slate-100">{item.lineItems.map((li, idx) => (<tr key={idx}><td className="py-1 text-slate-700">{li.item}</td><td className="py-1 text-right text-slate-600">{li.qty}</td><td className="py-1 text-right text-slate-600">{li.unit}</td><td className="py-1 text-right font-semibold text-slate-900">{li.total}</td></tr>))}</tbody>
+                    </table>
+                  </div>
+                  <ApprovalActionPanel itemName={item.title} itemType={item.type} onViewFull={() => handleAction(`Opened full ${item.type.toLowerCase()} record for ${item.id}`)} onApprove={(comment) => handleAction(`YOU APPROVED ${item.id}: ${comment}`)} onReject={(comment) => handleAction(`YOU REJECTED ${item.id}: ${comment}`)} />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      {/* ── Attendance ── */}
+      <Section title="Attendance Oversight" subtitle="Real-time presence and historical records">
+        <AdvancedFilterBar dateLabel="Date" statusOptions={['Present', 'Late', 'Absent', 'Leave', 'Remote']} ownerOptions={['Grants', 'Finance', 'HR', 'Innovation', 'Research', 'Procurement']} presets={[{ id: 'att1', name: 'Unexpected absences' }, { id: 'att2', name: 'Late arrivals this week' }]} onExport={(fmt) => handleAction(`Exporting attendance ${fmt.toUpperCase()}`)} onSavePreset={(name) => handleAction(`Saved preset: ${name}`)} />
+        <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-aims-green/10 rounded-lg border border-aims-green/20"><span className="material-symbols-outlined text-aims-green text-[18px]">check_circle</span><span className="text-sm font-bold text-aims-green">128 Present</span></div>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-aims-orange/10 rounded-lg border border-aims-orange/20"><span className="material-symbols-outlined text-aims-orange text-[18px]">schedule</span><span className="text-sm font-bold text-aims-orange">9 Late</span></div>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-red-50 rounded-lg border border-red-100"><span className="material-symbols-outlined text-red-500 text-[18px]">cancel</span><span className="text-sm font-bold text-red-500">5 Absent</span></div>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead><tr className="border-b border-slate-200"><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Employee</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Department</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Check In</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Check Out</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Status</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Location</th></tr></thead>
+            <tbody className="divide-y divide-slate-100">
+              {[
+                { name: 'Sarah Aciro', dept: 'Grants', checkIn: '07:58', checkOut: '—', status: 'present' as const, location: 'Onsite' },
+                { name: 'Janet Apio', dept: 'Grants', checkIn: '08:32', checkOut: '—', status: 'late' as const, location: 'Onsite' },
+                { name: 'Pius Odong', dept: 'Innovation', checkIn: '07:45', checkOut: '—', status: 'present' as const, location: 'Remote' },
+                { name: 'David Okello', dept: 'Finance', checkIn: '—', checkOut: '—', status: 'absent' as const, location: '—' },
+                { name: 'Grace Nakamya', dept: 'HR', checkIn: '07:50', checkOut: '—', status: 'present' as const, location: 'Onsite' },
+                { name: 'Isaac Tumusiime', dept: 'Procurement', checkIn: '08:15', checkOut: '—', status: 'late' as const, location: 'Onsite' },
+                { name: 'Florence Adong', dept: 'Research', checkIn: '07:55', checkOut: '—', status: 'present' as const, location: 'Onsite' },
+              ].map((emp, i) => (
+                <tr key={i} className="hover:bg-slate-50 transition-colors">
+                  <td className="py-2.5 font-bold text-slate-900">{emp.name}</td><td className="py-2.5 text-slate-600">{emp.dept}</td><td className="py-2.5 text-slate-600 font-mono text-xs">{emp.checkIn}</td><td className="py-2.5 text-slate-600 font-mono text-xs">{emp.checkOut}</td>
+                  <td className="py-2.5"><span className={cn('inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide', emp.status === 'present' ? 'bg-aims-green/15 text-aims-green' : emp.status === 'late' ? 'bg-aims-orange/15 text-aims-orange' : 'bg-red-50 text-red-500')}>{emp.status}</span></td>
+                  <td className="py-2.5 text-slate-500 text-xs">{emp.location}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Section>
+
+      {/* ── Grants: ED sees first-person workflow ── */}
+      <Section title="Grant Approvals & Deadlines" subtitle="Grants reviewed by Team Lead — awaiting your final approval before external submission">
+        <AdvancedFilterBar dateLabel="Deadline" statusOptions={['Awaiting Your Review', 'You Approved', 'Submitted', 'You Returned to TL', 'You Rejected']} ownerOptions={['Sarah Aciro', 'Janet Apio', 'Grants Team']} showAmountRange presets={[{ id: 'gd1', name: 'Due within 7 days' }, { id: 'gd2', name: 'Awaiting my review' }]} onExport={(fmt) => handleAction(`Exporting grants ${fmt.toUpperCase()}`)} onSavePreset={(name) => handleAction(`Saved preset: ${name}`)} />
+        <div className="space-y-3">
+          {[
+            { id: 'g3', title: 'Community Land Rights Documentation', uniqueId: 'GRANT-LAND-2026-001', funder: 'USAID', amount: 'UGX 450M', status: 'Awaiting Your Review', tlName: 'Sarah Aciro', tlDate: 'Aug 20', tlComment: 'Budget aligned with RFP requirements. All compliance docs attached. Recommend approval.', deadline: 'Aug 29', days: 7 },
+            { id: 'g1', title: 'Climate-Smart Farming Initiative', uniqueId: 'GRANT-AGRIC-2026-001', funder: 'EU Delegation', amount: 'UGX 820M', status: 'Awaiting Your Review', tlName: 'Sarah Aciro', tlDate: 'Aug 19', tlComment: 'Technical proposal strengthened per reviewer feedback. M&E framework complete.', deadline: 'Sep 6', days: 15 },
+            { id: 'g5', title: 'Youth Digital Literacy Program', uniqueId: 'GRANT-EDU-2026-003', funder: 'Mastercard Foundation', amount: 'UGX 310M', status: 'You Returned to TL', tlName: 'Janet Apio', tlDate: 'Aug 18', tlComment: 'Initial draft submitted.', deadline: 'Sep 19', days: 28, edReturnComment: 'Budget narrative too vague on sustainability plan. Revise Section 4.2 and resubmit.', edReturnDate: 'Aug 19' },
+          ].map((g) => (
+            <div key={g.id} className={cn('rounded-lg border transition-all', expandedGrant === g.id ? 'border-aims-navy shadow-md bg-white' : 'border-slate-200 bg-slate-50')}>
+              <div className="flex items-center justify-between p-3 cursor-pointer" onClick={() => setExpandedGrant(expandedGrant === g.id ? null : g.id)}>
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-slate-400 text-[18px]">{expandedGrant === g.id ? 'expand_less' : 'expand_more'}</span>
+                  <div><p className="text-sm font-bold text-slate-900">{g.title}</p><p className="text-xs text-slate-500">{g.uniqueId} • {g.funder} • {g.amount}</p></div>
+                </div>
+                <div className="text-right flex items-center gap-3">
+                  <span className={cn('inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide', g.status.includes('Awaiting Your') ? 'bg-aims-orange/15 text-aims-orange' : g.status.includes('You Returned') ? 'bg-red-50 text-red-500' : 'bg-aims-navy/10 text-aims-navy')}>{g.status}</span>
+                  <span className={cn('text-xs font-extrabold', g.days <= 7 ? 'text-aims-orange' : 'text-slate-600')}>{g.days}d</span>
+                </div>
+              </div>
+              {expandedGrant === g.id && (
+                <div className="px-3 pb-3 space-y-3">
+                  <div className="bg-aims-navy/5 rounded-lg p-3 border border-aims-navy/10">
+                    <div className="flex items-center gap-2 mb-1"><span className="material-symbols-outlined text-aims-navy text-[16px]">verified_user</span><p className="text-xs font-bold text-aims-navy">Team Lead Review — {g.tlName} ({g.tlDate})</p></div>
+                    <p className="text-xs text-slate-700 italic">"{g.tlComment}"</p>
+                  </div>
+                  {g.edReturnComment && (
+                    <div className="bg-red-50 rounded-lg p-3 border border-red-100">
+                      <div className="flex items-center gap-2 mb-1"><span className="material-symbols-outlined text-red-500 text-[16px]">assignment_return</span><p className="text-xs font-bold text-red-600">You Returned This ({g.edReturnDate})</p></div>
+                      <p className="text-xs text-slate-700 italic">"{g.edReturnComment}"</p>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 text-xs"><span className="material-symbols-outlined text-[16px] text-slate-400">event</span><span className="text-slate-600">Funder deadline: <strong className={cn(g.days <= 7 ? 'text-aims-orange' : 'text-slate-900')}>{g.deadline}</strong> ({g.days} days remaining)</span></div>
+                  {g.status.includes('Awaiting Your') && (
+                    <ApprovalActionPanel itemName={g.title} itemType="Grant Proposal" onViewFull={() => handleAction(`Opened full grant proposal for ${g.uniqueId}`)} onApprove={(comment) => handleAction(`YOU APPROVED GRANT ${g.uniqueId} for submission: ${comment}`)} onReject={(comment) => handleAction(`YOU RETURNED GRANT ${g.uniqueId} to TL: ${comment}`)} />
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      {/* ── Expiring Contracts ── */}
+      <Section title="Expiring Contracts" subtitle="Contracts approaching renewal deadline — flagged automatically">
+        <AdvancedFilterBar dateLabel="Expiry Date" statusOptions={['Expiring (30d)', 'Expiring (60d)', 'Expired']} ownerOptions={['Grants', 'Finance', 'HR', 'Innovation', 'Research']} presets={[{ id: 'ec1', name: 'Expiring this month' }]} onExport={(fmt) => handleAction(`Exporting contracts ${fmt.toUpperCase()}`)} onSavePreset={(name) => handleAction(`Saved preset: ${name}`)} />
+        <div className="space-y-2">
+          {[
+            { name: 'Janet Apio', role: 'Grant Writer', type: '1-Year', salary: 'UGX 1.8M', expiry: 'Sep 15, 2026', daysLeft: 24 },
+            { name: 'Pius Odong', role: 'Innovator', type: 'Contract', salary: 'UGX 1.5M', expiry: 'Sep 30, 2026', daysLeft: 39 },
+            { name: 'Isaac Tumusiime', role: 'Procurement Officer', type: 'Contract', salary: 'UGX 1.6M', expiry: 'Oct 10, 2026', daysLeft: 49 },
+          ].map((c, i) => (
+            <div key={i} className="flex items-center justify-between p-3 bg-aims-orange/5 rounded-lg border border-aims-orange/20">
+              <div><p className="text-sm font-bold text-slate-900">{c.name}</p><p className="text-xs text-slate-500">{c.role} • {c.type} • {c.salary}</p></div>
+              <div className="text-right">
+                <span className={cn('text-xs font-bold px-2 py-0.5 rounded', c.daysLeft <= 30 ? 'bg-aims-orange/15 text-aims-orange' : 'bg-slate-100 text-slate-600')}>Expires {c.expiry} ({c.daysLeft}d)</span>
+                <div className="flex gap-2 mt-1 justify-end"><button onClick={() => handleAction(`Renewing ${c.name}'s contract`)} className="text-[10px] font-bold text-aims-navy hover:underline">Renew</button><button onClick={() => handleAction(`Viewing ${c.name}'s contract`)} className="text-[10px] font-bold text-slate-500 hover:underline">View</button></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      {/* ── Contract Actions: ED first-person ── */}
+      <Section title="Contract Actions Queue" subtitle="Contracts awaiting your approval or rejection — with submitter comments">
+        <AdvancedFilterBar dateLabel="Submitted" statusOptions={['Awaiting Your Approval', 'You Rejected', 'You Approved', 'Returned for Revision']} ownerOptions={['HR Admin', 'Grants Team', 'Finance']} presets={[{ id: 'caq1', name: 'Awaiting my action' }]} onExport={(fmt) => handleAction(`Exporting contract actions ${fmt.toUpperCase()}`)} onSavePreset={(name) => handleAction(`Saved preset: ${name}`)} />
+        <div className="space-y-3">
+          {[
+            { id: 'ctr-david', name: 'David Okello', role: 'Finance Officer', type: 'Permanent', salary: 'UGX 2.0M', submittedBy: 'HR Admin', submittedDate: 'Aug 20', status: 'Awaiting Your Approval', comment: 'Salary adjustment per Q2 appraisal. Approved by Dept Head.' },
+            { id: 'ctr-mercy', name: 'Mercy Atim', role: 'Research Assistant', type: 'Intern', salary: 'UGX 800K', submittedBy: 'Grants Team', submittedDate: 'Aug 19', status: 'Awaiting Your Approval', comment: 'New hire for Land Rights project. Budget line confirmed.' },
+            { id: 'ctr-robert', name: 'Robert Ssemakula', role: 'Driver', type: 'Contract', salary: 'UGX 1.2M', submittedBy: 'HR Admin', submittedDate: 'Aug 17', status: 'You Rejected', comment: 'Salary exceeds band for role. HR to revise and resubmit.', rejectedDate: 'Aug 18', edRejectComment: 'Salary band for Driver is UGX 900K–1.1M. Please adjust or provide justification for exception.' },
+          ].map((item) => (
+            <div key={item.id} className={cn('rounded-lg border transition-all', expandedContract === item.id ? 'border-aims-navy shadow-md bg-white' : item.status === 'You Rejected' ? 'border-red-200 bg-red-50' : 'border-slate-200 bg-slate-50')}>
+              <div className="flex items-center justify-between p-3 cursor-pointer" onClick={() => setExpandedContract(expandedContract === item.id ? null : item.id)}>
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-slate-400 text-[18px]">{expandedContract === item.id ? 'expand_less' : 'expand_more'}</span>
+                  <div><p className="text-sm font-bold text-slate-900">{item.name}</p><p className="text-xs text-slate-500">{item.role} • {item.type} • {item.salary} • {item.submittedBy}</p></div>
+                </div>
+                <span className={cn('px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide', item.status === 'Awaiting Your Approval' ? 'bg-aims-orange/15 text-aims-orange' : item.status === 'You Rejected' ? 'bg-red-100 text-red-600' : 'bg-aims-green/15 text-aims-green')}>{item.status}</span>
+              </div>
+              {expandedContract === item.id && (
+                <div className="px-3 pb-3 space-y-3">
+                  <div className="bg-white rounded-lg p-2.5 border border-slate-100">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Comment from {item.submittedBy} ({item.submittedDate})</p>
+                    <p className="text-xs text-slate-700 italic">"{item.comment}"</p>
+                  </div>
+                  {item.edRejectComment && (
+                    <div className="bg-red-50 rounded-lg p-2.5 border border-red-100">
+                      <p className="text-[10px] font-bold text-red-400 uppercase tracking-wider mb-0.5">Your Rejection Reason ({item.rejectedDate})</p>
+                      <p className="text-xs text-slate-700 italic">"{item.edRejectComment}"</p>
+                    </div>
+                  )}
+                  {item.status === 'Awaiting Your Approval' && (
+                    <ApprovalActionPanel itemName={`${item.name}'s contract`} itemType="Contract" onViewFull={() => handleAction(`Opened full contract record for ${item.name}`)} onApprove={(comment) => handleAction(`YOU APPROVED contract for ${item.name}: ${comment}`)} onReject={(comment) => handleAction(`YOU REJECTED contract for ${item.name}: ${comment}`)} />
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      <Section title="Payslip Authorization" subtitle="Generate, review, and authorize payroll batches"><PayslipReviewPanel /></Section>
+
+      <Section title="Performance Appraisals" subtitle="Staff evaluations against assigned KPIs">
+        <AdvancedFilterBar dateLabel="Period" statusOptions={['Draft', 'Awaiting Your Review', 'Completed', 'Returned']} ownerOptions={['Grants', 'Finance', 'HR', 'Innovation', 'Research', 'Procurement']} presets={[{ id: 'pa1', name: 'Awaiting my review' }, { id: 'pa2', name: 'Q2 completed' }]} onExport={(fmt) => handleAction(`Exporting appraisals ${fmt.toUpperCase()}`)} onSavePreset={(name) => handleAction(`Saved preset: ${name}`)} />
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead><tr className="border-b border-slate-200"><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Employee</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Department</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Period</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Status</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Rating</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider text-right">Action</th></tr></thead>
+            <tbody className="divide-y divide-slate-100">
+              {[
+                { name: 'Sarah Aciro', dept: 'Grants', period: 'Q2 2026', status: 'Completed', rating: '4.5' },
+                { name: 'Janet Apio', dept: 'Grants', period: 'Q2 2026', status: 'Awaiting Your Review', rating: '—' },
+                { name: 'Pius Odong', dept: 'Innovation', period: 'Q2 2026', status: 'Awaiting Your Review', rating: '—' },
+                { name: 'David Okello', dept: 'Finance', period: 'Q2 2026', status: 'Completed', rating: '3.8' },
+                { name: 'Grace Nakamya', dept: 'HR', period: 'Q2 2026', status: 'Draft', rating: '—' },
+              ].map((emp, i) => (
+                <tr key={i} className="hover:bg-slate-50 transition-colors">
+                  <td className="py-2.5 font-bold text-slate-900">{emp.name}</td><td className="py-2.5 text-slate-600">{emp.dept}</td><td className="py-2.5 text-slate-600">{emp.period}</td>
+                  <td className="py-2.5"><span className={cn('inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide', emp.status === 'Completed' ? 'bg-aims-green/15 text-aims-green' : emp.status.includes('Your') ? 'bg-aims-orange/15 text-aims-orange' : 'bg-slate-100 text-slate-500')}>{emp.status}</span></td>
+                  <td className="py-2.5 font-extrabold text-slate-900">{emp.rating}</td>
+                  <td className="py-2.5 text-right"><button onClick={() => handleAction(`Opening appraisal form for ${emp.name}`)} className="text-xs font-bold text-aims-navy hover:underline">{emp.status === 'Draft' ? 'Start' : emp.status.includes('Your') ? 'Review' : 'View'}</button></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Section>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Section title="Monthly Cash Flow" subtitle="Income vs. expenditure with pending requisitions">
+          <div className="space-y-5"><Bar label="Total Income" value={1200} max={1400} display="UGX 1.2B" color="green" /><Bar label="Total Expenditure" value={850} max={1400} display="UGX 850M" color="orange" /></div>
+          <div className="mt-5 pt-4 border-t border-slate-100 flex justify-between items-center"><div><span className="text-sm font-semibold text-slate-600">Net Surplus</span><p className="text-[10px] text-slate-400">Pending requisitions: UGX 20.4M</p></div><span className="text-xl font-extrabold text-aims-green">UGX 350M</span></div>
+        </Section>
+        <Section title="User Management" subtitle="Active accounts, onboarding, credential issuance">
+          <AdvancedFilterBar dateLabel="Created" statusOptions={['Active', 'Pending Onboard', 'Inactive', 'Suspended']} ownerOptions={['Grants', 'Finance', 'HR', 'Innovation', 'Research', 'Procurement', 'IT']} presets={[{ id: 'um1', name: 'Pending credentials' }]} onExport={(fmt) => handleAction(`Exporting users ${fmt.toUpperCase()}`)} onSavePreset={(name) => handleAction(`Saved preset: ${name}`)} />
+          <div className="grid grid-cols-3 gap-3">
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100"><p className="text-xs text-slate-500 mb-1">Active Users</p><p className="text-2xl font-extrabold text-slate-900">142</p></div>
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100"><p className="text-xs text-slate-500 mb-1">Pending Onboard</p><p className="text-2xl font-extrabold text-aims-orange">3</p></div>
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100"><p className="text-xs text-slate-500 mb-1">Credentials Due</p><p className="text-2xl font-extrabold text-aims-navy">2</p></div>
+          </div>
+        </Section>
       </div>
+
+      <Section title="Inventory & Documents" subtitle="Low-stock warnings and policy hub">
+        <AdvancedFilterBar dateLabel="Last Updated" statusOptions={['Low Stock', 'In Stock', 'Document', 'Policy']} ownerOptions={['Admin', 'HR', 'Finance', 'IT']} presets={[{ id: 'inv1', name: 'Below threshold' }]} onExport={(fmt) => handleAction(`Exporting inventory ${fmt.toUpperCase()}`)} onSavePreset={(name) => handleAction(`Saved preset: ${name}`)} />
+        <div className="space-y-2">
+          {[
+            { item: 'A4 Printer Paper (Reams)', stock: 12, threshold: 20, type: 'inventory' as const },
+            { item: 'Toner Cartridges', stock: 3, threshold: 5, type: 'inventory' as const },
+            { item: 'Q2 Board Meeting Minutes', stock: null, threshold: null, type: 'document' as const, note: 'Restricted — shared with CD' },
+            { item: 'Updated HR Policy v3.2', stock: null, threshold: null, type: 'document' as const, note: 'Published Aug 18' },
+          ].map((entry, i) => (
+            <div key={i} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
+              <div className="flex items-center gap-2"><span className="material-symbols-outlined text-[18px] text-slate-400">{entry.type === 'inventory' ? 'inventory_2' : 'description'}</span><div><p className="text-sm font-bold text-slate-900">{entry.item}</p>{entry.note && <p className="text-[10px] text-slate-400">{entry.note}</p>}</div></div>
+              {entry.stock !== null && <span className={cn('text-xs font-bold px-2 py-0.5 rounded', entry.stock <= entry.threshold! ? 'bg-red-50 text-red-500' : 'bg-aims-green/10 text-aims-green')}>{entry.stock} / {entry.threshold}</span>}
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      <Section title="Company Feed" subtitle="Post institutional updates across departments">
+        <div className="space-y-3">
+          <div className="flex gap-2 mb-2"><input type="text" placeholder="Share an update with all departments…" className="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-aims-navy/30" /><button onClick={() => handleAction('Update posted to company feed')} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90 transition-colors">Post</button></div>
+          {[
+            { author: 'Executive Director', time: '1h ago', content: 'Reminder: All department Q3 budget revisions due by Friday COB.' },
+            { author: 'HR Admin', time: '3h ago', content: 'New leave policy updated in Documents hub. Please review.' },
+            { author: 'Grants Manager', time: '6h ago', content: 'USAID submission confirmed. Tracking number: AID-2026-UG-0441.' },
+          ].map((post, i) => (
+            <div key={i} className="p-3 bg-slate-50 rounded-lg border border-slate-100"><div className="flex items-center justify-between mb-1"><p className="text-sm font-bold text-slate-900">{post.author}</p><p className="text-[10px] text-slate-400">{post.time}</p></div><p className="text-sm text-slate-600">{post.content}</p></div>
+          ))}
+        </div>
+      </Section>
     </div>
   );
 }
 
 // ═══════════════════════════════════════════
-// 3. FINANCE DASHBOARD
+// OTHER ROLE DASHBOARDS (Unchanged)
 // ═══════════════════════════════════════════
 
-function FinanceDashboard() {
-  return (
-    <div className="space-y-6">
-      <DashHeader gradient="bg-grad-navy" title="Financial Command" subtitle="Cash flow, procurement & requisition workflows" />
-      <CheckInCard />
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <StatCard title="Income (MTD)" value="UGX 1.2B" icon="trending_up" color="green" />
-        <StatCard title="Expenditure" value="UGX 850M" icon="trending_down" color="orange" />
-        <StatCard title="Net Balance" value="UGX 350M" icon="account_balance_wallet" color="navy" />
-        <StatCard title="Requisitions" value="7" icon="request_quote" color="mint" />
-      </div>
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════
-// 4. GRANT WRITER / GRANTS MANAGER DASHBOARD
-// ═══════════════════════════════════════════
-
-function GrantDashboard() {
-  return (
-    <div className="space-y-6">
-      <DashHeader gradient="bg-grad-navy" title="Grants & Proposals" subtitle="AI-assisted drafting & deadline tracking" />
-      <CheckInCard />
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <StatCard title="Active Grants" value="4" icon="edit_note" color="navy" />
-        <StatCard title="Deadlines < 30d" value="2" icon="event_busy" color="orange" />
-        <StatCard title="Awarded (YTD)" value="UGX 890M" icon="workspace_premium" color="green" />
-        <StatCard title="AI Assists" value="28" icon="smart_toy" color="mint" />
-      </div>
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════
-// 5. INNOVATOR DASHBOARD
-// ═══════════════════════════════════════════
-
-function InnovatorDashboard() {
-  return (
-    <div className="space-y-6">
-      <DashHeader gradient="bg-grad-navy" title="Innovation Pipeline" subtitle="Research execution, prototyping & production" />
-      <CheckInCard />
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <StatCard title="Concept Phase" value="3" icon="lightbulb" color="orange" />
-        <StatCard title="Prototype" value="2" icon="science" color="navy" />
-        <StatCard title="Production" value="1" icon="rocket_launch" color="green" />
-        <StatCard title="My Assigned" value="4" icon="assignment" color="mint" />
-      </div>
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════
-// 6. SYSTEM ADMIN DASHBOARD
-// ═══════════════════════════════════════════
-
-function SysAdminDashboard() {
-  return (
-    <div className="space-y-6">
-      <DashHeader gradient="bg-grad-navy" title="System Telemetry" subtitle="Platform stability, security & configuration" />
-      <CheckInCard />
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <StatCard title="Uptime" value="99.9%" icon="check_circle" color="green" />
-        <StatCard title="Error Rate" value="0.4%" icon="bug_report" color="orange" />
-        <StatCard title="API Latency" value="182ms" icon="speed" color="navy" />
-        <StatCard title="Sessions" value="47" icon="group" color="mint" />
-      </div>
-    </div>
-  );
-}
-
-function DefaultDashboard() {
-  return (
-    <div className="space-y-6">
-      <CheckInCard />
-      <div className="p-8 text-center text-slate-500">Welcome to Ardhi.</div>
-    </div>
-  );
-}
+function AdminDashboard() { return (<div className="space-y-6"><DashHeader gradient="bg-grad-navy" title="Operations & HR Hub" subtitle="Workforce administration and resource oversight" /><CheckInCard /><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"><StatCard title="Active Staff" value="142" icon="people" color="navy" /><StatCard title="Present Today" value="128" icon="check_circle" color="green" /><StatCard title="Pending Payslips" value="15" icon="payments" color="orange" /><StatCard title="Expiring Contracts" value="3" icon="description" color="mint" /></div></div>); }
+function FinanceDashboard() { return (<div className="space-y-6"><DashHeader gradient="bg-grad-navy" title="Financial Command" subtitle="Cash flow, procurement & requisition workflows" /><CheckInCard /><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"><StatCard title="Income (MTD)" value="UGX 1.2B" icon="trending_up" color="green" /><StatCard title="Expenditure" value="UGX 850M" icon="trending_down" color="orange" /><StatCard title="Net Balance" value="UGX 350M" icon="account_balance_wallet" color="navy" /><StatCard title="Requisitions" value="7" icon="request_quote" color="mint" /></div></div>); }
+function GrantDashboard() { return (<div className="space-y-6"><DashHeader gradient="bg-grad-navy" title="Grants & Proposals" subtitle="AI-assisted drafting & deadline tracking" /><CheckInCard /><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"><StatCard title="Active Grants" value="4" icon="edit_note" color="navy" /><StatCard title="Deadlines < 30d" value="2" icon="event_busy" color="orange" /><StatCard title="Awarded (YTD)" value="UGX 890M" icon="workspace_premium" color="green" /><StatCard title="AI Assists" value="28" icon="smart_toy" color="mint" /></div></div>); }
+function InnovatorDashboard() { return (<div className="space-y-6"><DashHeader gradient="bg-grad-navy" title="Innovation Pipeline" subtitle="Research execution, prototyping & production" /><CheckInCard /><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"><StatCard title="Concept Phase" value="3" icon="lightbulb" color="orange" /><StatCard title="Prototype" value="2" icon="science" color="navy" /><StatCard title="Production" value="1" icon="rocket_launch" color="green" /><StatCard title="My Assigned" value="4" icon="assignment" color="mint" /></div></div>); }
+function SysAdminDashboard() { return (<div className="space-y-6"><DashHeader gradient="bg-grad-navy" title="System Telemetry" subtitle="Platform stability, security & configuration" /><CheckInCard /><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"><StatCard title="Uptime" value="99.9%" icon="check_circle" color="green" /><StatCard title="Error Rate" value="0.4%" icon="bug_report" color="orange" /><StatCard title="API Latency" value="182ms" icon="speed" color="navy" /><StatCard title="Sessions" value="47" icon="group" color="mint" /></div></div>); }
+function DefaultDashboard() { return (<div className="space-y-6"><CheckInCard /><div className="p-8 text-center text-slate-500">Welcome to Ardhi.</div></div>); }
