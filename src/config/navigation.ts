@@ -1,10 +1,6 @@
 // src/config/navigation.ts
 import type { NavItem, Role } from '@/types';
 
-/**
- * CD Sidebar — Ordered by strategic urgency
- * External-facing deadlines first, then governance visibility, then internal summaries.
- */
 const CD_NAV_ITEMS: NavItem[] = [
   { title: 'Dashboard', href: '/dashboard', icon: 'dashboard', roles: ['CD'] },
   { title: 'Grants', href: '/grants', icon: 'volunteer_activism', roles: ['CD'] },
@@ -12,16 +8,14 @@ const CD_NAV_ITEMS: NavItem[] = [
   { title: 'Finance & Procurement', href: '/finance', icon: 'account_balance', roles: ['CD'] },
   { title: 'Attendance', href: '/attendance?view=read', icon: 'schedule', roles: ['CD'] },
   { title: 'HR & Admin Summary', href: '/hr?view=summary', icon: 'people', roles: ['CD'] },
-  { title: 'Innovations & Tasks', href: '/innovations?view=read', icon: 'lightbulb', roles: ['CD'] },
+  { title: 'Innovations & Tasks', href: '/innovations', icon: 'lightbulb', roles: ['CD'] },
   { title: 'Documents', href: '/documents', icon: 'folder', roles: ['CD'] },
   { title: 'Inventory', href: '/inventory?view=read', icon: 'inventory_2', roles: ['CD'] },
-  { title: 'Company Feed', href: '/feed', icon: 'feed', roles: ['CD'] },
+  { title: 'Feed', href: '/feed', icon: 'feed', roles: ['CD'] },
+  { title: 'Email', href: '/email', icon: 'mail', roles: ['CD'] },
+  { title: 'Settings', href: '/settings', icon: 'settings', roles: ['CD'] },
 ];
 
-/**
- * ED Sidebar — Ordered by operational urgency
- * Actionable blocking items first, then full management modules.
- */
 const ED_NAV_ITEMS: NavItem[] = [
   { title: 'Dashboard', href: '/dashboard', icon: 'dashboard', roles: ['ED'] },
   { title: 'Grants', href: '/grants', icon: 'volunteer_activism', roles: ['ED'] },
@@ -33,39 +27,81 @@ const ED_NAV_ITEMS: NavItem[] = [
   { title: 'Appraisals', href: '/appraisals', icon: 'fact_check', roles: ['ED'] },
   { title: 'Innovations & Tasks', href: '/innovations', icon: 'lightbulb', roles: ['ED'] },
   { title: 'Inventory & Documents', href: '/inventory', icon: 'inventory_2', roles: ['ED'] },
-  { title: 'Company Feed', href: '/feed', icon: 'feed', roles: ['ED'] },
+  { title: 'Feed', href: '/feed', icon: 'feed', roles: ['ED'] },
+  { title: 'Email', href: '/email', icon: 'mail', roles: ['ED'] },
+  { title: 'Settings', href: '/settings', icon: 'settings', roles: ['ED'] },
 ];
 
-/**
- * Shared nav items for all other roles (unchanged from baseline)
- */
-const SHARED_NAV_ITEMS: NavItem[] = [
-  { title: 'Dashboard', href: '/dashboard', icon: 'dashboard', roles: 'ALL' },
-  { title: 'Feed', href: '/feed', icon: 'feed', roles: 'ALL' },
-  { title: 'Attendance', href: '/attendance', icon: 'schedule', roles: 'ALL' },
-  { title: 'HR & Admin', href: '/hr', icon: 'people', roles: ['SYS_ADMIN', 'COMPANY_ADMIN'] },
-  { title: 'Grants', href: '/grants', icon: 'volunteer_activism', roles: ['SYS_ADMIN', 'COMPANY_ADMIN', 'GRANTS_MANAGER', 'GRANT_WRITER'] },
-  { title: 'Innovations', href: '/innovations', icon: 'lightbulb', roles: ['SYS_ADMIN', 'COMPANY_ADMIN', 'INNOVATOR'] },
-  { title: 'Finance', href: '/finance', icon: 'account_balance', roles: ['SYS_ADMIN', 'FINANCE'] },
-  { title: 'Procurement', href: '/procurement', icon: 'shopping_cart', roles: ['SYS_ADMIN', 'FINANCE'] },
-  { title: 'Documents', href: '/documents', icon: 'folder', roles: 'ALL' },
-  { title: 'Knowledge Base', href: '/knowledge', icon: 'menu_book', roles: 'ALL' },
-  { title: 'CRM', href: '/crm', icon: 'contacts', roles: ['COMPANY_ADMIN'] },
-  { title: 'Analytics', href: '/analytics', icon: 'analytics', roles: 'ALL' },
-  { title: 'RBAC', href: '/rbac', icon: 'admin_panel_settings', roles: ['SYS_ADMIN'] },
-  { title: 'Settings', href: '/settings', icon: 'settings', roles: 'ALL' },
+const COMPANY_ADMIN_NAV_ITEMS: NavItem[] = [
+  { title: 'Dashboard', href: '/dashboard', icon: 'dashboard', roles: ['COMPANY_ADMIN'] },
+  { title: 'User Management', href: '/hr?tab=users', icon: 'manage_accounts', roles: ['COMPANY_ADMIN'] },
+  { title: 'Attendance Oversight', href: '/attendance', icon: 'schedule', roles: ['COMPANY_ADMIN'] },
+  { title: 'HR & People Management', href: '/hr', icon: 'people', roles: ['COMPANY_ADMIN'] },
+  { title: 'Contract Lifecycle', href: '/contracts', icon: 'description', roles: ['COMPANY_ADMIN'] },
+  { title: 'Performance Appraisals', href: '/appraisals', icon: 'fact_check', roles: ['COMPANY_ADMIN'] },
+  { title: 'Inventory & Document Hub', href: '/documents', icon: 'folder', roles: ['COMPANY_ADMIN'] },
+  { title: 'Feed', href: '/feed', icon: 'feed', roles: ['COMPANY_ADMIN'] },
+  { title: 'Email', href: '/email', icon: 'mail', roles: ['COMPANY_ADMIN'] },
+  { title: 'Settings', href: '/settings', icon: 'settings', roles: ['COMPANY_ADMIN'] },
 ];
 
-/** Combined nav items array */
-export const NAV_ITEMS: NavItem[] = [...CD_NAV_ITEMS, ...ED_NAV_ITEMS, ...SHARED_NAV_ITEMS];
+const SYS_ADMIN_NAV_ITEMS: NavItem[] = [
+  { title: 'Dashboard', href: '/dashboard', icon: 'dashboard', roles: ['SYS_ADMIN'] },
+  { title: 'System Telemetry & Logs', href: '/analytics', icon: 'monitoring', roles: ['SYS_ADMIN'] },
+  { title: 'Audit & Security Logs', href: '/rbac?tab=audit', icon: 'shield', roles: ['SYS_ADMIN'] },
+  { title: 'System Configuration', href: '/rbac', icon: 'admin_panel_settings', roles: ['SYS_ADMIN'] },
+  { title: 'Full Route Access', href: '/rbac?tab=routes', icon: 'bug_report', roles: ['SYS_ADMIN'] },
+  { title: 'Feed', href: '/feed', icon: 'feed', roles: ['SYS_ADMIN'] },
+  { title: 'Email', href: '/email', icon: 'mail', roles: ['SYS_ADMIN'] },
+  { title: 'Settings', href: '/settings', icon: 'settings', roles: ['SYS_ADMIN'] },
+];
 
-/**
- * Get visible nav items for a specific role.
- * CD and ED get their dedicated ordered sidebars.
- * All other roles use the shared nav filtered by role.
- */
+const FINANCE_NAV_ITEMS: NavItem[] = [
+  { title: 'Dashboard', href: '/dashboard', icon: 'dashboard', roles: ['FINANCE'] },
+  { title: 'Requisition Queue', href: '/approvals', icon: 'request_quote', roles: ['FINANCE'] },
+  { title: 'Cash Flow Analytics', href: '/finance', icon: 'account_balance', roles: ['FINANCE'] },
+  { title: 'My Attendance', href: '/attendance', icon: 'schedule', roles: ['FINANCE'] },
+  { title: 'Feed', href: '/feed', icon: 'feed', roles: ['FINANCE'] },
+  { title: 'Email', href: '/email', icon: 'mail', roles: ['FINANCE'] },
+  { title: 'Settings', href: '/settings', icon: 'settings', roles: ['FINANCE'] },
+];
+
+const GRANT_WRITER_NAV_ITEMS: NavItem[] = [
+  { title: 'Dashboard', href: '/dashboard', icon: 'dashboard', roles: ['GRANT_WRITER', 'GRANTS_MANAGER'] },
+  { title: 'Grants', href: '/grants', icon: 'volunteer_activism', roles: ['GRANT_WRITER', 'GRANTS_MANAGER'] },
+  { title: 'AI Assistant', href: '/ai-assistant', icon: 'smart_toy', roles: ['GRANT_WRITER', 'GRANTS_MANAGER'] },
+  { title: 'My Attendance', href: '/attendance', icon: 'schedule', roles: ['GRANT_WRITER', 'GRANTS_MANAGER'] },
+  { title: 'Feed', href: '/feed', icon: 'feed', roles: ['GRANT_WRITER', 'GRANTS_MANAGER'] },
+  { title: 'Email', href: '/email', icon: 'mail', roles: ['GRANT_WRITER', 'GRANTS_MANAGER'] },
+  { title: 'Settings', href: '/settings', icon: 'settings', roles: ['GRANT_WRITER', 'GRANTS_MANAGER'] },
+];
+
+const INNOVATOR_NAV_ITEMS: NavItem[] = [
+  { title: 'Dashboard', href: '/dashboard', icon: 'dashboard', roles: ['INNOVATOR'] },
+  { title: 'Innovations & Tasks', href: '/innovations', icon: 'lightbulb', roles: ['INNOVATOR'] },
+  { title: 'My Attendance', href: '/attendance', icon: 'schedule', roles: ['INNOVATOR'] },
+  { title: 'Feed', href: '/feed', icon: 'feed', roles: ['INNOVATOR'] },
+  { title: 'Email', href: '/email', icon: 'mail', roles: ['INNOVATOR'] },
+  { title: 'Settings', href: '/settings', icon: 'settings', roles: ['INNOVATOR'] },
+];
+
+export const NAV_ITEMS: NavItem[] = [
+  ...CD_NAV_ITEMS,
+  ...ED_NAV_ITEMS,
+  ...COMPANY_ADMIN_NAV_ITEMS,
+  ...SYS_ADMIN_NAV_ITEMS,
+  ...FINANCE_NAV_ITEMS,
+  ...GRANT_WRITER_NAV_ITEMS,
+  ...INNOVATOR_NAV_ITEMS,
+];
+
 export function getVisibleNavItems(userRole: Role): NavItem[] {
   if (userRole === 'CD') return CD_NAV_ITEMS;
   if (userRole === 'ED') return ED_NAV_ITEMS;
-  return SHARED_NAV_ITEMS.filter((item) => item.roles === 'ALL' || item.roles.includes(userRole));
+  if (userRole === 'COMPANY_ADMIN') return COMPANY_ADMIN_NAV_ITEMS;
+  if (userRole === 'SYS_ADMIN') return SYS_ADMIN_NAV_ITEMS;
+  if (userRole === 'FINANCE') return FINANCE_NAV_ITEMS;
+  if (userRole === 'GRANT_WRITER' || userRole === 'GRANTS_MANAGER') return GRANT_WRITER_NAV_ITEMS;
+  if (userRole === 'INNOVATOR') return INNOVATOR_NAV_ITEMS;
+  return [];
 }

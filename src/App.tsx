@@ -3,29 +3,28 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AppShell } from '@/components/layout/AppShell';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
-// Auth
+// Pages
 import { LoginMFA } from '@/pages/auth/LoginMFA';
-
-// App Pages
-import { Dashboard }     from '@/pages/Dashboard';
-import { Feed }          from '@/pages/Feed';
-import { Email }         from '@/pages/Email';
-import { Tasks }         from '@/pages/Tasks';
-import { Attendance }    from '@/pages/Attendance';
-import { HR }            from '@/pages/HR';
-import { Grants }        from '@/pages/Grants';
-import { Finance }       from '@/pages/Finance';
-import { Procurement }   from '@/pages/Procurement';
-import { Approvals }     from '@/pages/Approvals';
-import { Documents }     from '@/pages/Documents';
-import { Inventory }     from '@/pages/Inventory';
-import { Analytics }     from '@/pages/Analytics';
-import { Research }      from '@/pages/Research';
-import { Knowledge }     from '@/pages/Knowledge';
-import { CRM }           from '@/pages/CRM';
-import { RBAC }          from '@/pages/RBAC';
-import { Settings }      from '@/pages/Settings';
-import { AIAssistant }   from '@/pages/AIAssistant';
+import { Dashboard } from '@/pages/Dashboard';
+import { Feed } from '@/pages/Feed';
+import { EmailPage } from '@/pages/Email';
+import { Tasks } from '@/pages/Tasks';
+import { Attendance } from '@/pages/Attendance';
+import { HR } from '@/pages/HR';
+import { Grants } from '@/pages/Grants';
+import { Finance } from '@/pages/Finance';
+import { Procurement } from '@/pages/Procurement';
+import { Approvals } from '@/pages/Approvals';
+import { Documents } from '@/pages/Documents';
+import { Inventory } from '@/pages/Inventory';
+import { Analytics } from '@/pages/Analytics';
+import { Research } from '@/pages/Research';
+import { Knowledge } from '@/pages/Knowledge';
+import { CRM } from '@/pages/CRM';
+import { RBAC } from '@/pages/RBAC';
+import { Settings } from '@/pages/Settings';
+import { AIAssistant } from '@/pages/AIAssistant';
+import { InnovationDetail } from '@/pages/InnovationDetail';
 
 export function App() {
   return (
@@ -41,8 +40,9 @@ export function App() {
           <Route path="/dashboard" element={<ProtectedRoute module="dashboard"><Dashboard /></ProtectedRoute>} />
           <Route path="/feed" element={<ProtectedRoute module="feed"><Feed /></ProtectedRoute>} />
           <Route path="/chat" element={<Navigate to="/feed" replace />} />
-          <Route path="/email" element={<ProtectedRoute module="feed"><Email /></ProtectedRoute>} />
+          <Route path="/email" element={<ProtectedRoute module="feed"><EmailPage /></ProtectedRoute>} />
           <Route path="/innovations" element={<ProtectedRoute module="innovations"><Tasks /></ProtectedRoute>} />
+          <Route path="/innovations/:projectId" element={<ProtectedRoute module="innovations"><InnovationDetail /></ProtectedRoute>} />
           <Route path="/tasks" element={<Navigate to="/innovations" replace />} />
           <Route path="/attendance" element={<ProtectedRoute module="attendance"><Attendance /></ProtectedRoute>} />
           <Route path="/hr" element={<ProtectedRoute module="hr_admin"><HR /></ProtectedRoute>} />
@@ -66,3 +66,5 @@ export function App() {
     </BrowserRouter>
   );
 }
+
+export default App;

@@ -1,3 +1,4 @@
+// src/components/layout/AppShell.tsx
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { TopNavBar } from './TopNavBar';

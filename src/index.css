@@ -4,6 +4,30 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ═══════════════════════════════════════════
+   Material Symbols Outlined — Icon Font Activation
+   Must be declared BEFORE @layer so it's available globally
+   ═══════════════════════════════════════════ */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══════════════════════════════════════════
+   ARDHI Design Tokens
+   ═══════════════════════════════════════════ */
 :root {
   --brand-navy: #053664;   /* Ardhi Navy Blue */
   --brand-mint: #c1dbc3;
@@ -30,7 +54,7 @@
   }
 }
 
-/* Brand color utilities */
+/* ── Brand Color Utilities ── */
 .bg-aims-mint { background-color: var(--brand-mint); }
 .bg-aims-navy { background-color: var(--brand-navy); }
 .bg-aims-green { background-color: var(--brand-green); }
@@ -51,10 +75,32 @@
 .border-t-aims-orange { border-top-color: var(--brand-orange); }
 .border-t-aims-mint { border-top-color: var(--brand-green); }
 
-/* ── Gradients (all blue stops now use Ardhi Navy) ── */
+/* ── Gradients (all blue stops use Ardhi Navy) ── */
 .bg-grad-navy { background: linear-gradient(135deg, #053664 0%, #0b4070 100%); }
 .bg-grad-green { background: linear-gradient(135deg, #286b25 0%, #3f8f3a 100%); }
 .bg-grad-orange { background: linear-gradient(135deg, #eb3b14 0%, #f2662e 100%); }
 .bg-grad-finance { background: linear-gradient(135deg, #053664 0%, #286b25 100%); }
 .bg-grad-innov { background: linear-gradient(135deg, #286b25 0%, #053664 100%); }
 .bg-grad-dark { background: linear-gradient(135deg, #0f172a 0%, #053664 100%); }
+
+/* ── Scrollbar Styling ── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ── Selection Color ── */
+::selection {
+  background-color: var(--brand-navy);
+  color: white;
+}
