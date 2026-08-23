@@ -4,37 +4,17 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ═══════════════════════════════════════════
-   Material Symbols Outlined — Icon Font Activation
-   Must be declared BEFORE @layer so it's available globally
-   ═══════════════════════════════════════════ */
-.material-symbols-outlined {
-  font-family: 'Material Symbols Outlined';
-  font-weight: normal;
-  font-style: normal;
-  font-size: 24px;
-  line-height: 1;
-  letter-spacing: normal;
-  text-transform: none;
-  display: inline-block;
-  white-space: nowrap;
-  word-wrap: normal;
-  direction: ltr;
-  -webkit-font-feature-settings: 'liga';
-  font-feature-settings: 'liga';
-  -webkit-font-smoothing: antialiased;
-}
-
-/* ═══════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════
    ARDHI Design Tokens
-   ═══════════════════════════════════════════ */
+   ═══════════════════════════════════════════════════════════ */
 :root {
-  --brand-navy: #053664;   /* Ardhi Navy Blue */
-  --brand-mint: #c1dbc3;
-  --brand-green: #286b25;
-  --brand-orange: #eb3b14;
+  --aims-navy: #053664;
+  --aims-green: #286b25;
+  --aims-orange: #eb3b14;
+  --aims-mint: #c1dbc3;
 }
 
+/* Base styles */
 @layer base {
   html {
     font-family: 'Inter', system-ui, sans-serif;
@@ -54,36 +34,90 @@
   }
 }
 
-/* ── Brand Color Utilities ── */
-.bg-aims-mint { background-color: var(--brand-mint); }
-.bg-aims-navy { background-color: var(--brand-navy); }
-.bg-aims-green { background-color: var(--brand-green); }
-.bg-aims-orange { background-color: var(--brand-orange); }
+/* ═══════════════════════════════════════════════════════════
+   ARDHI brand colors — BASE (solid)
+   ═══════════════════════════════════════════════════════════ */
+.bg-aims-navy { background-color: var(--aims-navy); }
+.bg-aims-green { background-color: var(--aims-green); }
+.bg-aims-orange { background-color: var(--aims-orange); }
+.bg-aims-mint { background-color: var(--aims-mint); }
 
-.text-aims-mint { color: var(--brand-green); }
-.text-aims-navy { color: var(--brand-navy); }
-.text-aims-green { color: var(--brand-green); }
-.text-aims-orange { color: var(--brand-orange); }
+.text-aims-navy { color: var(--aims-navy); }
+.text-aims-green { color: var(--aims-green); }
+.text-aims-orange { color: var(--aims-orange); }
+.text-aims-mint { color: var(--aims-mint); }
 
-.border-aims-mint { border-color: var(--brand-mint); }
-.border-aims-navy { border-color: var(--brand-navy); }
-.border-aims-green { border-color: var(--brand-green); }
-.border-aims-orange { border-color: var(--brand-orange); }
+.border-aims-navy { border-color: var(--aims-navy); }
+.border-aims-green { border-color: var(--aims-green); }
+.border-aims-orange { border-color: var(--aims-orange); }
+.border-aims-mint { border-color: var(--aims-mint); }
 
-.border-t-aims-green { border-top-color: var(--brand-green); }
-.border-t-aims-navy { border-top-color: var(--brand-navy); }
-.border-t-aims-orange { border-top-color: var(--brand-orange); }
-.border-t-aims-mint { border-top-color: var(--brand-green); }
+.border-t-aims-navy { border-top-color: var(--aims-navy); }
+.border-t-aims-green { border-top-color: var(--aims-green); }
+.border-t-aims-orange { border-top-color: var(--aims-orange); }
+.border-t-aims-mint { border-top-color: var(--aims-mint); }
 
-/* ── Gradients (all blue stops use Ardhi Navy) ── */
-.bg-grad-navy { background: linear-gradient(135deg, #053664 0%, #0b4070 100%); }
-.bg-grad-green { background: linear-gradient(135deg, #286b25 0%, #3f8f3a 100%); }
-.bg-grad-orange { background: linear-gradient(135deg, #eb3b14 0%, #f2662e 100%); }
-.bg-grad-finance { background: linear-gradient(135deg, #053664 0%, #286b25 100%); }
-.bg-grad-innov { background: linear-gradient(135deg, #286b25 0%, #053664 100%); }
-.bg-grad-dark { background: linear-gradient(135deg, #0f172a 0%, #053664 100%); }
+/* ═══════════════════════════════════════════════════════════
+   ARDHI brand colors — OPACITY VARIANTS
+   Enables bg-aims-navy/10, text-aims-green/15, border-aims-orange/20
+   to work without needing the colors in tailwind.config
+   ═══════════════════════════════════════════════════════════ */
 
-/* ── Scrollbar Styling ── */
+/* Navy  #053664 = rgb(5,54,100) */
+.bg-aims-navy\/5  { background-color: rgba(5,54,100,0.05); }
+.bg-aims-navy\/10 { background-color: rgba(5,54,100,0.10); }
+.bg-aims-navy\/15 { background-color: rgba(5,54,100,0.15); }
+.bg-aims-navy\/20 { background-color: rgba(5,54,100,0.20); }
+.bg-aims-navy\/30 { background-color: rgba(5,54,100,0.30); }
+.text-aims-navy\/10 { color: rgba(5,54,100,0.10); }
+.text-aims-navy\/20 { color: rgba(5,54,100,0.20); }
+.border-aims-navy\/10 { border-color: rgba(5,54,100,0.10); }
+.border-aims-navy\/20 { border-color: rgba(5,54,100,0.20); }
+.border-aims-navy\/30 { border-color: rgba(5,54,100,0.30); }
+
+/* Green  #286b25 = rgb(40,107,37) */
+.bg-aims-green\/5  { background-color: rgba(40,107,37,0.05); }
+.bg-aims-green\/10 { background-color: rgba(40,107,37,0.10); }
+.bg-aims-green\/15 { background-color: rgba(40,107,37,0.15); }
+.bg-aims-green\/20 { background-color: rgba(40,107,37,0.20); }
+.bg-aims-green\/30 { background-color: rgba(40,107,37,0.30); }
+.text-aims-green\/15 { color: rgba(40,107,37,0.15); }
+.border-aims-green\/10 { border-color: rgba(40,107,37,0.10); }
+.border-aims-green\/20 { border-color: rgba(40,107,37,0.20); }
+.border-aims-green\/30 { border-color: rgba(40,107,37,0.30); }
+
+/* Orange  #eb3b14 = rgb(235,59,20) */
+.bg-aims-orange\/5  { background-color: rgba(235,59,20,0.05); }
+.bg-aims-orange\/10 { background-color: rgba(235,59,20,0.10); }
+.bg-aims-orange\/15 { background-color: rgba(235,59,20,0.15); }
+.bg-aims-orange\/20 { background-color: rgba(235,59,20,0.20); }
+.bg-aims-orange\/30 { background-color: rgba(235,59,20,0.30); }
+.text-aims-orange\/15 { color: rgba(235,59,20,0.15); }
+.border-aims-orange\/10 { border-color: rgba(235,59,20,0.10); }
+.border-aims-orange\/20 { border-color: rgba(235,59,20,0.20); }
+.border-aims-orange\/30 { border-color: rgba(235,59,20,0.30); }
+
+/* Mint  #c1dbc3 = rgb(193,219,195) */
+.bg-aims-mint\/10 { background-color: rgba(193,219,195,0.10); }
+.bg-aims-mint\/20 { background-color: rgba(193,219,195,0.20); }
+.border-aims-mint\/20 { border-color: rgba(193,219,195,0.20); }
+
+/* ═══════════════════════════════════════════════════════════
+   Gradient utilities
+   ═══════════════════════════════════════════════════════════ */
+.bg-grad-navy {
+  background: linear-gradient(135deg, #053664 0%, #0b4070 100%);
+}
+.bg-grad-green {
+  background: linear-gradient(135deg, #286b25 0%, #3f8f3a 100%);
+}
+.bg-grad-orange {
+  background: linear-gradient(135deg, #eb3b14 0%, #f2662e 100%);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Scrollbar styling
+   ═══════════════════════════════════════════════════════════ */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -99,8 +133,27 @@
   background: #94a3b8;
 }
 
-/* ── Selection Color ── */
-::selection {
-  background-color: var(--brand-navy);
-  color: white;
+/* ═══════════════════════════════════════════════════════════
+   Animation keyframes
+   ═══════════════════════════════════════════════════════════ */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-in-from-bottom {
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+.slide-in-from-bottom-2 {
+  animation: slide-in-from-bottom 0.2s ease-out;
+}
+
+.slide-in-from-bottom-4 {
+  animation: slide-in-from-bottom 0.3s ease-out;
 }

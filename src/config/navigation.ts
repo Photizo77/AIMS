@@ -26,7 +26,7 @@ const ED_NAV_ITEMS: NavItem[] = [
   { title: 'Contracts', href: '/contracts', icon: 'description', roles: ['ED'] },
   { title: 'Appraisals', href: '/appraisals', icon: 'fact_check', roles: ['ED'] },
   { title: 'Innovations & Tasks', href: '/innovations', icon: 'lightbulb', roles: ['ED'] },
-  { title: 'Inventory & Documents', href: '/inventory', icon: 'inventory_2', roles: ['ED'] },
+  { title: 'Documents', href: '/documents', icon: 'folder', roles: ['ED'] },
   { title: 'Feed', href: '/feed', icon: 'feed', roles: ['ED'] },
   { title: 'Email', href: '/email', icon: 'mail', roles: ['ED'] },
   { title: 'Settings', href: '/settings', icon: 'settings', roles: ['ED'] },
@@ -39,7 +39,7 @@ const COMPANY_ADMIN_NAV_ITEMS: NavItem[] = [
   { title: 'HR & People Management', href: '/hr', icon: 'people', roles: ['COMPANY_ADMIN'] },
   { title: 'Contract Lifecycle', href: '/contracts', icon: 'description', roles: ['COMPANY_ADMIN'] },
   { title: 'Performance Appraisals', href: '/appraisals', icon: 'fact_check', roles: ['COMPANY_ADMIN'] },
-  { title: 'Inventory & Document Hub', href: '/documents', icon: 'folder', roles: ['COMPANY_ADMIN'] },
+  { title: 'Documents', href: '/documents', icon: 'folder', roles: ['COMPANY_ADMIN'] },
   { title: 'Feed', href: '/feed', icon: 'feed', roles: ['COMPANY_ADMIN'] },
   { title: 'Email', href: '/email', icon: 'mail', roles: ['COMPANY_ADMIN'] },
   { title: 'Settings', href: '/settings', icon: 'settings', roles: ['COMPANY_ADMIN'] },
@@ -60,6 +60,7 @@ const FINANCE_NAV_ITEMS: NavItem[] = [
   { title: 'Dashboard', href: '/dashboard', icon: 'dashboard', roles: ['FINANCE'] },
   { title: 'Requisition Queue', href: '/approvals', icon: 'request_quote', roles: ['FINANCE'] },
   { title: 'Cash Flow Analytics', href: '/finance', icon: 'account_balance', roles: ['FINANCE'] },
+  { title: 'Procurement & Vendors', href: '/procurement', icon: 'local_shipping', roles: ['FINANCE'] },
   { title: 'My Attendance', href: '/attendance', icon: 'schedule', roles: ['FINANCE'] },
   { title: 'Feed', href: '/feed', icon: 'feed', roles: ['FINANCE'] },
   { title: 'Email', href: '/email', icon: 'mail', roles: ['FINANCE'] },
@@ -86,13 +87,8 @@ const INNOVATOR_NAV_ITEMS: NavItem[] = [
 ];
 
 export const NAV_ITEMS: NavItem[] = [
-  ...CD_NAV_ITEMS,
-  ...ED_NAV_ITEMS,
-  ...COMPANY_ADMIN_NAV_ITEMS,
-  ...SYS_ADMIN_NAV_ITEMS,
-  ...FINANCE_NAV_ITEMS,
-  ...GRANT_WRITER_NAV_ITEMS,
-  ...INNOVATOR_NAV_ITEMS,
+  ...CD_NAV_ITEMS, ...ED_NAV_ITEMS, ...COMPANY_ADMIN_NAV_ITEMS, ...SYS_ADMIN_NAV_ITEMS,
+  ...FINANCE_NAV_ITEMS, ...GRANT_WRITER_NAV_ITEMS, ...INNOVATOR_NAV_ITEMS,
 ];
 
 export function getVisibleNavItems(userRole: Role): NavItem[] {

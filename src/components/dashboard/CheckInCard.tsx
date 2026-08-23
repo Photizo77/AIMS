@@ -1,194 +1,139 @@
 // src/components/dashboard/CheckInCard.tsx
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
+import { useAttendance } from '@/context/AttendanceContext';
 import { cn } from '@/lib/utils';
-import { OFFICE_GEOFENCE, isWithinGeofence } from '@/config/geofence';
-import type { AttendanceType } from '@/types';
 
-/**
- * Geofenced Check-In Card — used across ALL user personas.
- * 
- * Physical check-in: Requires GPS within 150m of Nsambya office.
- *   - Blocked entirely if outside geofence with error toast.
- *   - Failed attempts logged to SysAdmin audit trail.
- * 
- * Remote check-in: Manual action, no GPS required.
- *   - IP address automatically captured and logged.
- *   - Tagged with attendance_type: 'remote'.
- */
+const OFFICE_LAT = 0.2925;
+const OFFICE_LNG = 32.5979;
+const MAX_RADIUS_METERS = 150;
+
+function getDistanceMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371e3;
+  const p1 = (lat1 * Math.PI) / 180;
+  const p2 = (lat2 * Math.PI) / 180;
+  const dp = ((lat2 - lat1) * Math.PI) / 180;
+  const dl = ((lon2 - lon1) * Math.PI) / 180;
+  const a = Math.sin(dp / 2) * Math.sin(dp / 2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl / 2) * Math.sin(dl / 2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 export function CheckInCard() {
   const { user } = useAuth();
   const { showToast } = useNotifications();
-  const [checkedIn, setCheckedIn] = useState(false);
-  const [checkInTime, setCheckInTime] = useState<string | null>(null);
-  const [attendanceType, setAttendanceType] = useState<AttendanceType | null>(null);
+  const { isCheckedIn, checkInTime, checkInMode, checkIn, checkOut } = useAttendance();
+  const [selectedMode, setSelectedMode] = useState<'physical' | 'remote'>('physical');
   const [isLocating, setIsLocating] = useState(false);
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const [locationError, setLocationError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 60000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const formattedTime = currentTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-  const formattedDate = currentTime.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
-
-  /**
-   * Physical check-in: Request GPS → validate geofence → allow or block.
-   */
-  const handlePhysicalCheckIn = () => {
-    if (!navigator.geolocation) {
-      showToast({
-        title: 'Geolocation Unavailable',
-        message: 'Your browser does not support GPS. Use remote check-in instead.',
-        type: 'error',
-      });
-      return;
+  const handleCheckIn = () => {
+    if (selectedMode === 'physical') {
+      if (!navigator.geolocation) {
+        setLocationError('Geolocation is not supported by your browser.');
+        showToast({ title: 'Location Unavailable', message: 'Your browser does not support GPS.', type: 'error' });
+        return;
+      }
+      setIsLocating(true);
+      setLocationError(null);
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          const distance = getDistanceMeters(latitude, longitude, OFFICE_LAT, OFFICE_LNG);
+          setIsLocating(false);
+          if (distance <= MAX_RADIUS_METERS) {
+            checkIn('physical', 'ARDHI Office, Kampala');
+          } else {
+            setLocationError(`You are ${Math.round(distance)}m from the office. Physical check-in requires you to be within ${MAX_RADIUS_METERS}m.`);
+            showToast({ title: 'Outside Office Radius', message: `You are ${Math.round(distance)}m away. Move closer to check in physically.`, type: 'error' });
+          }
+        },
+        (error) => {
+          setIsLocating(false);
+          let msg = 'Unable to retrieve your location.';
+          if (error.code === error.PERMISSION_DENIED) msg = 'Location permission denied. Please allow location access.';
+          if (error.code === error.POSITION_UNAVAILABLE) msg = 'Location information unavailable.';
+          if (error.code === error.TIMEOUT) msg = 'Location request timed out.';
+          setLocationError(msg);
+          showToast({ title: 'Location Error', message: msg, type: 'error' });
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    } else {
+      checkIn('remote', 'Remote Location');
     }
-
-    setIsLocating(true);
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setIsLocating(false);
-        const { latitude, longitude } = position.coords;
-        const passed = isWithinGeofence(latitude, longitude);
-
-        if (passed) {
-          setCheckedIn(true);
-          setCheckInTime(formattedTime);
-          setAttendanceType('physical');
-          showToast({
-            title: 'Checked In (Onsite)',
-            message: `Welcome, ${user?.name ?? 'User'}. Clock-in recorded at ${formattedTime}.`,
-            type: 'success',
-          });
-        } else {
-          // BLOCKED — log to audit trail (in production, POST to /api/audit/geofence-violations)
-          console.warn('[AUDIT] Geofence violation:', {
-            userId: user?.id,
-            userName: user?.name,
-            userRole: user?.role,
-            timestamp: new Date().toISOString(),
-            attemptedLat: latitude,
-            attemptedLng: longitude,
-            action: 'check_in',
-          });
-          showToast({
-            title: 'Check-In Blocked',
-            message: `You are outside the ${OFFICE_GEOFENCE.label} perimeter (${OFFICE_GEOFENCE.radiusMeters}m). This attempt has been logged.`,
-            type: 'error',
-          });
-        }
-      },
-      (error) => {
-        setIsLocating(false);
-        showToast({
-          title: 'GPS Error',
-          message: error.code === 1 ? 'Location permission denied. Enable GPS and retry.' : 'Unable to determine location. Try remote check-in.',
-          type: 'error',
-        });
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
   };
 
-  /**
-   * Remote check-in: No GPS. IP logged automatically.
-   */
-  const handleRemoteCheckIn = () => {
-    // In production, IP is captured server-side via request headers.
-    // Client-side placeholder for demonstration.
-    const simulatedIP = '41.220.138.xx';
-
-    setCheckedIn(true);
-    setCheckInTime(formattedTime);
-    setAttendanceType('remote');
-    showToast({
-      title: 'Checked In (Remote)',
-      message: `Remote clock-in recorded at ${formattedTime}. IP: ${simulatedIP}`,
-      type: 'success',
-    });
-  };
-
-  const handleCheckOut = () => {
-    setCheckedIn(false);
-    setCheckInTime(null);
-    setAttendanceType(null);
-    showToast({
-      title: 'Checked Out',
-      message: `Clock-out recorded at ${formattedTime}. Have a great day!`,
-      type: 'info',
-    });
-  };
+  if (!user) return null;
 
   return (
-    <div className="bg-aims-orange rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
-      {/* Decorative background pattern */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
-      <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
-
-      <div className="relative z-10 flex items-center justify-between">
-        {/* Left: Time & Date */}
-        <div>
-          <p className="text-sm font-medium text-white/80">{formattedDate}</p>
-          <p className="text-4xl font-extrabold tracking-tight text-white">{formattedTime}</p>
-          {checkedIn && (
-            <div className="flex items-center gap-1.5 mt-2">
-              <span className="material-symbols-outlined text-[18px] text-white">check_circle</span>
-              <span className="text-sm font-bold text-white">
-                Checked in at {checkInTime} ({attendanceType === 'physical' ? 'Onsite' : 'Remote'})
-              </span>
-            </div>
-          )}
+    <div className="bg-white border border-slate-200 border-t-4 border-t-aims-orange rounded-xl p-5 shadow-sm transition-all hover:shadow-md">
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-full bg-aims-orange/10 flex items-center justify-center flex-shrink-0">
+            <span className="material-symbols-outlined text-aims-orange text-[24px]">
+              {isCheckedIn ? 'check_circle' : 'schedule'}
+            </span>
+          </div>
+          <div>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">
+              {isCheckedIn ? 'Current Status' : 'Daily Attendance'}
+            </p>
+            <p className="text-lg font-extrabold text-slate-900 tracking-tight">
+              {isCheckedIn ? `Checked In at ${checkInTime}` : 'Ready to check in?'}
+            </p>
+            <p className="text-xs text-slate-500 font-semibold mt-0.5">
+              {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+            </p>
+          </div>
         </div>
 
-        {/* Right: Action Buttons */}
-        <div className="flex flex-col gap-2">
-          {!checkedIn ? (
-            <>
-              <button
-                onClick={handlePhysicalCheckIn}
-                disabled={isLocating}
-                className={cn(
-                  'px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2',
-                  isLocating
-                    ? 'bg-white/30 text-white/60 cursor-wait'
-                    : 'bg-white text-aims-orange hover:bg-white/90 shadow-md'
-                )}
-              >
-                <span className="material-symbols-outlined text-[18px]">
-                  {isLocating ? 'progress_activity' : 'location_on'}
-                </span>
-                {isLocating ? 'Locating…' : 'Clock In (Onsite)'}
-              </button>
-              <button
-                onClick={handleRemoteCheckIn}
-                className="px-5 py-2.5 rounded-xl text-xs font-bold bg-white/20 text-white hover:bg-white/30 transition-all flex items-center gap-2 backdrop-blur-sm"
-              >
-                <span className="material-symbols-outlined text-[18px]">wifi</span>
-                Clock In (Remote)
-              </button>
-            </>
+        <div className="flex flex-col gap-3 items-end">
+          <div className="flex items-center bg-slate-100 rounded-lg p-1">
+            <button
+              onClick={() => { setSelectedMode('physical'); setLocationError(null); }}
+              className={cn('px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1',
+                selectedMode === 'physical' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700')}
+            >
+              <span className="material-symbols-outlined text-[14px]">location_on</span>Physical
+            </button>
+            <button
+              onClick={() => { setSelectedMode('remote'); setLocationError(null); }}
+              className={cn('px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1',
+                selectedMode === 'remote' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700')}
+            >
+              <span className="material-symbols-outlined text-[14px]">home</span>Remote
+            </button>
+          </div>
+
+          {locationError && (
+            <p className="text-[10px] font-bold text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-1.5 max-w-[280px] text-right">
+              {locationError}
+            </p>
+          )}
+
+          {!isCheckedIn ? (
+            <button
+              onClick={handleCheckIn}
+              disabled={isLocating}
+              className={cn('px-6 py-2.5 text-sm font-bold rounded-lg transition-colors shadow-sm flex items-center gap-2',
+                isLocating ? 'bg-slate-100 text-slate-400 cursor-wait' : 'bg-aims-green text-white hover:bg-aims-green/90')}
+            >
+              {isLocating ? (
+                <><span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>Locating…</>
+              ) : (
+                <><span className="material-symbols-outlined text-[18px]">login</span>Check In Now</>
+              )}
+            </button>
           ) : (
             <button
-              onClick={handleCheckOut}
-              className="px-5 py-2.5 rounded-xl text-xs font-bold bg-white text-aims-orange hover:bg-white/90 shadow-md transition-all flex items-center gap-2"
+              onClick={checkOut}
+              className="px-6 py-2.5 bg-slate-100 text-slate-700 text-sm font-bold rounded-lg hover:bg-slate-200 transition-colors flex items-center gap-2"
             >
-              <span className="material-symbols-outlined text-[18px]">logout</span>
-              Clock Out
+              <span className="material-symbols-outlined text-[18px]">logout</span>Check Out
             </button>
           )}
         </div>
-      </div>
-
-      {/* Geofence info footer */}
-      <div className="relative z-10 mt-4 pt-3 border-t border-white/20 flex items-center gap-2">
-        <span className="material-symbols-outlined text-[14px] text-white/60">fence</span>
-        <p className="text-[10px] text-white/60">
-          Onsite check-in requires GPS within {OFFICE_GEOFENCE.radiusMeters}m of {OFFICE_GEOFENCE.label} ({OFFICE_GEOFENCE.latitude.toFixed(4)}°N, {OFFICE_GEOFENCE.longitude.toFixed(4)}°E)
-        </p>
       </div>
     </div>
   );

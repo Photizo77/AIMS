@@ -1,134 +1,284 @@
-import { useState, useEffect } from 'react'
+// src/pages/Attendance.tsx
+import { useState } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { useNotifications } from '@/context/NotificationContext';
+import { cn } from '@/lib/utils';
 
-const weekLog = [
-  { date: 'Mon Jul 28', checkIn: '08:05 AM', checkOut: '05:12 PM', hours: '9h 07m', status: 'Present' },
-  { date: 'Tue Jul 29', checkIn: '07:58 AM', checkOut: '05:00 PM', hours: '9h 02m', status: 'Present' },
-  { date: 'Wed Jul 30', checkIn: '08:22 AM', checkOut: '04:45 PM', hours: '8h 23m', status: 'Present' },
-  { date: 'Thu Jul 31', checkIn: '09:10 AM', checkOut: '05:30 PM', hours: '8h 20m', status: 'Late'    },
-  { date: 'Fri Aug 01', checkIn: '08:12 AM', checkOut: '—',        hours: 'Active', status: 'Present' },
-]
+// Office location (updated coordinates)
+const OFFICE_LAT = 0.2925;
+const OFFICE_LNG = 32.5979;
+const MAX_RADIUS_METERS = 150;
 
-function statusStyle(s: string): React.CSSProperties {
-  if (s === 'Present') return { backgroundColor: 'rgba(40,107,37,0.10)', color: '#286b25' }
-  if (s === 'Late')    return { backgroundColor: 'rgba(235,59,20,0.10)', color: '#eb3b14' }
-  return { backgroundColor: '#e5eeff', color: '#002141' }
+function getDistanceMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371e3;
+  const p1 = (lat1 * Math.PI) / 180;
+  const p2 = (lat2 * Math.PI) / 180;
+  const dp = ((lat2 - lat1) * Math.PI) / 180;
+  const dl = ((lon2 - lon1) * Math.PI) / 180;
+  const a = Math.sin(dp / 2) * Math.sin(dp / 2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl / 2) * Math.sin(dl / 2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+interface AttendanceRecord {
+  id: string;
+  date: string;
+  checkIn: string;
+  checkOut: string | null;
+  mode: 'physical' | 'remote';
+  location: string;
+  status: 'present' | 'late' | 'absent' | 'leave';
+  hours: string;
+}
+
+const MOCK_HISTORY: AttendanceRecord[] = [
+  { id: 'a1', date: '2026-08-22', checkIn: '07:58', checkOut: '17:02', mode: 'physical', location: 'ARDHI Office, Kampala', status: 'present', hours: '9h 4m' },
+  { id: 'a2', date: '2026-08-21', checkIn: '08:15', checkOut: '17:30', mode: 'remote', location: 'Plot 45, Kira Road', status: 'late', hours: '9h 15m' },
+  { id: 'a3', date: '2026-08-20', checkIn: '07:52', checkOut: '16:45', mode: 'physical', location: 'ARDHI Office, Kampala', status: 'present', hours: '8h 53m' },
+  { id: 'a4', date: '2026-08-19', checkIn: '', checkOut: null, mode: 'physical', location: '', status: 'leave', hours: '—' },
+  { id: 'a5', date: '2026-08-18', checkIn: '07:55', checkOut: '17:10', mode: 'physical', location: 'ARDHI Office, Kampala', status: 'present', hours: '9h 15m' },
+];
+
+const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
+  present: { label: 'Present', cls: 'bg-aims-green/15 text-aims-green' },
+  late: { label: 'Late', cls: 'bg-aims-orange/15 text-aims-orange' },
+  absent: { label: 'Absent', cls: 'bg-red-100 text-red-600' },
+  leave: { label: 'On Leave', cls: 'bg-slate-100 text-slate-600' },
+};
+
 export function Attendance() {
-  const [checkedIn, setCheckedIn] = useState(true)
-  const [now, setNow] = useState(new Date())
+  const { user } = useAuth();
+  const { showToast } = useNotifications();
+  const [isCheckedIn, setIsCheckedIn] = useState(false);
+  const [checkInTime, setCheckInTime] = useState<string | null>(null);
+  const [checkInMode, setCheckInMode] = useState<'physical' | 'remote'>('physical');
+  const [isLocating, setIsLocating] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
+  const [filterStatus, setFilterStatus] = useState('');
 
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 1000)
-    return () => clearInterval(id)
-  }, [])
+  const handleCheckIn = () => {
+    if (checkInMode === 'physical') {
+      if (!navigator.geolocation) {
+        setLocationError('Geolocation is not supported by your browser.');
+        showToast({ title: 'Location Unavailable', message: 'Your browser does not support GPS.', type: 'error' });
+        return;
+      }
+      setIsLocating(true);
+      setLocationError(null);
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          const distance = getDistanceMeters(latitude, longitude, OFFICE_LAT, OFFICE_LNG);
+          setIsLocating(false);
+          if (distance <= MAX_RADIUS_METERS) {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+            setIsCheckedIn(true);
+            setCheckInTime(timeString);
+            showToast({ title: 'Checked In (Physical)', message: `Location verified. Checked in at ${timeString}.`, type: 'success' });
+          } else {
+            setLocationError(`You are ${Math.round(distance)}m from the office. Physical check-in requires you to be within ${MAX_RADIUS_METERS}m.`);
+            showToast({ title: 'Outside Office Radius', message: `You are ${Math.round(distance)}m away. Move closer to check in physically.`, type: 'error' });
+          }
+        },
+        (error) => {
+          setIsLocating(false);
+          let msg = 'Unable to retrieve your location.';
+          if (error.code === error.PERMISSION_DENIED) msg = 'Location permission denied. Please allow location access.';
+          if (error.code === error.POSITION_UNAVAILABLE) msg = 'Location information unavailable.';
+          if (error.code === error.TIMEOUT) msg = 'Location request timed out.';
+          setLocationError(msg);
+          showToast({ title: 'Location Error', message: msg, type: 'error' });
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    } else {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+      setIsCheckedIn(true);
+      setCheckInTime(timeString);
+      showToast({ title: 'Checked In (Remote)', message: `Checked in at ${timeString}.`, type: 'success' });
+    }
+  };
 
-  const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-  const dateStr = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+  const handleCheckOut = () => {
+    setIsCheckedIn(false);
+    setCheckInTime(null);
+    setLocationError(null);
+    showToast({ title: 'Checked Out', message: 'You have successfully checked out.', type: 'success' });
+  };
+
+  const filteredHistory = MOCK_HISTORY.filter((r) => {
+    if (filterStatus && r.status !== filterStatus) return false;
+    return true;
+  });
+
+  if (!user) return <div className="p-8 text-center text-slate-500">Loading…</div>;
 
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
-        <div>
-          <h1 style={{ fontSize: '32px', fontWeight: 600, lineHeight: '40px', letterSpacing: '-0.01em', color: '#002141' }}>Attendance</h1>
-          <p style={{ fontSize: '16px', lineHeight: '24px', color: '#43474f', marginTop: '4px' }}>Daily check-in / check-out and attendance log</p>
+    <div className="space-y-6">
+      <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
+        <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">My Attendance</h1>
+        <p className="text-base font-medium text-white">Track your daily check-ins, hours, and leave balance</p>
+      </div>
+
+      {/* Check-In Card */}
+      <div className="bg-white border border-slate-200 border-t-4 border-t-aims-orange rounded-xl p-5 shadow-sm">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-aims-orange/10 flex items-center justify-center flex-shrink-0">
+              <span className="material-symbols-outlined text-aims-orange text-[24px]">
+                {isCheckedIn ? 'check_circle' : 'schedule'}
+              </span>
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">
+                {isCheckedIn ? 'Current Status' : 'Daily Attendance'}
+              </p>
+              <p className="text-lg font-extrabold text-slate-900 tracking-tight">
+                {isCheckedIn ? `Checked In at ${checkInTime}` : 'Ready to check in?'}
+              </p>
+              <p className="text-xs text-slate-500 font-semibold mt-0.5">
+                {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3 items-end">
+            <div className="flex items-center bg-slate-100 rounded-lg p-1">
+              <button
+                onClick={() => { setCheckInMode('physical'); setLocationError(null); }}
+                className={cn('px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1',
+                  checkInMode === 'physical' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700')}
+              >
+                <span className="material-symbols-outlined text-[14px]">location_on</span>Physical
+              </button>
+              <button
+                onClick={() => { setCheckInMode('remote'); setLocationError(null); }}
+                className={cn('px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1',
+                  checkInMode === 'remote' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700')}
+              >
+                <span className="material-symbols-outlined text-[14px]">home</span>Remote
+              </button>
+            </div>
+
+            {locationError && (
+              <p className="text-[10px] font-bold text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-1.5 max-w-[280px] text-right">
+                {locationError}
+              </p>
+            )}
+
+            {!isCheckedIn ? (
+              <button
+                onClick={handleCheckIn}
+                disabled={isLocating}
+                className={cn('px-6 py-2.5 text-sm font-bold rounded-lg transition-colors shadow-sm flex items-center gap-2',
+                  isLocating ? 'bg-slate-100 text-slate-400 cursor-wait' : 'bg-aims-green text-white hover:bg-aims-green/90')}
+              >
+                {isLocating ? (
+                  <><span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>Locating…</>
+                ) : (
+                  <><span className="material-symbols-outlined text-[18px]">login</span>Check In Now</>
+                )}
+              </button>
+            ) : (
+              <button
+                onClick={handleCheckOut}
+                className="px-6 py-2.5 bg-slate-100 text-slate-700 text-sm font-bold rounded-lg hover:bg-slate-200 transition-colors flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined text-[18px]">logout</span>Check Out
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Clock-in card */}
-        <div className="lg:col-span-1">
-          <div style={{ backgroundColor: '#053664', borderRadius: '16px', padding: '32px', textAlign: 'center', color: '#ffffff', boxShadow: '0px 20px 25px -5px rgba(0,0,0,0.1)', position: 'relative', overflow: 'hidden' }}>
-            <span className="material-symbols-outlined" style={{ position: 'absolute', bottom: '-20px', right: '-20px', fontSize: '140px', color: 'rgba(255,255,255,0.05)' }}>schedule</span>
-            <p style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', opacity: 0.6, marginBottom: '8px' }}>Current Time</p>
-            <p style={{ fontSize: '40px', fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '8px' }}>{timeStr}</p>
-            <p style={{ fontSize: '13px', opacity: 0.7, marginBottom: '28px' }}>{dateStr}</p>
+      {/* Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-green p-4 shadow-sm">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Days Present</p>
+          <p className="text-2xl font-extrabold text-slate-900 mt-1">18</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">this month</p>
+        </div>
+        <div className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-orange p-4 shadow-sm">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Late Arrivals</p>
+          <p className="text-2xl font-extrabold text-slate-900 mt-1">2</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">this month</p>
+        </div>
+        <div className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-navy p-4 shadow-sm">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Hours</p>
+          <p className="text-2xl font-extrabold text-slate-900 mt-1">162h</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">this month</p>
+        </div>
+        <div className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-mint p-4 shadow-sm">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Leave Balance</p>
+          <p className="text-2xl font-extrabold text-slate-900 mt-1">12</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">days remaining</p>
+        </div>
+      </div>
 
-            {/* Status badge */}
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: checkedIn ? 'rgba(171,245,157,0.2)' : 'rgba(235,59,20,0.2)', padding: '6px 20px', borderRadius: '9999px', marginBottom: '24px' }}>
-              <span style={{ width: 8, height: 8, borderRadius: '9999px', backgroundColor: checkedIn ? '#abf59d' : '#eb3b14', display: 'inline-block' }} className="animate-pulse" />
-              <span style={{ fontSize: '13px', fontWeight: 700, color: checkedIn ? '#abf59d' : '#eb3b14' }}>{checkedIn ? 'Checked In — 08:12 AM' : 'Not Checked In'}</span>
-            </div>
-
-            {/* Check-in / out button */}
-            <button
-              onClick={() => setCheckedIn((v) => !v)}
-              style={{ width: '100%', padding: '14px', borderRadius: '12px', fontSize: '16px', fontWeight: 700, backgroundColor: checkedIn ? '#eb3b14' : '#abf59d', color: checkedIn ? '#ffffff' : '#002202', transition: 'all 0.2s', border: 'none', cursor: 'pointer' }}
-              className="hover:opacity-90 active:scale-95 flex items-center justify-center gap-2 mx-auto">
-              <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>{checkedIn ? 'logout' : 'login'}</span>
-              {checkedIn ? 'Check Out' : 'Check In'}
-            </button>
-
-            {checkedIn && (
-              <p style={{ fontSize: '12px', opacity: 0.6, marginTop: '12px' }}>Duration today: <strong>9h 22m</strong></p>
-            )}
-          </div>
-
-          {/* Location */}
-          <div style={{ backgroundColor: '#ffffff', borderRadius: '12px', padding: '20px', border: '1px solid #c3c6d0', marginTop: '20px' }}>
-            <p style={{ fontSize: '12px', fontWeight: 700, color: '#43474f', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>Check-In Location</p>
-            <div className="flex items-center gap-3">
-              <span className="material-symbols-outlined" style={{ color: '#eb3b14', fontSize: '24px' }}>location_on</span>
-              <div>
-                <p style={{ fontSize: '14px', fontWeight: 600, color: '#0b1c30' }}>ARDHI HQ — Kampala</p>
-                <p style={{ fontSize: '12px', color: '#43474f' }}>0.4° N, 32.6° E · Verified GPS</p>
-              </div>
-            </div>
-          </div>
+      {/* Attendance History */}
+      <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-base font-bold text-slate-900">Attendance History</h3>
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="text-xs border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-aims-navy/30"
+          >
+            <option value="">All statuses</option>
+            <option value="present">Present</option>
+            <option value="late">Late</option>
+            <option value="absent">Absent</option>
+            <option value="leave">On Leave</option>
+          </select>
         </div>
 
-        {/* Right: weekly log + summary */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Month summary stat cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { label: 'Days Present', value: '18',    icon: 'check_circle',  ok: true  },
-              { label: 'Days Absent',  value: '2',     icon: 'cancel',        ok: false },
-              { label: 'Late Arrivals',value: '3',     icon: 'schedule',      ok: false },
-              { label: 'Hours Logged', value: '162h',  icon: 'timer',         ok: true  },
-            ].map((c) => (
-              <div key={c.label}
-                style={{ backgroundColor: '#c1dbc3', padding: '16px', borderRadius: '12px', border: '1px solid #a8c4aa', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '8px' }}>
-                <div className="flex justify-between items-center">
-                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#002141', textTransform: 'uppercase' }}>{c.label}</span>
-                  <span className="material-symbols-outlined" style={{ fontSize: '18px', color: 'rgba(0,33,65,0.4)' }}>{c.icon}</span>
-                </div>
-                <span style={{ fontSize: '24px', fontWeight: 600, color: '#002141' }}>{c.value}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Weekly log table */}
-          <div style={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #c3c6d0', overflow: 'hidden' }}>
-            <div style={{ padding: '16px 20px', borderBottom: '1px solid #c3c6d0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#002141' }}>This Week's Log</h3>
-              <button style={{ fontSize: '12px', fontWeight: 500, color: '#002141' }} className="hover:underline">Full History</button>
-            </div>
-            <table style={{ width: '100%', fontSize: '14px', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ backgroundColor: '#053664', color: '#ffffff' }}>
-                  {['Date','Check-In','Check-Out','Hours','Status'].map((h) => (
-                    <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: '12px', fontWeight: 700 }}>{h}</th>
-                  ))}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-slate-200">
+                <th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Date</th>
+                <th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Check In</th>
+                <th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Check Out</th>
+                <th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Mode</th>
+                <th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Location</th>
+                <th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Status</th>
+                <th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider text-right">Hours</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {filteredHistory.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="py-8 text-center text-xs text-slate-400 italic">
+                    No attendance records match your filter.
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {weekLog.map((row, i) => (
-                  <tr key={row.date} style={{ backgroundColor: i % 2 === 0 ? '#f8f9ff' : '#ffffff' }} className="hover:bg-[#eff4ff] transition-colors">
-                    <td style={{ padding: '10px 16px', fontWeight: 500, color: '#0b1c30' }}>{row.date}</td>
-                    <td style={{ padding: '10px 16px', color: '#43474f' }}>{row.checkIn}</td>
-                    <td style={{ padding: '10px 16px', color: '#43474f' }}>{row.checkOut}</td>
-                    <td style={{ padding: '10px 16px', fontWeight: 600, color: '#002141' }}>{row.hours}</td>
-                    <td style={{ padding: '10px 16px' }}>
-                      <span style={{ ...statusStyle(row.status), fontSize: '11px', fontWeight: 700, padding: '3px 12px', borderRadius: '9999px' }}>{row.status}</span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              )}
+              {filteredHistory.map((r) => (
+                <tr key={r.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="py-2.5 font-bold text-slate-900">
+                    {new Date(r.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                  </td>
+                  <td className="py-2.5 text-slate-600 font-mono text-xs">{r.checkIn || '—'}</td>
+                  <td className="py-2.5 text-slate-600 font-mono text-xs">{r.checkOut || '—'}</td>
+                  <td className="py-2.5">
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 capitalize">
+                      {r.mode}
+                    </span>
+                  </td>
+                  <td className="py-2.5 text-slate-600 text-xs truncate max-w-[180px]">{r.location || '—'}</td>
+                  <td className="py-2.5">
+                    <span className={cn('text-[9px] font-bold px-1.5 py-0.5 rounded uppercase', STATUS_BADGE[r.status].cls)}>
+                      {STATUS_BADGE[r.status].label}
+                    </span>
+                  </td>
+                  <td className="py-2.5 text-right font-bold text-slate-900 text-xs">{r.hours}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
-  )
+  );
 }

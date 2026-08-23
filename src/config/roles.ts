@@ -33,7 +33,7 @@ const MODULE_ACCESS: Record<string, Role[]> = {
   innovations: ['CD', 'ED', 'SYS_ADMIN', 'COMPANY_ADMIN', 'INNOVATOR'],
   finance: ['CD', 'ED', 'SYS_ADMIN', 'FINANCE'],
   procurement: ['CD', 'ED', 'SYS_ADMIN', 'FINANCE'],
-  approvals: ['CD', 'ED'],
+  approvals: ['CD', 'ED', 'FINANCE'],
   documents: ['CD', 'ED', 'SYS_ADMIN', 'COMPANY_ADMIN', 'FINANCE', 'GRANTS_MANAGER', 'GRANT_WRITER', 'INNOVATOR'],
   knowledge: ['CD', 'ED', 'SYS_ADMIN', 'COMPANY_ADMIN', 'FINANCE', 'GRANTS_MANAGER', 'GRANT_WRITER', 'INNOVATOR'],
   crm: ['CD', 'ED', 'COMPANY_ADMIN'],
