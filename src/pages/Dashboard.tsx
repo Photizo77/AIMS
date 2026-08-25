@@ -1,6 +1,6 @@
 // src/pages/Dashboard.tsx
 import { type ReactNode, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
 import { useNotifications } from '@/context/NotificationContext';
@@ -163,8 +163,22 @@ function PreparePayrollModal({ onClose, onSubmit }: { onClose: () => void; onSub
 
 export function Dashboard() {
   const { user } = useAuth();
+  const location = useLocation(); 
+  
   if (!user) return null;
   const role = user.role;
+
+  const searchParams = new URLSearchParams(location.search);
+  const view = searchParams.get('view');
+
+  // 1. QUERY PARAM OVERRIDES (For sidebar links that want to show dashboard views)
+  if (view === 'grants') return <GrantDashboard />;
+  if (view === 'finance') return <FinanceDashboard />;
+  if (view === 'innovations') return <InnovatorDashboard />;
+  if (view === 'hr') return <HRDashboard />;
+  if (view === 'inventory') return <InventoryDashboard />;
+
+  // 2. DEFAULT ROLE-BASED ROUTING (Handles the base /dashboard route)
   if (role === 'CD') return <CDDashboard />;
   if (role === 'ED') return <EDDashboard />;
   if (role === 'COMPANY_ADMIN') return <AdminDashboard />;
@@ -172,6 +186,7 @@ export function Dashboard() {
   if (role === 'GRANT_WRITER' || role === 'GRANTS_MANAGER') return <GrantDashboard />;
   if (role === 'INNOVATOR') return <InnovatorDashboard />;
   if (role === 'SYS_ADMIN') return <SysAdminDashboard />;
+  
   return <DefaultDashboard />;
 }
 
@@ -272,13 +287,11 @@ function EDDashboard() {
   const handleAction = (msg: string) => showToast({ title: 'Action Logged', message: msg, type: 'success' });
   const [expandedApproval, setExpandedApproval] = useState<string | null>(null);
   const [expandedGrant, setExpandedGrant] = useState<string | null>(null);
-  const [expandedContract, setExpandedContract] = useState<string | null>(null);
   return (
     <div className="space-y-6">
       <DashHeader gradient="bg-grad-navy" title="Executive Director Dashboard" subtitle="Operational execution, team leadership & daily management" />
       <CheckInCard />
 
-      {/* ═══ 1. GRANTS ═══ */}
       <Section title="Grant Approvals & Deadlines" subtitle="Grants reviewed by Team Lead — awaiting your final approval before external submission">
         <AdvancedFilterBar dateLabel="Deadline" statusOptions={['Awaiting Your Review', 'You Approved', 'Submitted', 'You Returned to TL', 'You Rejected']} ownerOptions={['Sarah Aciro', 'Janet Apio', 'Grants Team']} showAmountRange presets={[{ id: 'gd1', name: 'Due within 7 days' }, { id: 'gd2', name: 'Awaiting my review' }]} onExport={(fmt) => handleAction(`Exporting grants ${fmt.toUpperCase()}`)} onSavePreset={(name) => handleAction(`Saved preset: ${name}`)} />
         <div className="space-y-3">
@@ -305,7 +318,6 @@ function EDDashboard() {
         </div>
       </Section>
 
-      {/* ═══ 2. APPROVALS ═══ */}
       <Section title="Your Pending Approvals" subtitle="Requisitions and payslips awaiting your decision — you are the sole approval authority">
         <AdvancedFilterBar dateLabel="Submitted" statusOptions={['Awaiting Your Decision', 'Overdue', 'You Approved', 'You Rejected', 'Disbursed']} ownerOptions={['Finance Dept', 'HR Admin', 'Grants Team', 'Procurement', 'Innovation']} showAmountRange presets={[{ id: 'aq1', name: 'My overdue items' }, { id: 'aq2', name: 'Payslips only' }, { id: 'aq3', name: 'High value (>10M)' }]} onExport={(fmt) => handleAction(`Exporting approvals ${fmt.toUpperCase()}`)} onSavePreset={(name) => handleAction(`Saved preset: ${name}`)} />
         <div className="space-y-3">
@@ -336,14 +348,12 @@ function EDDashboard() {
         </div>
       </Section>
 
-      {/* ═══ 3. FINANCE & PROCUREMENT ═══ */}
       <Section title="Payslip Authorization" subtitle="Generate, review, and authorize payroll batches"><PayslipReviewPanel /></Section>
       <Section title="Monthly Cash Flow" subtitle="Income vs. expenditure with pending requisitions">
         <div className="space-y-5"><Bar label="Total Income" value={1200} max={1400} display="UGX 1.2B" color="green" /><Bar label="Total Expenditure" value={850} max={1400} display="UGX 850M" color="orange" /></div>
         <div className="mt-5 pt-4 border-t border-slate-100 flex justify-between items-center"><div><span className="text-sm font-semibold text-slate-600">Net Surplus</span><p className="text-[10px] text-slate-400">Pending requisitions: UGX 20.4M</p></div><span className="text-xl font-extrabold text-aims-green">UGX 350M</span></div>
       </Section>
 
-      {/* ═══ 4. ATTENDANCE ═══ */}
       <Section title="Attendance Oversight" subtitle="Real-time presence and historical records">
         <AdvancedFilterBar dateLabel="Date" statusOptions={['Present', 'Late', 'Absent', 'Leave', 'Remote']} ownerOptions={['Grants', 'Finance', 'HR', 'Innovation', 'Research', 'Procurement']} presets={[{ id: 'att1', name: 'Unexpected absences' }, { id: 'att2', name: 'Late arrivals this week' }]} onExport={(fmt) => handleAction(`Exporting attendance ${fmt.toUpperCase()}`)} onSavePreset={(name) => handleAction(`Saved preset: ${name}`)} />
         <div className="flex items-center gap-3 mb-4">
@@ -362,7 +372,6 @@ function EDDashboard() {
         </div>
       </Section>
 
-      {/* ═══ 5. INNOVATIONS ═══ */}
       <Section title="Innovation Pipeline Flags" subtitle="Projects requiring your attention — flagged by CD or stalled in stage">
         <div className="space-y-3">
           {[
@@ -392,41 +401,6 @@ function EDDashboard() {
         </div>
       </Section>
 
-      {/* ═══ 6. CONTRACTS ═══ */}
-      <Section title="Expiring Contracts" subtitle="Contracts approaching renewal deadline — flagged automatically">
-        <AdvancedFilterBar dateLabel="Expiry Date" statusOptions={['Expiring (30d)', 'Expiring (60d)', 'Expired']} ownerOptions={['Grants', 'Finance', 'HR', 'Innovation', 'Research']} presets={[{ id: 'ec1', name: 'Expiring this month' }]} onExport={(fmt) => handleAction(`Exporting contracts ${fmt.toUpperCase()}`)} onSavePreset={(name) => handleAction(`Saved preset: ${name}`)} />
-        <div className="space-y-2">
-          {[{ name: 'Janet Apio', role: 'Grant Writer', type: '1-Year', salary: 'UGX 1.8M', expiry: 'Sep 15, 2026', daysLeft: 24 },{ name: 'Pius Odong', role: 'Innovator', type: 'Contract', salary: 'UGX 1.5M', expiry: 'Sep 30, 2026', daysLeft: 39 },{ name: 'Isaac Tumusiime', role: 'Procurement Officer', type: 'Contract', salary: 'UGX 1.6M', expiry: 'Oct 10, 2026', daysLeft: 49 }].map((c, i) => (
-            <div key={i} className="flex items-center justify-between p-3 bg-aims-orange/5 rounded-lg border border-aims-orange/20"><div><p className="text-sm font-bold text-slate-900">{c.name}</p><p className="text-xs text-slate-500">{c.role} • {c.type} • {c.salary}</p></div><div className="text-right"><span className={cn('text-xs font-bold px-2 py-0.5 rounded', c.daysLeft <= 30 ? 'bg-aims-orange/15 text-aims-orange' : 'bg-slate-100 text-slate-600')}>Expires {c.expiry} ({c.daysLeft}d)</span><div className="flex gap-2 mt-1 justify-end"><button onClick={() => handleAction(`Renewing ${c.name}'s contract`)} className="text-[10px] font-bold text-aims-navy hover:underline">Renew</button><button onClick={() => handleAction(`Viewing ${c.name}'s contract`)} className="text-[10px] font-bold text-slate-500 hover:underline">View</button></div></div></div>
-          ))}
-        </div>
-      </Section>
-      <Section title="Contract Actions Queue" subtitle="Contracts awaiting your approval or rejection — with submitter comments">
-        <AdvancedFilterBar dateLabel="Submitted" statusOptions={['Awaiting Your Approval', 'You Rejected', 'You Approved', 'Returned for Revision']} ownerOptions={['HR Admin', 'Grants Team', 'Finance']} presets={[{ id: 'caq1', name: 'Awaiting my action' }]} onExport={(fmt) => handleAction(`Exporting contract actions ${fmt.toUpperCase()}`)} onSavePreset={(name) => handleAction(`Saved preset: ${name}`)} />
-        <div className="space-y-3">
-          {[
-            { id: 'ctr-david', name: 'David Okello', role: 'Finance Officer', type: 'Permanent', salary: 'UGX 2.0M', submittedBy: 'HR Admin', submittedDate: 'Aug 20', status: 'Awaiting Your Approval', comment: 'Salary adjustment per Q2 appraisal. Approved by Dept Head.' },
-            { id: 'ctr-mercy', name: 'Mercy Atim', role: 'Research Assistant', type: 'Intern', salary: 'UGX 800K', submittedBy: 'Grants Team', submittedDate: 'Aug 19', status: 'Awaiting Your Approval', comment: 'New hire for Land Rights project. Budget line confirmed.' },
-            { id: 'ctr-robert', name: 'Robert Ssemakula', role: 'Driver', type: 'Contract', salary: 'UGX 1.2M', submittedBy: 'HR Admin', submittedDate: 'Aug 17', status: 'You Rejected', comment: 'Salary exceeds band for role.', rejectedDate: 'Aug 18', edRejectComment: 'Salary band for Driver is UGX 900K–1.1M.' },
-          ].map((item) => (
-            <div key={item.id} className={cn('rounded-lg border transition-all', expandedContract === item.id ? 'border-aims-navy shadow-md bg-white' : item.status === 'You Rejected' ? 'border-red-200 bg-red-50' : 'border-slate-200 bg-slate-50')}>
-              <div className="flex items-center justify-between p-3 cursor-pointer" onClick={() => setExpandedContract(expandedContract === item.id ? null : item.id)}>
-                <div className="flex items-center gap-3"><span className="material-symbols-outlined text-slate-400 text-[18px]">{expandedContract === item.id ? 'expand_less' : 'expand_more'}</span><div><p className="text-sm font-bold text-slate-900">{item.name}</p><p className="text-xs text-slate-500">{item.role} • {item.type} • {item.salary} • {item.submittedBy}</p></div></div>
-                <span className={cn('px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide', item.status === 'Awaiting Your Approval' ? 'bg-aims-orange/15 text-aims-orange' : item.status === 'You Rejected' ? 'bg-red-100 text-red-600' : 'bg-aims-green/15 text-aims-green')}>{item.status}</span>
-              </div>
-              {expandedContract === item.id && (
-                <div className="px-3 pb-3 space-y-3">
-                  <div className="bg-white rounded-lg p-2.5 border border-slate-100"><p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Comment from {item.submittedBy} ({item.submittedDate})</p><p className="text-xs text-slate-700 italic">"{item.comment}"</p></div>
-                  {item.edRejectComment && <div className="bg-red-50 rounded-lg p-2.5 border border-red-100"><p className="text-[10px] font-bold text-red-400 uppercase tracking-wider mb-0.5">Your Rejection Reason ({item.rejectedDate})</p><p className="text-xs text-slate-700 italic">"{item.edRejectComment}"</p></div>}
-                  {item.status === 'Awaiting Your Approval' && <ApprovalActionPanel itemName={`${item.name}'s contract`} itemType="Contract" onViewFull={() => handleAction(`Opened full contract record for ${item.name}`)} onApprove={(c) => handleAction(`YOU APPROVED contract for ${item.name}: ${c}`)} onReject={(c) => handleAction(`YOU REJECTED contract for ${item.name}: ${c}`)} />}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </Section>
-
-      {/* ═══ 7. DOCUMENTS & SHARED LIBRARY ═══ */}
       <Section title="Documents & Shared Library" subtitle="Access organizational documents, policies, and shared resources">
         <SharedLibraryWidget />
         <div className="mt-4 pt-4 border-t border-slate-100">
@@ -436,7 +410,6 @@ function EDDashboard() {
         </div>
       </Section>
 
-      {/* ═══ 8. COMPANY FEED ═══ */}
       <Section title="Company Feed" subtitle="Post institutional updates across departments">
         <div className="space-y-3">
           <div className="flex gap-2 mb-2"><input type="text" placeholder="Share an update with all departments…" className="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-aims-navy/30" /><button onClick={() => handleAction('Update posted to company feed')} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90 transition-colors">Post</button></div>
@@ -454,7 +427,6 @@ function AdminDashboard() {
 }
 
 function FinanceDashboard() {
-  const { user } = useAuth();
   const { showToast } = useNotifications();
   const navigate = useNavigate();
   const [showNewReq, setShowNewReq] = useState(false);
@@ -750,6 +722,221 @@ function SysAdminDashboard() {
           </div>
         </Section>
       )}
+    </div>
+  );
+}
+
+function HRDashboard() {
+  const { showToast } = useNotifications();
+  const navigate = useNavigate();
+  const handleAction = (msg: string) => showToast({ title: 'Action Logged', message: msg, type: 'success' });
+  const [expandedContract, setExpandedContract] = useState<string | null>(null);
+
+  return (
+    <div className="space-y-6">
+      <DashHeader gradient="bg-grad-navy" title="HR & People Management" subtitle="Workforce administration, contracts, and performance" />
+      <CheckInCard />
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <StatCard title="Total Headcount" value="142" icon="people" color="navy" />
+        <StatCard title="Present Today" value="128" icon="check_circle" color="green" />
+        <StatCard title="Expiring Contracts (30d)" value="3" icon="description" color="orange" />
+        <StatCard title="Pending Appraisals" value="12" icon="fact_check" color="mint" />
+      </div>
+
+      <Section title="Quick Actions" subtitle="Manage workforce operations">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <button onClick={() => navigate('/hr?tab=users')} className="p-4 bg-aims-navy/5 hover:bg-aims-navy/10 rounded-xl border border-aims-navy/20 transition-colors text-left">
+            <span className="material-symbols-outlined text-aims-navy text-[24px] mb-2">manage_accounts</span>
+            <p className="text-sm font-bold text-slate-900">User Management</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">Add/edit employees</p>
+          </button>
+          <button onClick={() => navigate('/attendance')} className="p-4 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 transition-colors text-left">
+            <span className="material-symbols-outlined text-slate-600 text-[24px] mb-2">schedule</span>
+            <p className="text-sm font-bold text-slate-900">Attendance</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">View records</p>
+          </button>
+        </div>
+      </Section>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Section title="Expiring Contracts" subtitle="Contracts approaching renewal deadline">
+          <div className="space-y-2">
+            {[
+              { id: 'c1', name: 'Janet Apio', role: 'Grant Writer', type: '1-Year', salary: 'UGX 1.8M', expiry: 'Sep 15, 2026', daysLeft: 24 },
+              { id: 'c2', name: 'Pius Odong', role: 'Innovator', type: 'Contract', salary: 'UGX 1.5M', expiry: 'Sep 30, 2026', daysLeft: 39 },
+              { id: 'c3', name: 'Isaac Tumusiime', role: 'Procurement Officer', type: 'Contract', salary: 'UGX 1.6M', expiry: 'Oct 10, 2026', daysLeft: 49 },
+            ].map((c) => (
+              <div key={c.id} className="flex items-center justify-between p-3 bg-aims-orange/5 rounded-lg border border-aims-orange/20">
+                <div>
+                  <p className="text-sm font-bold text-slate-900">{c.name}</p>
+                  <p className="text-xs text-slate-500">{c.role} • {c.type} • {c.salary}</p>
+                </div>
+                <div className="text-right">
+                  <span className={cn('text-xs font-bold px-2 py-0.5 rounded', c.daysLeft <= 30 ? 'bg-aims-orange/15 text-aims-orange' : 'bg-slate-100 text-slate-600')}>
+                    Expires {c.expiry} ({c.daysLeft}d)
+                  </span>
+                  <div className="flex gap-2 mt-1 justify-end">
+                    <button onClick={() => handleAction(`Renewing ${c.name}'s contract`)} className="text-[10px] font-bold text-aims-navy hover:underline">Renew</button>
+                    <button onClick={() => handleAction(`Viewing ${c.name}'s contract`)} className="text-[10px] font-bold text-slate-500 hover:underline">View</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Section>
+
+        <Section title="Pending Appraisals" subtitle="Employees awaiting performance review">
+          <div className="space-y-3">
+            {[
+              { id: 'a1', name: 'Florence Adong', dept: 'Research', role: 'Research Lead', lastReview: 'Feb 2026', dueDate: 'Sep 10, 2026', status: 'pending' },
+              { id: 'a2', name: 'Grace Nakamya', dept: 'HR', role: 'HR Officer', lastReview: 'Mar 2026', dueDate: 'Sep 15, 2026', status: 'pending' },
+              { id: 'a3', name: 'Isaac Tumusiime', dept: 'Procurement', role: 'Procurement Officer', lastReview: 'Jan 2026', dueDate: 'Sep 20, 2026', status: 'overdue' },
+            ].map((emp) => (
+              <div key={emp.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
+                <div>
+                  <p className="text-sm font-bold text-slate-900">{emp.name}</p>
+                  <p className="text-xs text-slate-500">{emp.role} • {emp.dept}</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">Last review: {emp.lastReview}</p>
+                </div>
+                <div className="text-right">
+                  <span className={cn('text-xs font-bold px-2 py-0.5 rounded', 
+                    emp.status === 'overdue' ? 'bg-red-50 text-red-600' : 'bg-aims-orange/15 text-aims-orange'
+                  )}>
+                    Due: {emp.dueDate}
+                  </span>
+                  <button onClick={() => navigate(`/appraisals/${emp.id}`)} className="block mt-1 text-[10px] font-bold text-aims-navy hover:underline">Start Review</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Section>
+      </div>
+
+      <Section title="Contract Actions Queue" subtitle="Contracts awaiting your approval or rejection">
+        <div className="space-y-3">
+          {[
+            { id: 'ctr-david', name: 'David Okello', role: 'Finance Officer', type: 'Permanent', salary: 'UGX 2.0M', submittedBy: 'HR Admin', submittedDate: 'Aug 20', status: 'Awaiting Your Approval', comment: 'Salary adjustment per Q2 appraisal. Approved by Dept Head.' },
+            { id: 'ctr-mercy', name: 'Mercy Atim', role: 'Research Assistant', type: 'Intern', salary: 'UGX 800K', submittedBy: 'Grants Team', submittedDate: 'Aug 19', status: 'Awaiting Your Approval', comment: 'New hire for Land Rights project. Budget line confirmed.' },
+          ].map((item) => (
+            <div key={item.id} className={cn('rounded-lg border transition-all', expandedContract === item.id ? 'border-aims-navy shadow-md bg-white' : 'border-slate-200 bg-slate-50')}>
+              <div className="flex items-center justify-between p-3 cursor-pointer" onClick={() => setExpandedContract(expandedContract === item.id ? null : item.id)}>
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-slate-400 text-[18px]">{expandedContract === item.id ? 'expand_less' : 'expand_more'}</span>
+                  <div>
+                    <p className="text-sm font-bold text-slate-900">{item.name}</p>
+                    <p className="text-xs text-slate-500">{item.role} • {item.type} • {item.salary} • {item.submittedBy}</p>
+                  </div>
+                </div>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-aims-orange/15 text-aims-orange">{item.status}</span>
+              </div>
+              {expandedContract === item.id && (
+                <div className="px-3 pb-3 space-y-3">
+                  <div className="bg-white rounded-lg p-2.5 border border-slate-100">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Comment from {item.submittedBy} ({item.submittedDate})</p>
+                    <p className="text-xs text-slate-700 italic">"{item.comment}"</p>
+                  </div>
+                  <ApprovalActionPanel 
+                    itemName={`${item.name}'s contract`} 
+                    itemType="Contract" 
+                    onViewFull={() => handleAction(`Opened full contract record for ${item.name}`)} 
+                    onApprove={(c) => handleAction(`YOU APPROVED contract for ${item.name}: ${c}`)} 
+                    onReject={(c) => handleAction(`YOU REJECTED contract for ${item.name}: ${c}`)} 
+                  />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      <Section title="Recent Activity" subtitle="Latest HR operations">
+        <div className="space-y-3">
+          {[
+            { action: 'Contract Renewed', user: 'Janet Apio', time: '2h ago', icon: 'description', color: 'green' as ColorKey },
+            { action: 'Appraisal Completed', user: 'Pius Odong', time: '5h ago', icon: 'fact_check', color: 'navy' as ColorKey },
+            { action: 'New Employee Added', user: 'Mercy Atim', time: '1d ago', icon: 'person_add', color: 'orange' as ColorKey },
+          ].map((item, i) => (
+            <div key={i} className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
+              <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center', CHIP[item.color])}>
+                <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-bold text-slate-900">{item.action}</p>
+                <p className="text-xs text-slate-500">{item.user}</p>
+              </div>
+              <p className="text-[10px] text-slate-400">{item.time}</p>
+            </div>
+          ))}
+        </div>
+      </Section>
+    </div>
+  );
+}
+
+function InventoryDashboard() {
+  const { showToast } = useNotifications();
+  const navigate = useNavigate();
+  const handleAction = (msg: string) => showToast({ title: 'Action Logged', message: msg, type: 'success' });
+
+  return (
+    <div className="space-y-6">
+      <DashHeader gradient="bg-grad-navy" title="Inventory Management" subtitle="Track assets, equipment, and supplies" />
+      <CheckInCard />
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <StatCard title="Total Assets" value="284" icon="inventory_2" color="navy" />
+        <StatCard title="In Use" value="241" icon="check_circle" color="green" />
+        <StatCard title="Under Maintenance" value="12" icon="build" color="orange" />
+        <StatCard title="Low Stock Items" value="8" icon="warning" color="mint" />
+      </div>
+
+      <Section title="Inventory Overview" subtitle="Current asset status and alerts">
+        <div className="space-y-3">
+          {[
+            { item: 'Laptops (Dell Latitude)', total: 45, inUse: 42, available: 3, status: 'healthy' },
+            { item: 'Field Tablets (Samsung Tab A9)', total: 20, inUse: 18, available: 2, status: 'low' },
+            { item: 'GPS Units (Garmin GPSMAP 67i)', total: 15, inUse: 12, available: 3, status: 'healthy' },
+            { item: 'Solar Chargers (Anker 24W)', total: 30, inUse: 25, available: 5, status: 'healthy' },
+            { item: 'Office Chairs', total: 50, inUse: 48, available: 2, status: 'low' },
+          ].map((item, i) => (
+            <div key={i} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
+              <div className="flex-1">
+                <p className="text-sm font-bold text-slate-900">{item.item}</p>
+                <p className="text-xs text-slate-500">Total: {item.total} • In Use: {item.inUse} • Available: {item.available}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded', 
+                  item.status === 'healthy' ? 'bg-aims-green/15 text-aims-green' : 'bg-aims-orange/15 text-aims-orange'
+                )}>
+                  {item.status === 'healthy' ? 'Healthy' : 'Low Stock'}
+                </span>
+                <button onClick={() => handleAction(`Viewing details for ${item.item}`)} className="text-xs font-bold text-aims-navy hover:underline">View</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      <Section title="Quick Actions" subtitle="Manage inventory operations">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+          <button onClick={() => navigate('/inventory?tab=add')} className="p-4 bg-aims-navy/5 hover:bg-aims-navy/10 rounded-xl border border-aims-navy/20 transition-colors text-left">
+            <span className="material-symbols-outlined text-aims-navy text-[24px] mb-2">add_box</span>
+            <p className="text-sm font-bold text-slate-900">Add New Asset</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">Register equipment</p>
+          </button>
+          <button onClick={() => navigate('/inventory?tab=transfer')} className="p-4 bg-aims-green/5 hover:bg-aims-green/10 rounded-xl border border-aims-green/20 transition-colors text-left">
+            <span className="material-symbols-outlined text-aims-green text-[24px] mb-2">swap_horiz</span>
+            <p className="text-sm font-bold text-slate-900">Transfer Asset</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">Move between users</p>
+          </button>
+          <button onClick={() => navigate('/inventory?tab=maintenance')} className="p-4 bg-aims-orange/5 hover:bg-aims-orange/10 rounded-xl border border-aims-orange/20 transition-colors text-left">
+            <span className="material-symbols-outlined text-aims-orange text-[24px] mb-2">build</span>
+            <p className="text-sm font-bold text-slate-900">Schedule Maintenance</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">Service equipment</p>
+          </button>
+        </div>
+      </Section>
     </div>
   );
 }
