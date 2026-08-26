@@ -32,9 +32,10 @@ const ED_NAV_ITEMS: NavItem[] = [
 
 const COMPANY_ADMIN_NAV_ITEMS: NavItem[] = [
   { title: 'Dashboard', href: '/dashboard', icon: 'dashboard', roles: ['COMPANY_ADMIN'] },
-  { title: 'User Management', href: '/hr?tab=users', icon: 'manage_accounts', roles: ['COMPANY_ADMIN'] },
-  { title: 'Attendance Oversight', href: '/attendance', icon: 'schedule', roles: ['COMPANY_ADMIN'] },
+  { title: 'User Management', href: '/user-management', icon: 'manage_accounts', roles: ['COMPANY_ADMIN'] },
+  { title: 'Attendance', href: '/attendance', icon: 'schedule', roles: ['COMPANY_ADMIN'] },
   { title: 'HR & People Management', href: '/hr', icon: 'people', roles: ['COMPANY_ADMIN'] },
+  { title: 'Inventory Management', href: '/inventory', icon: 'inventory_2', roles: ['COMPANY_ADMIN'] },
   { title: 'Documents', href: '/documents', icon: 'folder', roles: ['COMPANY_ADMIN'] },
   { title: 'Feed', href: '/feed', icon: 'feed', roles: ['COMPANY_ADMIN'] },
   { title: 'Email', href: '/email', icon: 'mail', roles: ['COMPANY_ADMIN'] },

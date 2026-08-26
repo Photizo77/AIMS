@@ -20,6 +20,7 @@ const ROUTE_MODULE_MAP: Record<string, ModuleKey> = {
   '/innovations': 'innovations',
   '/tasks': 'innovations',
   '/attendance': 'attendance',
+  '/user-management': 'hr_admin',
   '/hr-admin': 'hr_admin',
   '/hr': 'hr_admin',
   '/finance': 'finance',

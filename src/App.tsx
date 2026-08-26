@@ -11,6 +11,7 @@ import { LoginMFA } from '@/pages/auth/LoginMFA';
 
 // Core Pages
 import { Dashboard } from '@/pages/Dashboard';
+import { UserManagement } from '@/pages/UserManagement';
 import { Feed } from '@/pages/Feed';
 import { EmailPage } from '@/pages/Email';
 import { Tasks } from '@/pages/Tasks'; // The Innovator "My Work" Module
@@ -46,6 +47,7 @@ export function App() {
               {/* ── Protected Routes (wrapped in AppShell layout) ── */}
               <Route element={<AppShell />}>
                 <Route path="/dashboard" element={<ProtectedRoute module="dashboard"><Dashboard /></ProtectedRoute>} />
+                <Route path="/user-management" element={<ProtectedRoute module="hr_admin"><UserManagement /></ProtectedRoute>} />
                 <Route path="/feed" element={<ProtectedRoute module="feed"><Feed /></ProtectedRoute>} />
                 <Route path="/email" element={<ProtectedRoute><EmailPage /></ProtectedRoute>} />
                 

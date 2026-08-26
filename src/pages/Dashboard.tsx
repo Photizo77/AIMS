@@ -14,11 +14,11 @@ import { innovationService } from '@/services/innovationService'; // Importing o
 import { grantService } from '@/services/grantService';
 import { GRANT_STAGES } from '@/data/grants';
 
-type ColorKey = 'green' | 'navy' | 'orange' | 'mint';
+type ColorKey = 'green' | 'navy' | 'orange' | 'mint' | 'red';
 
-const CHIP: Record<ColorKey, string> = { green: 'bg-aims-green text-white', navy: 'bg-aims-navy text-white', orange: 'bg-aims-orange text-white', mint: 'bg-aims-mint text-aims-green' };
-const ACCENT: Record<ColorKey, string> = { green: 'border-t-aims-green', navy: 'border-t-aims-navy', orange: 'border-t-aims-orange', mint: 'border-t-aims-mint' };
-const FILL: Record<ColorKey, string> = { green: 'bg-aims-green', navy: 'bg-aims-navy', orange: 'bg-aims-orange', mint: 'bg-aims-green' };
+const CHIP: Record<ColorKey, string> = { green: 'bg-aims-green text-white', navy: 'bg-aims-navy text-white', orange: 'bg-aims-orange text-white', mint: 'bg-aims-mint text-aims-green', red: 'bg-red-500 text-white' };
+const ACCENT: Record<ColorKey, string> = { green: 'border-t-aims-green', navy: 'border-t-aims-navy', orange: 'border-t-aims-orange', mint: 'border-t-aims-mint', red: 'border-t-red-500' };
+const FILL: Record<ColorKey, string> = { green: 'bg-aims-green', navy: 'bg-aims-navy', orange: 'bg-aims-orange', mint: 'bg-aims-green', red: 'bg-red-500' };
 
 function DashHeader({ gradient, title, subtitle }: { gradient: string; title: string; subtitle: string }) {
   return (<div className={cn('rounded-2xl p-7 text-white shadow-lg', gradient)}><h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">{title}</h1><p className="text-base font-medium text-white">{subtitle}</p></div>);
@@ -405,7 +405,102 @@ function EDDashboard() {
 }
 
 function AdminDashboard() {
-  return (<div className="space-y-6"><DashHeader gradient="bg-grad-navy" title="Operations & HR Hub" subtitle="Workforce administration and resource oversight" /><CheckInCard /><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"><StatCard title="Active Staff" value="142" icon="people" color="navy" /><StatCard title="Present Today" value="128" icon="check_circle" color="green" /><StatCard title="Pending Payslips" value="15" icon="payments" color="orange" /><StatCard title="Expiring Contracts" value="3" icon="description" color="mint" /></div><SharedLibraryWidget /></div>);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { showToast } = useNotifications();
+  if (!user) return null;
+
+  const go = (path: string, tab?: string) => navigate(path, { state: tab ? { tab } : undefined });
+
+  const atAGlance = [
+    { key: 'onboarding', label: 'Pending Onboarding', value: '3', icon: 'person_add', color: 'orange' as ColorKey, onClick: () => go('/user-management', 'onboarding') },
+    { key: 'contracts', label: 'Contracts Expiring', value: '2', icon: 'description', color: 'navy' as ColorKey, onClick: () => go('/hr', 'contracts') },
+    { key: 'appraisals', label: 'Appraisals Complete', value: '78%', icon: 'fact_check', color: 'green' as ColorKey, onClick: () => go('/hr', 'performance') },
+    { key: 'anomalies', label: 'Attendance Anomalies', value: '5', icon: 'warning', color: 'red' as ColorKey, onClick: () => go('/attendance', 'anomalies') },
+  ];
+
+  const summaryStats = [
+    { label: 'Total Staff', value: '142', icon: 'group', sub: 'across 8 departments' },
+    { label: 'Departments', value: '8', icon: 'apartment', sub: 'fully staffed' },
+    { label: 'Open Tickets', value: '12', icon: 'support_agent', sub: 'HR & admin requests' },
+    { label: 'Compliance', value: '94%', icon: 'verified_user', sub: 'policy adherence' },
+  ];
+
+  const quickActions = [
+    { label: 'View Pending Onboarding', icon: 'person_add', onClick: () => go('/user-management', 'onboarding') },
+    { label: 'Review Expiring Contracts', icon: 'description', onClick: () => go('/hr', 'contracts') },
+    { label: 'Check Attendance Anomalies', icon: 'warning', onClick: () => go('/attendance', 'anomalies') },
+    { label: 'Manage Open Tickets', icon: 'support_agent', onClick: () => showToast({ title: 'Ticket System', message: 'The ticketing module is planned as a future module.', type: 'info' }) },
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Welcome header */}
+      <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
+        <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">Admin Dashboard</h1>
+        <p className="text-base font-medium text-white">Welcome back, {user.name} | Last login: Today 9:15 AM</p>
+      </div>
+
+      {/* At a Glance strip — clickable, deep-links to source module */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {atAGlance.map((s) => (
+          <button key={s.key} onClick={s.onClick} className={cn('bg-white rounded-xl border border-slate-200 border-t-4 p-4 shadow-sm text-left hover:shadow-md transition-shadow group', s.color === 'red' ? 'border-t-red-500' : s.color === 'orange' ? 'border-t-aims-orange' : s.color === 'green' ? 'border-t-aims-green' : 'border-t-aims-navy')}>
+            <div className="flex items-center justify-between mb-2">
+              <span className={cn('w-9 h-9 rounded-lg flex items-center justify-center', s.color === 'red' ? 'bg-red-50 text-red-500' : s.color === 'orange' ? 'bg-aims-orange/10 text-aims-orange' : s.color === 'green' ? 'bg-aims-green/10 text-aims-green' : 'bg-aims-navy/10 text-aims-navy')}>
+                <span className="material-symbols-outlined text-[20px]">{s.icon}</span>
+              </span>
+              <span className="material-symbols-outlined text-slate-300 group-hover:text-aims-navy transition-colors text-[18px]">open_in_new</span>
+            </div>
+            <p className="text-2xl font-extrabold text-slate-900 tracking-tight">{s.value}</p>
+            <p className="text-xs font-bold text-slate-600 mt-0.5">{s.label}</p>
+          </button>
+        ))}
+      </div>
+
+      {/* Summary statistics */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {summaryStats.map((s) => (
+          <div key={s.label} className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="material-symbols-outlined text-aims-green text-[20px]">{s.icon}</span>
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{s.label}</p>
+            </div>
+            <p className="text-2xl font-extrabold text-slate-900 tracking-tight">{s.value}</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">{s.sub}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* AI Insight block */}
+      <div className="bg-white rounded-xl border border-slate-200 border-l-4 border-l-aims-navy p-5 shadow-sm">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="w-8 h-8 rounded-lg bg-aims-navy/10 flex items-center justify-center"><span className="material-symbols-outlined text-aims-navy text-[20px]">auto_awesome</span></span>
+          <div>
+            <h3 className="text-sm font-extrabold text-slate-900">System Summary (AI-Generated)</h3>
+            <p className="text-[10px] font-bold text-aims-navy uppercase tracking-wider">Powered by Tier 1 AI — Insights</p>
+          </div>
+        </div>
+        <div className="bg-slate-50 rounded-lg border border-slate-100 p-4">
+          <p className="text-sm text-slate-700 leading-relaxed">
+            "3 employment contracts expire this month with no renewal documentation drafted yet. Recommend immediate engagement with affected employees. Additionally, attendance anomalies are up 40% week-on-week, with 5 geofence failures recorded today. Consider a comms reminder on check-in procedures."
+          </p>
+        </div>
+      </div>
+
+      {/* Quick action links */}
+      <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+        <h3 className="text-sm font-extrabold text-slate-900 mb-4">Quick Actions</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {quickActions.map((a) => (
+            <button key={a.label} onClick={a.onClick} className="flex items-center gap-3 p-3.5 bg-slate-50 rounded-xl border border-slate-100 hover:border-aims-navy/30 hover:bg-aims-navy/5 transition-colors text-left">
+              <span className="w-9 h-9 rounded-lg bg-aims-navy/10 flex items-center justify-center shrink-0"><span className="material-symbols-outlined text-aims-navy text-[20px]">{a.icon}</span></span>
+              <span className="text-xs font-bold text-slate-700">{a.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function FinanceDashboard() {
