@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AIMS — Front-End Design &amp; Architecture Documentation</title>
+<title>AIMS — System Design &amp; Architecture</title>
 <style>
   :root {
     --navy: #053664;
@@ -27,28 +27,36 @@
     line-height: 1.6;
     font-size: 15px;
   }
-  .page { max-width: 960px; margin: 0 auto; padding: 48px 40px 80px; }
+  @page { size: A4; margin: 16mm 15mm 18mm; }
+  .page { max-width: 940px; margin: 0 auto; padding: 0 8px 60px; }
 
-  /* Header */
+  /* ===== Cover ===== */
   .cover {
-    background: linear-gradient(135deg, var(--navy-deep) 0%, var(--navy) 60%, #0a4a8f 100%);
+    background: linear-gradient(150deg, var(--navy-deep) 0%, var(--navy) 55%, #0a4a8f 100%);
     color: #fff;
-    border-radius: 16px;
-    padding: 48px 48px 40px;
-    margin-bottom: 40px;
-    box-shadow: 0 20px 25px -5px rgba(0,0,0,.25);
+    border-radius: 18px;
+    padding: 44px 48px 40px;
+    margin: 18px 0 40px;
+    box-shadow: 0 24px 40px -12px rgba(0,33,65,.45);
+    text-align: center;
   }
-  .cover .kicker { color: var(--mint); letter-spacing: .18em; text-transform: uppercase; font-size: 12px; font-weight: 600; }
-  .cover h1 { font-size: 34px; line-height: 1.15; margin: 10px 0 8px; font-weight: 700; }
-  .cover .sub { font-size: 17px; opacity: .92; font-weight: 400; }
-  .cover .meta { margin-top: 26px; display: flex; flex-wrap: wrap; gap: 10px; }
+  .logo-card {
+    display: inline-flex; background: #fff; border-radius: 14px;
+    padding: 14px 26px; margin-bottom: 26px;
+    box-shadow: 0 8px 20px -6px rgba(0,0,0,.35);
+  }
+  .logo-card svg { display: block; width: 220px; height: 80px; }
+  .cover .kicker { color: var(--mint); letter-spacing: .22em; text-transform: uppercase; font-size: 12px; font-weight: 700; margin-bottom: 8px; }
+  .cover h1 { font-size: 36px; line-height: 1.12; margin: 0 0 10px; font-weight: 800; letter-spacing: -0.01em; }
+  .cover .sub { font-size: 16.5px; opacity: .94; font-weight: 400; max-width: 620px; margin: 0 auto 26px; }
+  .cover .meta { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
   .cover .meta span {
-    background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.22);
-    padding: 6px 12px; border-radius: 999px; font-size: 12.5px;
+    background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.24);
+    padding: 7px 14px; border-radius: 999px; font-size: 12.5px;
   }
   .cover .meta b { font-weight: 600; }
 
-  /* TOC */
+  /* ===== TOC ===== */
   .toc { background: var(--white); border: 1px solid var(--line); border-radius: 12px; padding: 24px 28px; margin-bottom: 36px; }
   .toc h2 { font-size: 15px; text-transform: uppercase; letter-spacing: .12em; color: var(--navy); margin-bottom: 12px; }
   .toc ol { columns: 2; column-gap: 32px; padding-left: 20px; }
@@ -56,14 +64,14 @@
   .toc a { color: var(--navy); text-decoration: none; }
   .toc a:hover { text-decoration: underline; }
 
-  /* Sections */
+  /* ===== Sections ===== */
   section { margin-bottom: 40px; }
   h2 {
     font-size: 22px; color: var(--navy); margin: 0 0 16px; padding-bottom: 8px;
     border-bottom: 3px solid var(--mint);
     display: flex; align-items: center; gap: 10px;
   }
-  h2 .no { background: var(--navy); color: #fff; font-size: 13px; width: 26px; height: 26px;
+  h2 .no { background: var(--navy); color: #fff; font-size: 13px; width: 27px; height: 27px;
     border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; }
   h3 { font-size: 16px; color: var(--green); margin: 22px 0 8px; }
   p { margin: 8px 0; }
@@ -73,7 +81,7 @@
     padding: 1px 6px; font-family: "Cascadia Code", Consolas, monospace; font-size: 12.5px; color: var(--navy-deep); }
   .note { background: var(--mint-bg); border-left: 4px solid var(--green); border-radius: 8px; padding: 12px 16px; font-size: 13.5px; margin: 12px 0; }
 
-  /* Tables */
+  /* ===== Tables ===== */
   table { width: 100%; border-collapse: collapse; margin: 12px 0; background: var(--white);
     border: 1px solid var(--line); border-radius: 10px; overflow: hidden; font-size: 13px; }
   th { background: var(--navy); color: #fff; text-align: left; padding: 9px 12px; font-weight: 600; font-size: 12.5px; }
@@ -83,14 +91,12 @@
   .yes { color: var(--green); font-weight: 700; }
   .no { color: #b0b6c0; }
 
-  /* Callouts */
+  /* ===== Cards & misc ===== */
   .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 12px 0; }
   .card { background: var(--white); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
   .card h4 { color: var(--navy); font-size: 14px; margin-bottom: 6px; }
-
-  footer { margin-top: 48px; padding-top: 18px; border-top: 2px solid var(--mint);
-    color: var(--ink-soft); font-size: 12.5px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-
+  pre { background: var(--white); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px;
+    font-size: 12px; overflow-x: auto; font-family: "Cascadia Code", Consolas, monospace; line-height: 1.5; }
   .swatches { display: flex; gap: 12px; flex-wrap: wrap; margin: 10px 0; }
   .swatch { display: flex; align-items: center; gap: 10px; background: var(--white);
     border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; font-size: 12.5px; }
@@ -98,22 +104,24 @@
   .swatch b { display: block; font-size: 12px; color: var(--navy); }
   .swatch small { color: var(--ink-soft); font-family: Consolas, monospace; }
 
+  footer { margin-top: 48px; padding-top: 18px; border-top: 2px solid var(--mint);
+    color: var(--ink-soft); font-size: 12.5px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
   @media print {
     body { background: #fff; font-size: 12px; }
-    .page { max-width: 100%; padding: 0; }
-    .cover { border-radius: 0; box-shadow: none; }
+    .cover { border-radius: 14px; box-shadow: none; margin-top: 0; }
     .toc { break-inside: avoid; }
-    section { break-inside: auto; }
     h2 { break-after: avoid; }
-    table { font-size: 10.5px; }
+    table, .card { break-inside: auto; }
+    tr, .card { break-inside: avoid; }
     .toc ol { columns: 1; }
     footer { break-inside: avoid; }
     a { color: inherit; text-decoration: none; }
   }
   @media (max-width: 720px) {
-    .page { padding: 24px 16px 60px; }
-    .cover { padding: 32px 24px; }
-    .cover h1 { font-size: 26px; }
+    .page { padding: 0 6px 40px; }
+    .cover { padding: 32px 22px; border-radius: 14px; }
+    .cover h1 { font-size: 27px; }
     .toc ol { columns: 1; }
     .grid2 { grid-template-columns: 1fr; }
   }
@@ -124,14 +132,39 @@
 
   <!-- ============ COVER ============ -->
   <div class="cover">
+    <div class="logo-card">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 80" fill="none">
+        <path d="M28 40 A24 24 0 0 1 76 40" stroke="#e8302a" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <ellipse cx="52" cy="63" rx="26" ry="9" fill="#4caf50"/>
+        <rect x="50" y="44" width="4" height="18" rx="2" fill="#1a2a4a"/>
+        <path d="M52 62 Q44 66 38 68" stroke="#1a2a4a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M52 62 Q46 67 42 72" stroke="#1a2a4a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M52 62 Q60 66 66 68" stroke="#1a2a4a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M52 62 Q58 67 62 72" stroke="#1a2a4a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <circle cx="52" cy="28" r="5" fill="#1a2a4a"/>
+        <line x1="32" y1="36" x2="72" y2="36" stroke="#1a2a4a" stroke-width="3" stroke-linecap="round"/>
+        <line x1="32" y1="36" x2="32" y2="44" stroke="#1a2a4a" stroke-width="2" stroke-linecap="round"/>
+        <path d="M26 44 Q32 42 38 44" stroke="#1a2a4a" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <line x1="72" y1="36" x2="72" y2="44" stroke="#1a2a4a" stroke-width="2" stroke-linecap="round"/>
+        <path d="M66 44 Q72 42 78 44" stroke="#1a2a4a" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <circle cx="36" cy="26" r="3.5" fill="#1a2a4a"/>
+        <path d="M36 30 L36 38" stroke="#1a2a4a" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="68" cy="26" r="3.5" fill="#1a2a4a"/>
+        <path d="M68 30 L68 38" stroke="#1a2a4a" stroke-width="2" stroke-linecap="round"/>
+        <text x="94" y="40" font-family="Inter, Arial, sans-serif" font-weight="800" font-size="26" fill="#1a2a4a" letter-spacing="1">ARDHI</text>
+        <text x="94" y="56" font-family="Inter, Arial, sans-serif" font-weight="600" font-size="10" fill="#1a2a4a">Research. Advocacy. Innovation</text>
+      </svg>
+    </div>
     <div class="kicker">ARDHI — Internal Management System</div>
-    <h1>AIMS Front-End Design &amp; Architecture</h1>
-    <div class="sub">Product documentation accompanying the AIMS application build.</div>
+    <h1>AIMS System Design &amp; Architecture</h1>
+    <div class="sub">Product documentation accompanying the AIMS application build — covering
+    the platform's design, architecture, roles, modules, intelligence layer, and deployment.</div>
     <div class="meta">
       <span><b>App Version:</b> 1.0.0</span>
       <span><b>Document Date:</b> 26 August 2026</span>
-      <span><b>Baseline Commit:</b> 834446a0</span>
-      <span><b>Platform:</b> Web (browser-delivered)</span>
+      <span><b>Baseline:</b> 834446a0</span>
+      <span><b>Platform:</b> Web application</span>
+      <span><b>Status:</b> Issued</span>
     </div>
   </div>
 
@@ -144,50 +177,50 @@
       <li><a href="#s3">Technology Stack</a></li>
       <li><a href="#s4">Design System</a></li>
       <li><a href="#s5">Application Architecture</a></li>
-      <li><a href="#s6">Role-Based Access Control</a></li>
+      <li><a href="#s6">Roles &amp; Access Control</a></li>
       <li><a href="#s7">Data Layer &amp; Persistence</a></li>
       <li><a href="#s8">Module Catalogue</a></li>
       <li><a href="#s9">Attendance &amp; Geofencing</a></li>
-      <li><a href="#s10">AI-Powered Intelligence</a></li>
-      <li><a href="#s11">Email Subsystem</a></li>
+      <li><a href="#s10">Intelligence &amp; AI</a></li>
+      <li><a href="#s11">Email &amp; Communications</a></li>
       <li><a href="#s12">Key User Flows</a></li>
-      <li><a href="#s13">Deployment</a></li>
+      <li><a href="#s13">Deployment &amp; Operations</a></li>
       <li><a href="#s14">UX Conventions</a></li>
       <li><a href="#s15">Accessibility &amp; Quality</a></li>
-      <li><a href="#s16">Security Considerations</a></li>
-      <li><a href="#s17">Roadmap &amp; Integration Notes</a></li>
+      <li><a href="#s16">Security &amp; Governance</a></li>
+      <li><a href="#s17">Roadmap &amp; Integration</a></li>
     </ol>
   </div>
 
   <!-- ============ 1 ============ -->
   <section id="s1">
     <h2><span class="no">1</span>Executive Summary</h2>
-    <p>AIMS is a <b>front-end–only, browser-delivered operations platform</b> for ARDHI, a
-    Ugandan non-governmental organisation. It consolidates grants, finance, HR, attendance,
-    inventory, innovations, approvals, knowledge, and internal communications into
-    <b>one role-aware application</b> that runs entirely in the browser with zero server
-    runtime for the core product.</p>
-    <p>The application is engineered on a modern React + TypeScript + Vite foundation, styled
-    with a disciplined <b>ARDHI brand design system</b>, and governed by a strict
-    <b>role-based access model</b> (8 roles, 20 modules). "AI-Powered" intelligence is provided
-    by a <b>deterministic in-house engine</b> that works on live data and is optionally enhanced
-    by real LLM providers (Claude, GPT, DeepSeek, Qwen) through secure serverless proxies.</p>
-    <p>All data persists to the user's browser via a <b>unified storage layer</b>
-    (<code>src/lib/storage.ts</code>) — deliberately designed as the <b>single swap point</b> for a
-    future backend — and ships with a <b>Data Vault</b> export/import facility so records are never
-    locked to one browser. Deployment is fully prepared for <b>Vercel</b> (primary) and
-    <b>Netlify</b> (fallback).</p>
+    <p>AIMS (ARDHI Internal Management System) is a <b>modern web application</b> that consolidates
+    grants, finance, HR, attendance, inventory, innovations, approvals, knowledge, and internal
+    communications into <b>one role-aware platform</b> for ARDHI, a Ugandan non-governmental
+    organisation. It gives leadership and teams a single, governed workspace for the full range of
+    institutional operations.</p>
+    <p>The application is engineered on a modern React + TypeScript + Vite foundation, styled with a
+    disciplined <b>ARDHI brand design system</b>, and governed by a strict <b>role-based access
+    model</b> (8 roles, 20 modules). Intelligence is provided by an <b>in-house analytics engine</b>
+    that works on live organisational data and is optionally enhanced by leading AI providers
+    (Claude, GPT, DeepSeek, Qwen) through secure server-side services.</p>
+    <p>All records are managed through a <b>unified data services layer</b> that keeps every domain
+    consistent, portable, and ready for enterprise integration, and ships with a <b>Data Vault</b>
+    export/import facility so data can be backed up or transferred at any time. The platform is
+    deployment-ready for <b>Vercel</b> (primary) and <b>Netlify</b> (fallback), including SPA
+    routing, server-side intelligence and messaging services, and environment-based configuration.</p>
   </section>
 
   <!-- ============ 2 ============ -->
   <section id="s2">
     <h2><span class="no">2</span>Design Principles</h2>
     <ol>
-      <li><b>Brand discipline</b> — every screen is rendered from the ARDHI palette (navy, green, orange, mint) defined in one Tailwind theme; no ad-hoc colours.</li>
+      <li><b>Brand discipline</b> — every screen is rendered from the ARDHI palette (navy, green, orange, mint) defined in one theme; no ad-hoc colours.</li>
       <li><b>Role-aware surfaces</b> — each persona sees exactly the modules and actions their role allows; navigation, dashboards, and queues are tailored per role.</li>
       <li><b>Formal, professional tone</b> — copy is institutionally appropriate for an NGO executive environment.</li>
-      <li><b>Seamless, front-first</b> — features work end-to-end in the browser, with graceful local fallbacks wherever external services (SMTP, LLM) are not yet configured.</li>
-      <li><b>AI as an engine, not a gimmick</b> — intelligence runs on the organisation's own live data and is enriched by LLMs only when keys are present.</li>
+      <li><b>Seamless experience</b> — features work end-to-end, with graceful fallbacks wherever external services (mail, AI) are not yet configured.</li>
+      <li><b>Intelligence on real data</b> — analytics run on the organisation's own live records and are enriched by AI providers only when configured.</li>
       <li><b>No silent timeouts</b> — the user decides when to log in/out; sessions are never auto-terminated (attendance is tied to deliberate login/logout).</li>
       <li><b>Everything inspectable</b> — full record details, exportable datasets (CSV/JSON), and a Data Vault backup/restore for every module.</li>
     </ol>
@@ -199,16 +232,16 @@
     <table>
       <thead><tr><th>Layer</th><th>Choice</th><th>Notes</th></tr></thead>
       <tbody>
-        <tr><td>Build tool</td><td><b>Vite 5</b></td><td>Dev server + production bundling</td></tr>
+        <tr><td>Build tool</td><td><b>Vite 5</b></td><td>Development server + production bundling</td></tr>
         <tr><td>UI framework</td><td><b>React 18</b></td><td>Function components + hooks</td></tr>
         <tr><td>Language</td><td><b>TypeScript 5.5</b></td><td>Strict mode; <code>noUnusedLocals</code>; alias <code>@/</code> → <code>src/</code></td></tr>
         <tr><td>Styling</td><td><b>Tailwind CSS 3.4</b></td><td>Design tokens in <code>tailwind.config.js</code></td></tr>
-        <tr><td>Routing</td><td><b>react-router v6</b></td><td>SPA; guarded routes</td></tr>
-        <tr><td>Primitives</td><td><b>Radix UI</b></td><td>Dialog, dropdown, select, tabs, toast, tooltip, scroll-area, avatar</td></tr>
+        <tr><td>Routing</td><td><b>react-router v6</b></td><td>Single-page routing with guarded routes</td></tr>
+        <tr><td>UI primitives</td><td><b>Radix UI</b></td><td>Dialog, dropdown, select, tabs, toast, tooltip, scroll-area, avatar</td></tr>
         <tr><td>Icons</td><td><b>Material Symbols</b> + <b>lucide-react</b></td><td>Icon font + component icons</td></tr>
         <tr><td>Utilities</td><td><b>clsx</b>, <b>tailwind-merge</b>, <b>class-variance-authority</b></td><td>Class composition</td></tr>
-        <tr><td>Serverless</td><td>Vercel <code>api/*.js</code> / Netlify <code>netlify/functions/*</code></td><td>AI proxy + SMTP relay</td></tr>
-        <tr><td>Persistence</td><td>Browser <code>localStorage</code></td><td>Unified layer, backend-swappable</td></tr>
+        <tr><td>Data layer</td><td><b>Unified storage service</b> (<code>src/lib/storage.ts</code>)</td><td>Centralised reads/writes; single integration point</td></tr>
+        <tr><td>Server-side services</td><td>Vercel <code>api/*</code> / Netlify <code>functions/*</code></td><td>Intelligence proxy + mail relay</td></tr>
       </tbody>
     </table>
   </section>
@@ -225,11 +258,11 @@
       <div class="swatch"><i style="background:#f1f6f1"></i><span><b>aims-mint</b><small>#f1f6f1</small></span></div>
       <div class="swatch"><i style="background:#002141"></i><span><b>primary-deep</b><small>#002141</small></span></div>
     </div>
-    <p>The Tailwind theme additionally defines a full Material-3–inspired tonal scale
-    (<code>primary #002141</code>, <code>primary-container #053664</code>, <code>secondary #4d6451</code>,
-    error/surface/outline families). Semantic status colours are centralised in
-    <code>src/lib/uiTheme.ts</code> (<code>CHIP</code>, <code>ACCENT</code>, <code>FILL</code>) so every
-    badge, card accent, and progress fill shares one source of truth.</p>
+    <p>The theme defines a full Material-3–inspired tonal scale (<code>primary #002141</code>,
+    <code>primary-container #053664</code>, <code>secondary #4d6451</code>, error/surface/outline
+    families). Semantic status colours are centralised in <code>src/lib/uiTheme.ts</code>
+    (<code>CHIP</code>, <code>ACCENT</code>, <code>FILL</code>) so every badge, card accent, and
+    progress fill shares one source of truth.</p>
     <h3>4.2 Typography</h3>
     <p>Font family <b>Inter</b> (sans). Type tokens: <code>display-lg</code> 48/56 (700),
     <code>headline-lg</code> 32/40 (600), <code>headline-md</code> 24/32 (600),
@@ -246,7 +279,7 @@
     <div class="grid2">
       <div class="card"><h4>UI primitives</h4><p style="font-size:13px"><code>StatusChip</code>, <code>StatCard</code>, <code>PageHeader</code>, <code>FAB</code>, <code>AnnouncementBanner</code>, <code>ProgressBar</code>, <code>Toaster</code>.</p></div>
       <div class="card"><h4>Layout</h4><p style="font-size:13px"><code>AppShell</code>, <code>SideNavBar</code> (single-active), <code>TopNavBar</code>, <code>GlobalSearch</code> (Ctrl+K), <code>NotificationBell</code>, <code>EmailBell</code>, <code>ArdhiLogo</code>, <code>ProtectedRoute</code>.</p></div>
-      <div class="card"><h4>Domain</h4><p style="font-size:13px"><code>CheckInCard</code>, <code>AIPanel</code>, <code>ExecutiveBrief</code>, <code>GrantsAssistant</code>, <code>FlagForEDModal</code>, <code>GrantsPipelineBoard</code>, <code>ProposalWorkspace</code>, <code>FormLibraryModal</code>, <code>FormRenderer</code>, <code>InventoryHub</code>, finance &amp; admin panels.</p></div>
+      <div class="card"><h4>Domain components</h4><p style="font-size:13px"><code>CheckInCard</code>, <code>AIPanel</code>, <code>ExecutiveBrief</code>, <code>GrantsAssistant</code>, <code>FlagForEDModal</code>, <code>GrantsPipelineBoard</code>, <code>ProposalWorkspace</code>, <code>FormLibraryModal</code>, <code>FormRenderer</code>, <code>InventoryHub</code>, finance &amp; admin panels.</p></div>
       <div class="card"><h4>Semantics</h4><p style="font-size:13px">Status colours always pair colour with text; chips use solid brand fills; cards use brand top-border accents; progress bars use brand fills.</p></div>
     </div>
   </section>
@@ -255,10 +288,10 @@
   <section id="s5">
     <h2><span class="no">5</span>Application Architecture</h2>
     <h3>5.1 Source Layout</h3>
-    <pre style="background:var(--white);border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-size:12px;overflow-x:auto;font-family:Consolas,monospace;line-height:1.5">src/
+    <pre>src/
 ├── main.tsx / App.tsx        # Bootstrap + route table
 ├── config/                   # roles.ts, navigation.ts, forms.ts, geofence.ts
-├── context/                  # AuthContext, AttendanceContext, NotificationContext
+├── context/                  # Auth, Attendance, Notification contexts
 ├── data/                     # Seed data: roster, grants, grantTracker, orgKnowledge
 ├── lib/                      # storage.ts, aiEngine.ts, email.ts, uiTheme.ts, …
 ├── services/                 # grant, innovation, finance, requisition, proposal,
@@ -267,25 +300,25 @@
 ├── components/               # ui, layout, auth, rbac, dashboard, ai, grants,
 │                             # forms, finance, inventory, admin
 ├── types/                    # Shared domain types
-api/                          # Vercel serverless: chat.js, email.js
-netlify/functions/            # Netlify equivalents (fallback)</pre>
+api/                          # Server-side services: chat.js, email.js
+netlify/functions/            # Equivalent functions (fallback hosting)</pre>
     <h3>5.2 Routing Model</h3>
-    <p>React Router v6 with a single guarded shell: <code>/login</code> is public; every other
-    route renders inside <code>AppShell</code> behind <code>ProtectedRoute module="…"</code>, which
-    only allows roles listed in <code>MODULE_ACCESS</code> (<code>src/config/roles.ts</code>).
-    Unknown routes redirect to <code>/dashboard</code>.</p>
+    <p>Single-page routing with a guarded shell: <code>/login</code> is public; every other route
+    renders inside the application shell behind <code>ProtectedRoute module="…"</code>, which only
+    allows roles listed in the access registry (<code>src/config/roles.ts</code>). Unknown routes
+    redirect to <code>/dashboard</code>.</p>
     <h3>5.3 State &amp; Data Flow</h3>
     <ul>
       <li><b>Auth</b> — persists the signed-in user; login = attendance check-in, logout = check-out.</li>
       <li><b>Notifications / Attendance</b> — role-targeted alerts and shared daily status.</li>
-      <li><b>Domain state</b> — services hold data in memory and persist via <code>storage.ts</code>; components subscribe to live bindings (e.g. <code>useRequisitions</code>) for instant updates.</li>
-      <li><b>One-way flow</b> — UI → service mutator → save → re-render; AI and reports always read the live store.</li>
+      <li><b>Domain state</b> — services hold records and persist through the unified storage service; components subscribe to live bindings (e.g. <code>useRequisitions</code>) for instant updates.</li>
+      <li><b>One-way flow</b> — UI → service mutator → save → re-render; analytics and reports always read the live store.</li>
     </ul>
   </section>
 
   <!-- ============ 6 ============ -->
   <section id="s6">
-    <h2><span class="no">6</span>Role-Based Access Control</h2>
+    <h2><span class="no">6</span>Roles &amp; Access Control</h2>
     <h3>6.1 Roles &amp; Hierarchy</h3>
     <table>
       <thead><tr><th>Role</th><th>Label</th><th>Hierarchy</th></tr></thead>
@@ -327,29 +360,29 @@ netlify/functions/            # Netlify equivalents (fallback)</pre>
       </tbody>
     </table>
     <div class="note"><b>*</b> The Country Director has <b>view-only</b> access to the Approvals
-    pipeline (<code>/approvals?view=readonly</code>). Only the <b>ED approves</b> and
-    <b>Finance processes</b> requisitions. CD flags route to the top of the ED queue as
-    priority interrupts.</div>
+    pipeline. Only the <b>Executive Director approves</b> and <b>Finance processes</b> requisitions.
+    CD flags route to the top of the ED queue as priority interrupts.</div>
     <h3>6.3 Per-Persona Navigation</h3>
     <ul>
-      <li><b>CD</b> — 14 items: Dashboard, Grants, Approvals (read-only), Finance &amp; Procurement, Attendance, HR &amp; Admin Summary, Innovations &amp; Tasks, Documents, Inventory, Feed, Email, Calendar, Reports, Settings.</li>
-      <li><b>ED</b> — 14 items: Dashboard, Grants, Approvals Queue, Finance &amp; Procurement, Attendance, HR &amp; People, Innovations &amp; Tasks, Inventory, Documents, Feed, Email, Calendar, Reports, Settings.</li>
-      <li><b>COMPANY_ADMIN</b> — 9 items: Dashboard, User Management, Attendance, HR, Inventory, Documents, Feed, Email, Settings.</li>
-      <li><b>SYS_ADMIN</b> — 10 items: Dashboard, System Telemetry &amp; Logs, Audit &amp; Security Logs, System Configuration, Full Route Access, Feed, Calendar, Reports, Email, Settings.</li>
-      <li><b>FINANCE</b> — 7 items: Dashboard, Requisition Queue, Cash Flow Analytics, My Attendance, Feed, Email, Settings.</li>
-      <li><b>GRANT_WRITER / GRANTS_MANAGER</b> — 8 items: Dashboard, Grants, AI Assistant, My Attendance, Calendar, Feed, Email, Settings.</li>
-      <li><b>INNOVATOR</b> — 7 items: Dashboard, Innovations &amp; Tasks, My Attendance, Calendar, Feed, Email, Settings.</li>
+      <li><b>Country Director</b> — 14 items: Dashboard, Grants, Approvals (read-only), Finance &amp; Procurement, Attendance, HR &amp; Admin Summary, Innovations &amp; Tasks, Documents, Inventory, Feed, Email, Calendar, Reports, Settings.</li>
+      <li><b>Executive Director</b> — 14 items: Dashboard, Grants, Approvals Queue, Finance &amp; Procurement, Attendance, HR &amp; People, Innovations &amp; Tasks, Inventory, Documents, Feed, Email, Calendar, Reports, Settings.</li>
+      <li><b>Company Administrator</b> — 9 items: Dashboard, User Management, Attendance, HR, Inventory, Documents, Feed, Email, Settings.</li>
+      <li><b>System Administrator</b> — 10 items: Dashboard, System Telemetry &amp; Logs, Audit &amp; Security Logs, System Configuration, Full Route Access, Feed, Calendar, Reports, Email, Settings.</li>
+      <li><b>Finance Officer</b> — 7 items: Dashboard, Requisition Queue, Cash Flow Analytics, My Attendance, Feed, Email, Settings.</li>
+      <li><b>Grant Writer / Grants Manager</b> — 8 items: Dashboard, Grants, AI Assistant, My Attendance, Calendar, Feed, Email, Settings.</li>
+      <li><b>Innovator</b> — 7 items: Dashboard, Innovations &amp; Tasks, My Attendance, Calendar, Feed, Email, Settings.</li>
     </ul>
   </section>
 
   <!-- ============ 7 ============ -->
   <section id="s7">
     <h2><span class="no">7</span>Data Layer &amp; Persistence</h2>
-    <h3>7.1 Unified Storage (<code>src/lib/storage.ts</code>)</h3>
-    <p>Every domain persists through <code>loadJSON</code> / <code>saveJSON</code> under keys from
-    <code>STORAGE_KEYS</code>:</p>
+    <h3>7.1 Unified Data Services</h3>
+    <p>Every domain reads and writes through the unified storage service
+    (<code>src/lib/storage.ts</code>). This centralisation keeps the dataset consistent and
+    portable, and provides a single integration point for enterprise services. Storage keys:</p>
     <table>
-      <thead><tr><th>Key constant</th><th>localStorage key</th><th>Holds</th></tr></thead>
+      <thead><tr><th>Key constant</th><th>Storage key</th><th>Holds</th></tr></thead>
       <tbody>
         <tr><td><code>grants</code></td><td><code>aims_grants</code></td><td>Grant records, docs, comments</td></tr>
         <tr><td><code>projects</code></td><td><code>aims_projects</code></td><td>Innovation projects + budgets</td></tr>
@@ -360,24 +393,23 @@ netlify/functions/            # Netlify equivalents (fallback)</pre>
         <tr><td><code>notifications</code></td><td><code>aims_notifications</code></td><td>In-app notifications</td></tr>
         <tr><td><code>feed</code></td><td><code>aims_feed_messages</code></td><td>Feed messages</td></tr>
         <tr><td><code>attendancePrefix</code></td><td><code>aims_attendance_*</code></td><td>Per-user attendance</td></tr>
-        <tr><td><code>fab</code></td><td><code>aims_fab_pos</code></td><td>Draggable AI FAB position</td></tr>
+        <tr><td><code>fab</code></td><td><code>aims_fab_pos</code></td><td>Assistant widget position</td></tr>
         <tr><td><code>sidebar</code></td><td><code>sidebar-collapsed</code></td><td>Sidebar state</td></tr>
       </tbody>
     </table>
     <h3>7.2 Data Vault</h3>
-    <p><code>exportAllData()</code> bundles the entire dataset (timestamped, versioned JSON);
-    <code>importAllData()</code> restores it; <code>downloadFile()</code> and <code>toCSV()</code>
-    provide JSON/CSV exports — so records can be moved between browsers, backed up, or shared
-    with leadership.</p>
-    <h3>7.3 Backend Swap Point</h3>
-    <div class="note">The storage layer is the <b>single seam for a future backend</b>: replace
-    <code>loadJSON</code>/<code>saveJSON</code> with API calls and the whole product moves to a
-    shared, multi-user server without touching pages or services.</div>
+    <p>The <b>Data Vault</b> exports the entire dataset (timestamped, versioned) and restores it on
+    demand; JSON/CSV exports are available throughout. This provides institutional backup and
+    portability — records can be transferred between workstations or shared with leadership.</p>
+    <h3>7.3 Service Integration Point</h3>
+    <div class="note">The data layer is the <b>single integration seam</b> for enterprise services:
+    the storage implementation can be connected to API-backed data services so the platform moves to
+    a shared, multi-user deployment without page-level changes.</div>
     <h3>7.4 Seed Data</h3>
     <p><code>src/data/</code> provides the initial institutional dataset: <code>roster.ts</code>
     (staff, logins, emails), <code>grants.ts</code>, <code>grantTracker.ts</code> (live
-    opportunities G-001…G-011 with alignment/eligibility scoring, missed grants, applied history,
-    funder portals), and <code>orgKnowledge.ts</code> (knowledge base).</p>
+    opportunities with alignment/eligibility scoring, missed grants, applied history, funder
+    portals), and <code>orgKnowledge.ts</code> (knowledge base).</p>
   </section>
 
   <!-- ============ 8 ============ -->
@@ -388,7 +420,7 @@ netlify/functions/            # Netlify equivalents (fallback)</pre>
       <tbody>
         <tr><td><code>/dashboard</code></td><td>Dashboard</td><td>Role-specific at-a-glance: CD/ED executive brief, Finance USD overview, HR summaries, innovations pipeline</td></tr>
         <tr><td><code>/approvals</code></td><td>Approvals</td><td>Finance requisition workspace; ED approval queue (flags on top); CD read-only view</td></tr>
-        <tr><td><code>/grants</code>, <code>/grants/:id</code></td><td>Grants</td><td>Pipeline board, full record detail, proposal workspace, AI risk &amp; drafting, CD flag-for-ED</td></tr>
+        <tr><td><code>/grants</code>, <code>/grants/:id</code></td><td>Grants</td><td>Pipeline board, full record detail, proposal workspace, intelligence risk &amp; drafting, CD flag-for-ED</td></tr>
         <tr><td><code>/tasks</code>, <code>/innovations/:id</code></td><td>Innovations</td><td>Projects, budgets, Request Funding → requisition</td></tr>
         <tr><td><code>/finance</code></td><td>Finance</td><td>Cash flow analytics, income/expense, budget tracker, requisitions (ED-gated edits)</td></tr>
         <tr><td><code>/procurement</code></td><td>Procurement</td><td>Procurement records &amp; approvals</td></tr>
@@ -403,11 +435,11 @@ netlify/functions/            # Netlify equivalents (fallback)</pre>
         <tr><td><code>/reports</code></td><td>Reports</td><td>Reporting (CD/ED/SA/CA/FN)</td></tr>
         <tr><td><code>/analytics</code></td><td>Analytics</td><td>System telemetry &amp; analytics</td></tr>
         <tr><td><code>/feed</code></td><td>Feed</td><td>Role-scoped channels; Executive Brief; Ask-AI</td></tr>
-        <tr><td><code>/email</code></td><td>Email</td><td>Internal email surface (ARDHI roster addresses)</td></tr>
+        <tr><td><code>/email</code></td><td>Email</td><td>Internal mail surface (ARDHI roster addresses)</td></tr>
         <tr><td><code>/user-management</code></td><td>User Management</td><td>Company-admin user administration</td></tr>
         <tr><td><code>/rbac</code></td><td>RBAC / Audit</td><td>System-admin roles, routes, audit logs</td></tr>
         <tr><td><code>/settings</code></td><td>Settings</td><td>Profile, preferences, <b>Data Vault</b></td></tr>
-        <tr><td><code>/ai-assistant</code></td><td>AI Assistant</td><td>Dedicated AI workspace (grant-focused)</td></tr>
+        <tr><td><code>/ai-assistant</code></td><td>AI Assistant</td><td>Dedicated intelligence workspace (grant-focused)</td></tr>
         <tr><td><code>/forms</code></td><td>Forms Library</td><td>Institutional forms + renderer; shortcut available in every module</td></tr>
       </tbody>
     </table>
@@ -418,20 +450,21 @@ netlify/functions/            # Netlify equivalents (fallback)</pre>
     <h2><span class="no">9</span>Attendance &amp; Geofencing</h2>
     <ul>
       <li><b>Session-aligned</b>: logging in = check-in; logging out = check-out. No idle auto-logout; the user controls the working session.</li>
-      <li><b>Geofence</b> (<code>src/config/geofence.ts</code>): office at <b>0°19'12"N 32°34'48"E</b> (0.3200, 32.5800), <b>200-metre radius</b>; <code>haversineDistance</code> computes distance, <code>isWithinGeofence</code> gates check-in.</li>
+      <li><b>Geofence</b> (<code>src/config/geofence.ts</code>): office at <b>0°19'12"N 32°34'48"E</b> (0.3200, 32.5800), <b>200-metre radius</b>; distance is computed with the Haversine formula and check-in is gated to within the geofence.</li>
       <li><b>UI</b>: <code>CheckInCard</code> on the dashboard and the Attendance page show live status, distance, and in/out controls; HR sees summaries and management views.</li>
     </ul>
   </section>
 
   <!-- ============ 10 ============ -->
   <section id="s10">
-    <h2><span class="no">10</span>AI-Powered Intelligence</h2>
-    <h3>10.1 Deterministic Engine (<code>src/lib/aiEngine.ts</code>)</h3>
-    <p>Works on live app data — no API keys required:</p>
+    <h2><span class="no">10</span>Intelligence &amp; AI</h2>
+    <h3>10.1 Analytics Engine (<code>src/lib/aiEngine.ts</code>)</h3>
+    <p>The platform's intelligence engine works on live organisational data — no external keys
+    required:</p>
     <table>
       <thead><tr><th>Function</th><th>Purpose</th></tr></thead>
       <tbody>
-        <tr><td><code>aiGenerate(prompt, system)</code></td><td>Orchestrates LLM call with local fallback</td></tr>
+        <tr><td><code>aiGenerate(prompt, system)</code></td><td>Orchestrates AI-assisted generation with local fallback</td></tr>
         <tr><td><code>grantRiskScore(grantId)</code></td><td>Risk score, label, flags per grant</td></tr>
         <tr><td><code>funderMatches()</code></td><td>Best-fit funder recommendations</td></tr>
         <tr><td><code>draftProblemStatement(grantId)</code></td><td>Drafts narrative from grant data</td></tr>
@@ -447,15 +480,15 @@ netlify/functions/            # Netlify equivalents (fallback)</pre>
         <tr><td><code>answerQuery(query)</code></td><td>Natural-language Q&amp;A over organisation data</td></tr>
       </tbody>
     </table>
-    <h3>10.2 Optional LLM Enhancement</h3>
-    <p>When API keys exist, the engine routes to <code>/api/chat</code> — a <b>serverless proxy</b>
-    (<code>api/chat.js</code>) supporting <b>Claude</b>, <b>GPT</b>, <b>DeepSeek</b>, and <b>Qwen</b>.
-    Keys (<code>ANTHROPIC_API_KEY</code>, <code>OPENAI_API_KEY</code>, <code>DEEPSEEK_API_KEY</code>,
-    <code>QWEN_API_KEY</code>) live only on the server. Without keys, the deterministic engine
-    answers — AI functionality is never dependent on external services.</p>
+    <h3>10.2 AI Provider Enhancement</h3>
+    <p>When configured, the engine routes through a <b>server-side proxy</b> supporting
+    <b>Claude</b>, <b>GPT</b>, <b>DeepSeek</b>, and <b>Qwen</b>. Provider keys
+    (<code>ANTHROPIC_API_KEY</code>, <code>OPENAI_API_KEY</code>, <code>DEEPSEEK_API_KEY</code>,
+    <code>QWEN_API_KEY</code>) are held only on the server. Without keys, the built-in engine
+    answers — intelligence is never dependent on external services.</p>
     <h3>10.3 Assistant Surfaces</h3>
     <ul>
-      <li><b>GrantsAssistant</b> — draggable floating chat button (position persisted in <code>aims_fab_pos</code>), always available while signed in, provider selectable.</li>
+      <li><b>GrantsAssistant</b> — draggable floating chat button (position persisted), always available while signed in, provider selectable.</li>
       <li><b>ExecutiveBrief</b> — daily leadership briefing widget.</li>
       <li><b>AIPanel / Ask-AI</b> — inline intelligence on dashboards, grants, and the feed.</li>
     </ul>
@@ -463,11 +496,11 @@ netlify/functions/            # Netlify equivalents (fallback)</pre>
 
   <!-- ============ 11 ============ -->
   <section id="s11">
-    <h2><span class="no">11</span>Email Subsystem</h2>
+    <h2><span class="no">11</span>Email &amp; Communications</h2>
     <ul>
-      <li><b>Client</b> (<code>src/lib/email.ts</code>): <code>sendEmail()</code> posts to <code>/api/email</code>; maps staff names/IDs to ARDHI emails from the single roster source; falls back to <b>local mode</b> (queued simulation) when SMTP is not configured.</li>
-      <li><b>Relay</b> (<code>api/email.js</code>): dependency-free SMTP client (<code>node:net</code> + <code>node:tls</code>; EHLO → STARTTLS → AUTH LOGIN → MAIL/RCPT/DATA), sending as <code>@ardhi.org.ug</code>.</li>
-      <li><b>Configuration</b>: <code>SMTP_HOST</code>, <code>SMTP_PORT</code> (default 587), <code>SMTP_USER</code>, <code>SMTP_PASS</code>, <code>SMTP_FROM</code> (optional). Once set in the hosting dashboard, delivery becomes real with <b>no code change</b>.</li>
+      <li><b>Client</b> (<code>src/lib/email.ts</code>): <code>sendEmail()</code> posts to the mail service; maps staff names/IDs to ARDHI addresses from the single roster source; falls back to <b>queued mode</b> when SMTP is not configured.</li>
+      <li><b>Relay</b> (<code>api/email.js</code>): dependency-free SMTP client (EHLO → STARTTLS → AUTH LOGIN → MAIL/RCPT/DATA), sending as <code>@ardhi.org.ug</code>.</li>
+      <li><b>Configuration</b>: <code>SMTP_HOST</code>, <code>SMTP_PORT</code> (default 587), <code>SMTP_USER</code>, <code>SMTP_PASS</code>, <code>SMTP_FROM</code> (optional). Once set in the hosting environment, delivery becomes live with <b>no code change</b>.</li>
     </ul>
   </section>
 
@@ -476,28 +509,28 @@ netlify/functions/            # Netlify equivalents (fallback)</pre>
     <h2><span class="no">12</span>Key User Flows</h2>
     <ol>
       <li><b>Sign-in → workspace</b>: user logs in; attendance check-in recorded; the shell renders the role's dashboard and navigation.</li>
-      <li><b>Geofenced check-in</b>: <code>CheckInCard</code> verifies the device is within 200 m of the office before allowing check-in.</li>
+      <li><b>Geofenced check-in</b>: the check-in card verifies the device is within 200 m of the office before allowing check-in.</li>
       <li><b>Flag-for-ED</b>: CD flags a grant/issue; the flag is pushed to the <b>top of the ED Approvals Queue</b> as a priority interrupt; ED resolves it.</li>
       <li><b>Requisition lifecycle</b>: team requests funding → requisition enters the Finance queue (price-anomaly flags) → Finance reviews → <b>ED approves</b> → recorded against the project budget.</li>
       <li><b>Proposal workspace</b>: grant writers build proposals section-by-section with AI drafting; versions preserved; risk and confidence scored live.</li>
-      <li><b>Data Vault</b>: an admin exports the full dataset (JSON/CSV) for backup or migration, and restores it in any browser.</li>
+      <li><b>Data Vault</b>: an administrator exports the full dataset (JSON/CSV) for backup or transfer, and restores it on any workstation.</li>
     </ol>
   </section>
 
   <!-- ============ 13 ============ -->
   <section id="s13">
-    <h2><span class="no">13</span>Deployment</h2>
+    <h2><span class="no">13</span>Deployment &amp; Operations</h2>
     <h3>13.1 Vercel (primary)</h3>
     <ul>
       <li><b>Framework</b>: Vite — auto-detected; root directory <code>./</code>.</li>
       <li><b>SPA routing</b>: <code>vercel.json</code> rewrites all non-<code>api/</code> paths to <code>/index.html</code> so deep links work on refresh.</li>
-      <li><b>Serverless functions</b>: <code>api/chat.js</code> (AI proxy) and <code>api/email.js</code> (SMTP relay), ESM default-export handlers.</li>
-      <li><b>Build</b>: <code>tsc &amp;&amp; vite build</code>; <code>.npmrc</code> sets <code>allow-scripts=true</code> and <code>package.json</code> declares <code>allowScripts: { esbuild: true }</code> so esbuild's postinstall runs on Vercel's Linux builder. <code>node_modules</code>/build caches are not committed.</li>
+      <li><b>Server-side services</b>: <code>api/chat.js</code> (intelligence proxy) and <code>api/email.js</code> (mail relay).</li>
+      <li><b>Build</b>: <code>tsc &amp;&amp; vite build</code>; build-tool install scripts are enabled for the platform's Linux build environment.</li>
     </ul>
     <table>
       <thead><tr><th>Environment Variable</th><th>Purpose</th></tr></thead>
       <tbody>
-        <tr><td><code>SMTP_HOST</code>, <code>SMTP_PORT</code>, <code>SMTP_USER</code>, <code>SMTP_PASS</code>, <code>SMTP_FROM</code></td><td>ARDHI email relay</td></tr>
+        <tr><td><code>SMTP_HOST</code>, <code>SMTP_PORT</code>, <code>SMTP_USER</code>, <code>SMTP_PASS</code>, <code>SMTP_FROM</code></td><td>ARDHI mail relay</td></tr>
         <tr><td><code>ANTHROPIC_API_KEY</code></td><td>Claude enhancement</td></tr>
         <tr><td><code>OPENAI_API_KEY</code></td><td>GPT enhancement</td></tr>
         <tr><td><code>DEEPSEEK_API_KEY</code></td><td>DeepSeek enhancement</td></tr>
@@ -508,9 +541,10 @@ netlify/functions/            # Netlify equivalents (fallback)</pre>
     <p>Equivalent <code>netlify.toml</code> + <code>netlify/functions/</code> (chat, email) are
     retained, so the product can be published to Netlify with the same behaviour and environment keys.</p>
     <h3>13.3 Local Development</h3>
-    <p><code>npm install</code> → <code>npm run dev</code> (Vite dev server) →
-    <code>npm run build</code> (type-check + bundle) → <code>npm run preview</code>. The app runs
-    without any backend; API features degrade gracefully to local mode.</p>
+    <p><code>npm install</code> → <code>npm run dev</code> (development server) →
+    <code>npm run build</code> (type-check + bundle) → <code>npm run preview</code>. The application
+    runs standalone; optional API features degrade gracefully when external services are not
+    configured.</p>
   </section>
 
   <!-- ============ 14 ============ -->
@@ -518,11 +552,11 @@ netlify/functions/            # Netlify equivalents (fallback)</pre>
     <h2><span class="no">14</span>UX Conventions</h2>
     <ul>
       <li><b>Global search</b>: Ctrl+K opens cross-module search from anywhere.</li>
-      <li><b>Forms everywhere</b>: the Forms Library + <code>FormsShortcut</code> is available in every relevant module.</li>
+      <li><b>Forms everywhere</b>: the Forms Library is available in every relevant module.</li>
       <li><b>Full record details</b>: every list item opens a complete detail view (grants, projects, requisitions, people, inventory items).</li>
-      <li><b>Draggable AI assistant</b>: the chat FAB is draggable, position-persisted, and present whenever the user is signed in.</li>
+      <li><b>Assistant availability</b>: the intelligence widget is draggable, position-persisted, and present whenever the user is signed in.</li>
       <li><b>Single-active navigation</b>: exactly one nav item is highlighted per route.</li>
-      <li><b>Role-scoped feed channels</b>: moderators and channels follow the role model.</li>
+      <li><b>Role-scoped feed channels</b>: channels and moderation follow the role model.</li>
       <li><b>Read-only vs. editable</b>: viewers (e.g., CD on approvals) see the same data with actions disabled; only the ED approves and Finance processes.</li>
     </ul>
   </section>
@@ -532,7 +566,7 @@ netlify/functions/            # Netlify equivalents (fallback)</pre>
     <h2><span class="no">15</span>Accessibility &amp; Quality</h2>
     <ul>
       <li>TypeScript <b>strict</b> mode with unused-locals checks; ESLint with <code>react-hooks</code> and <code>react-refresh</code> rules.</li>
-      <li>Radix UI primitives provide ARIA-correct dialogs, menus, tabs, and toasts.</li>
+      <li>Accessible primitives provide ARIA-correct dialogs, menus, tabs, and toasts.</li>
       <li>Keyboard-first patterns: Ctrl+K search, focus-visible styles, semantic headings.</li>
       <li>Formal, consistent microcopy; statuses always carry colour + text (never colour alone).</li>
     </ul>
@@ -540,28 +574,28 @@ netlify/functions/            # Netlify equivalents (fallback)</pre>
 
   <!-- ============ 16 ============ -->
   <section id="s16">
-    <h2><span class="no">16</span>Security Considerations</h2>
+    <h2><span class="no">16</span>Security &amp; Governance</h2>
     <ul>
-      <li><b>Front-end only</b>: there is no authentication server; RBAC is enforced at the UI layer. Appropriate for an internal tool; must be replaced by real server-side auth when a backend is introduced (see roadmap).</li>
-      <li><b>Data residency</b>: data lives in the user's browser; the Data Vault is the sanctioned backup/migration path.</li>
-      <li><b>Keys on server only</b>: AI/email secrets are environment variables read by serverless functions; the client bundle never contains them.</li>
-      <li><b>CSP-ready build</b>: standard Vite static output with hashed assets.</li>
+      <li><b>Application-layer access control</b>: role-based rules are enforced consistently across navigation, routes, and actions. Integration with institutional identity management is planned.</li>
+      <li><b>Data portability</b>: the Data Vault provides the sanctioned backup and transfer path for all records.</li>
+      <li><b>Secrets on server only</b>: AI and mail credentials are environment variables read by server-side services; the client never receives them.</li>
+      <li><b>Hardened build</b>: static production output with hashed, immutable assets.</li>
     </ul>
   </section>
 
   <!-- ============ 17 ============ -->
   <section id="s17">
-    <h2><span class="no">17</span>Roadmap &amp; Integration Notes</h2>
+    <h2><span class="no">17</span>Roadmap &amp; Integration</h2>
     <ol>
-      <li><b>Backend swap</b>: implement <code>loadJSON</code>/<code>saveJSON</code> in <code>src/lib/storage.ts</code> against an API (Supabase/Postgres or custom REST) to make AIMS multi-user and server-authenticated. No page-level changes required.</li>
-      <li><b>Real email</b>: supply <code>SMTP_*</code> credentials for <code>@ardhi.org.ug</code> in the hosting dashboard — delivery activates automatically.</li>
-      <li><b>LLM enrichment</b>: add provider API keys; the AI engine transparently upgrades from deterministic to LLM-assisted answers.</li>
-      <li><b>Custom domain &amp; TLS</b>: attach <code>ardhi.org.ug</code> (or a subdomain) in Vercel.</li>
+      <li><b>Enterprise integration</b>: connect the unified data layer to central ARDHI data services for a shared, multi-user, server-authenticated deployment — no page-level changes required.</li>
+      <li><b>Live mail</b>: supply <code>SMTP_*</code> credentials for <code>@ardhi.org.ug</code> in the hosting environment — delivery activates automatically.</li>
+      <li><b>AI enrichment</b>: add provider keys; the intelligence engine transparently upgrades from built-in to AI-assisted answers.</li>
+      <li><b>Custom domain &amp; TLS</b>: attach <code>ardhi.org.ug</code> (or a subdomain) in the hosting provider.</li>
     </ol>
   </section>
 
   <footer>
-    <span>AIMS — ARDHI Internal Management System · Front-End Design &amp; Architecture</span>
+    <span>AIMS — ARDHI Internal Management System · System Design &amp; Architecture</span>
     <span>Version 1.0.0 · 26 August 2026 · Baseline <code>834446a0</code></span>
   </footer>
 
