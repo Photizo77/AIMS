@@ -16,7 +16,13 @@ import {
   type ChatMessage,
 } from '@/lib/knowledgeRetrieval';
 
-const API_MODEL = 'deepseek-chat';
+/** Providers supported by the Netlify /api/chat function (keys set in Netlify env vars) */
+export const ASSISTANT_MODELS: { id: string; label: string; hint: string }[] = [
+  { id: 'deepseek-chat', label: 'DeepSeek', hint: 'DEEPSEEK_API_KEY' },
+  { id: 'claude-sonnet-4-20250514', label: 'Claude', hint: 'ANTHROPIC_API_KEY' },
+  { id: 'gpt-4o-mini', label: 'GPT-4o Mini', hint: 'OPENAI_API_KEY' },
+  { id: 'qwen-plus', label: 'Qwen Plus', hint: 'QWEN_API_KEY' },
+];
 
 /** Programmatically open the assistant (used by dashboard quick-access buttons) */
 export function openGrantsAssistant(): void {
@@ -26,6 +32,8 @@ export function openGrantsAssistant(): void {
 interface AssistantMessage extends ChatMessage {
   id: string;
   source: 'ai' | 'local' | 'user';
+  /** Which provider answered (ai replies only) */
+  modelLabel?: string;
 }
 
 let msgId = 0;
@@ -42,7 +50,7 @@ const WELCOME: AssistantMessage = {
     "Hi! I'm the ARDHI Grants Assistant — tuned on ARDHI's own documents (Organisational Profile, 5-Year Strategic Plan 2026-2031, resource mobilisation plan) and the Grants Tracker (Aug 2026).\n\nAsk me about our grants history, missed deadlines, live opportunities, or anything about the organisation.",
 };
 
-async function callAiChat(history: ChatMessage[], userText: string): Promise<string | null> {
+async function callAiChat(history: ChatMessage[], userText: string, model: string): Promise<{ reply: string; modelLabel: string } | null> {
   const systemPrompt = buildGrantsSystemPrompt(userText);
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 30000);
@@ -50,12 +58,16 @@ async function callAiChat(history: ChatMessage[], userText: string): Promise<str
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: history, model: API_MODEL, systemPrompt }),
+      body: JSON.stringify({ messages: history, model, systemPrompt }),
       signal: controller.signal,
     });
     if (!res.ok) return null;
     const data = await res.json();
-    return typeof data.reply === 'string' && data.reply.trim() ? data.reply : null;
+    if (typeof data.reply === 'string' && data.reply.trim()) {
+      const label = ASSISTANT_MODELS.find((m) => m.id === model)?.label ?? model;
+      return { reply: data.reply, modelLabel: label };
+    }
+    return null;
   } catch {
     return null;
   } finally {
@@ -68,6 +80,7 @@ export function GrantsAssistant() {
   const [messages, setMessages] = useState<AssistantMessage[]>([WELCOME]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [modelId, setModelId] = useState('deepseek-chat');
   const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -94,14 +107,14 @@ export function GrantsAssistant() {
 
     const history: ChatMessage[] = next.map((m) => ({ role: m.role, content: m.content }));
 
-    const aiReply = await callAiChat(history, trimmed);
-    const localReply = aiReply === null ? generateLocalAnswer(trimmed) : null;
+    const aiResult = await callAiChat(history, trimmed, modelId);
 
     const assistantMsg: AssistantMessage = {
       id: nextMsgId(),
       role: 'assistant',
-      source: aiReply ? 'ai' : 'local',
-      content: aiReply ?? localReply ?? "Sorry — I couldn't find an answer for that. Try rephrasing.",
+      source: aiResult ? 'ai' : 'local',
+      content: aiResult?.reply ?? generateLocalAnswer(trimmed) ?? "Sorry — I couldn't find an answer for that. Try rephrasing.",
+      modelLabel: aiResult?.modelLabel,
     };
     setMessages((prev) => [...prev, assistantMsg]);
     setLoading(false);
@@ -139,9 +152,21 @@ export function GrantsAssistant() {
                 </p>
               </div>
             </div>
-            <button onClick={() => setOpen(false)} className="p-1 rounded hover:bg-white/20 text-white/80 hover:text-white transition-colors">
-              <span className="material-symbols-outlined text-[20px]">close</span>
-            </button>
+            <div className="flex items-center gap-1.5">
+              <select
+                value={modelId}
+                onChange={(e) => setModelId(e.target.value)}
+                title="AI provider — use the one whose API key is set in Netlify (falls back to local knowledge if unavailable)"
+                className="text-[10px] font-bold bg-white/15 text-white border border-white/25 rounded-md px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-white/40 [&>option]:text-slate-800"
+              >
+                {ASSISTANT_MODELS.map((m) => (
+                  <option key={m.id} value={m.id} title={`${m.hint}`}>{m.label}</option>
+                ))}
+              </select>
+              <button onClick={() => setOpen(false)} className="p-1 rounded hover:bg-white/20 text-white/80 hover:text-white transition-colors">
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
           </div>
 
           {/* Messages */}
@@ -150,9 +175,17 @@ export function GrantsAssistant() {
               <div key={m.id} className={cn('flex', m.role === 'user' ? 'justify-end' : 'justify-start')}>
                 <div className={cn('max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap shadow-sm', m.role === 'user' ? 'bg-[#286b25] text-white rounded-br-sm' : 'bg-white border border-slate-200 text-slate-800 rounded-bl-sm')}>
                   {m.content}
-                  {m.role === 'assistant' && m.source !== 'local' && (
+                  {m.role === 'assistant' && (
                     <p className="text-[9px] font-bold uppercase tracking-wide text-slate-400 mt-1.5 flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[11px]">auto_awesome</span>Answered by AI model
+                      {m.source === 'ai' ? (
+                        <>
+                          <span className="material-symbols-outlined text-[11px]">auto_awesome</span>Answered by {m.modelLabel ?? 'AI'}
+                        </>
+                      ) : (
+                        <>
+                          <span className="material-symbols-outlined text-[11px]">menu_book</span>Local knowledge base
+                        </>
+                      )}
                     </p>
                   )}
                 </div>
