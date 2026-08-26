@@ -2,15 +2,15 @@
 import type { GeofenceConfig } from '@/types';
 
 /**
- * Nsambya Office Geofence Configuration
- * Coordinates: 0.3003° N, 32.5921° E
- * Radius: 150 meters
+ * ARDHI Office Geofence Configuration
+ * Coordinates: 0°19'12.0"N, 32°34'48.0"E  (0.3200, 32.5800)
+ * Radius: 200 metres
  */
 export const OFFICE_GEOFENCE: GeofenceConfig = {
-  latitude: 0.3003,
-  longitude: 32.5921,
-  radiusMeters: 150,
-  label: 'Nsambya Office',
+  latitude: 0.32,
+  longitude: 32.58,
+  radiusMeters: 200,
+  label: 'ARDHI Office (200m geofence)',
 };
 
 /**

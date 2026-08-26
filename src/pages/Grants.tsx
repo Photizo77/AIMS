@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
 import { MOCK_GRANTS, GRANT_STAGES, formatCurrency, daysUntil, grantProgress, type GrantRecord } from '@/data/grants';
 import { GrantsPipelineBoard } from '@/components/grants/GrantsPipelineBoard';
+import { FormsShortcut } from '@/components/forms/FormsShortcut';
 
 type ColorKey = 'green' | 'navy' | 'orange' | 'mint' | 'red';
 const CHIP: Record<ColorKey, string> = { green: 'bg-aims-green text-white', navy: 'bg-aims-navy text-white', orange: 'bg-aims-orange text-white', mint: 'bg-aims-mint text-aims-green', red: 'bg-red-500 text-white' };
@@ -48,6 +49,7 @@ export function Grants() {
           <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">Grants Pipeline</h1>
           <p className="text-base font-medium text-white">Organization-wide grant tracking from identification to award</p>
         </div>
+        <FormsShortcut module="grants" title="Grant Forms — Proposal Cover Sheet · Budget · Milestone Checklist · Closeout Report" />
         <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
           <GrantsPipelineBoard />
         </div>

@@ -24,6 +24,7 @@ export function ContractsTab() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
   const isED = user?.role === 'ED';
+  const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
 
   // Contracts awaiting ED employer signature
   const [signQueue, setSignQueue] = useState([
@@ -124,7 +125,7 @@ export function ContractsTab() {
                 </td>
                 <td className="px-4 py-3">
                   <button className="text-xs text-aims-mint hover:underline mr-3">Edit</button>
-                  <button className="text-xs text-gray-500 hover:underline">View</button>
+                  <button onClick={() => setSelectedContract(contract)} className="text-xs text-gray-500 hover:underline">View Full Details</button>
                 </td>
               </tr>
             ))}
@@ -138,6 +139,8 @@ export function ContractsTab() {
           onClose={() => setShowAddForm(false)}
         />
       )}
+
+      {selectedContract && <ContractDetailModal contract={selectedContract} onClose={() => setSelectedContract(null)} />}
     </div>
   );
 }
@@ -191,6 +194,42 @@ function AddContractModal({ onSave, onClose }: { onSave: () => void; onClose: ()
           <button onClick={onSave} className="px-4 py-2 text-sm bg-aims-mint text-white rounded-lg hover:opacity-90">
             Save Contract
           </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── CONTRACT DETAIL MODAL (full record) ──
+function ContractDetailModal({ contract, onClose }: { contract: Contract; onClose: () => void }) {
+  const { showToast } = useNotifications();
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={onClose}>
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className="px-6 py-4 bg-aims-navy text-white flex items-center justify-between">
+          <div>
+            <p className="text-[10px] font-bold text-white/70 font-mono">{contract.id} · {contract.type}</p>
+            <h3 className="text-lg font-extrabold">Employment Contract — {contract.employeeName}</h3>
+          </div>
+          <button onClick={onClose} className="text-white/80 hover:text-white"><span className="material-symbols-outlined text-[22px]">close</span></button>
+        </div>
+        <div className="p-6 space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100"><p className="text-[10px] font-bold text-slate-500 uppercase">Employee ID</p><p className="text-sm font-bold text-slate-900 mt-0.5 font-mono">{contract.employeeId}</p></div>
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100"><p className="text-[10px] font-bold text-slate-500 uppercase">Contract Type</p><p className="text-sm font-bold text-slate-900 mt-0.5 capitalize">{contract.type}</p></div>
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100"><p className="text-[10px] font-bold text-slate-500 uppercase">Start Date</p><p className="text-sm font-bold text-slate-900 mt-0.5">{contract.startDate}</p></div>
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100"><p className="text-[10px] font-bold text-slate-500 uppercase">End Date</p><p className="text-sm font-bold text-slate-900 mt-0.5">{contract.endDate || 'Indefinite'}</p></div>
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100"><p className="text-[10px] font-bold text-slate-500 uppercase">Salary</p><p className="text-sm font-extrabold text-aims-navy mt-0.5">UGX {(contract.salary * 1000).toLocaleString()}</p></div>
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100"><p className="text-[10px] font-bold text-slate-500 uppercase">Status</p><p className="text-sm font-bold text-slate-900 mt-0.5 capitalize">{contract.status}</p></div>
+          </div>
+          <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Audit Trail</p>
+            <p className="text-xs text-slate-600">Created: {contract.createdAt} · Updated: {contract.updatedAt}</p>
+            <p className="text-[10px] text-slate-400 mt-1">Auto-filed to Documents {'>'} HR &amp; Contracts. Refer to FORM-HR-01 for the full contract template.</p>
+          </div>
+          <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+            <button onClick={() => showToast({ title: 'Downloading', message: `${contract.employeeName} contract PDF.`, type: 'success' })} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg">Download PDF</button>
+          </div>
         </div>
       </div>
     </div>

@@ -525,6 +525,7 @@ function AdminDashboard() {
 
 function FinanceDashboard() {
   const { user } = useAuth();
+  const showCheckIn = user?.role === 'FINANCE';
   const { showToast } = useNotifications();
   const navigate = useNavigate();
   const pendingEdits = financeService.getPendingEdits();
@@ -560,7 +561,7 @@ function FinanceDashboard() {
   return (
     <div className="space-y-6">
       <DashHeader gradient="bg-grad-navy" title="Finance Operational Center" subtitle={`Department: Finance | Reports to: ED — ${user?.name ?? ''}`} />
-      <CheckInCard />
+      {showCheckIn && <CheckInCard />}
 
       {/* Headline stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -737,7 +738,9 @@ function FinanceDashboard() {
 }
 
 function GrantDashboard() {
+  const { user } = useAuth();
   const grants = grantService.getAllGrants();
+  const showCheckIn = user?.role === 'GRANT_WRITER' || user?.role === 'GRANTS_MANAGER';
   const unassigned = grants.filter((g) => !g.handler || g.handler === 'Unassigned').length;
   const active = grants.filter((g) => !['awarded', 'declined'].includes(g.stage)).length;
   const pipelineTotal = grants.filter((g) => !['awarded', 'declined'].includes(g.stage)).reduce((s, g) => s + g.amountRequested, 0);
@@ -745,7 +748,7 @@ function GrantDashboard() {
   return (
     <div className="space-y-6">
       <DashHeader gradient="bg-grad-navy" title="Grants & Proposals" subtitle="Discover, claim and track grants — AI-assisted drafting & deadline tracking" />
-      <CheckInCard />
+      {showCheckIn && <CheckInCard />}
       {/* Stage counts — whole organizational pipeline */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         {GRANT_STAGES.map((s) => {
@@ -791,6 +794,8 @@ function GrantDashboard() {
 // REFACTORED INNOVATOR DASHBOARD - Shows ALL projects for strategic overview
 function InnovatorDashboard() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const showCheckIn = user?.role === 'INNOVATOR';
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
 
   // FIX: Use getAllProjects to show the ENTIRE organizational pipeline
@@ -811,7 +816,7 @@ function InnovatorDashboard() {
   return (
     <div className="space-y-6">
       <DashHeader gradient="bg-grad-navy" title="Innovation Pipeline" subtitle="Research execution, prototyping & production tracking" />
-      <CheckInCard />
+      {showCheckIn && <CheckInCard />}
       <SharedLibraryWidget />
       
       {/* Stats for ALL projects */}

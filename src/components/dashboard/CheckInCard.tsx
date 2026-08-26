@@ -5,9 +5,10 @@ import { useNotifications } from '@/context/NotificationContext';
 import { useAttendance } from '@/context/AttendanceContext';
 import { cn } from '@/lib/utils';
 
-const OFFICE_LAT = 0.2925;
-const OFFICE_LNG = 32.5979;
-const MAX_RADIUS_METERS = 150;
+// Office geofence: 0°19'12.0"N, 32°34'48.0"E — 200 metre radius
+const OFFICE_LAT = 0.32;
+const OFFICE_LNG = 32.58;
+const MAX_RADIUS_METERS = 200;
 
 function getDistanceMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371e3;

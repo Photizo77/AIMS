@@ -1,0 +1,19 @@
+feat: full record details, personalized redirects, live notifications & email, forms everywhere, geofence
+
+- Full record details across the system: requisition detail modal (ED/CD/Finance),
+  CD opens full grant detail page (with Flag for ED), asset detail modal,
+  payslip detail modal, contract detail modal
+- Personalized redirects: CheckInCard hidden for CD/ED on the Grants, Finance
+  and Innovations dashboard redirects (shown only to the home role)
+- Notifications persist to localStorage so pushes (e.g. project handoffs) pop up
+  in the recipient bell after login; targeted notifications also dispatch email
+- Email system for @ardhi.org.ug: dependency-free Netlify SMTP function
+  (node:net + STARTTLS; env SMTP_HOST/PORT/USER/PASS/FROM) + email client lib
+  with name->address mapping; Email composer sends through it with local-mode
+  fallback until credentials are configured in Netlify
+- Forms: ARDHI Forms Library surfaced in every module via FormLibraryModal +
+  in-module shortcuts (HR-01..05, FIN-01..03, GRT-01..04, INV-01..02,
+  INVT-01..02, SYS-01..02) on HR, Finance, Grants, Tasks, Inventory, RBAC
+- Login now reflects in attendance (auto check-in, persisted per user)
+- Geofence restricted to a 200m radius at 0.32N, 32.58E in geofence.ts,
+  CheckInCard and Attendance

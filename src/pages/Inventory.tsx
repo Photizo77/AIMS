@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { InventoryManager } from '@/components/inventory/InventoryManager';
 import { InventoryHub } from '@/components/inventory/InventoryHub';
 import { openFlagForED } from '@/components/grants/FlagForEDModal';
+import { FormsShortcut } from '@/components/forms/FormsShortcut';
 
 const READ_ONLY_ASSETS = [
   { tag: 'LAP001', name: 'MacBook Pro 14"', category: 'IT Hardware', custodian: 'Sarah Aciro', condition: 'Excellent' },
@@ -75,6 +76,7 @@ export function Inventory() {
         <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">Inventory & Asset Management</h1>
         <p className="text-base font-medium text-white">Assets, stock & consumables, reorders, assignment, maintenance and stock-take</p>
       </div>
+      <FormsShortcut module="inventory" title="Inventory Forms — Reorder Request · Asset Register Entry" />
       {user?.role === 'CD' ? <InventoryReadOnly /> : user?.role === 'COMPANY_ADMIN' || user?.role === 'ED' ? <InventoryHub /> : <InventoryManager />}
     </div>
   );

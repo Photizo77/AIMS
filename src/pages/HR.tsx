@@ -15,6 +15,7 @@ import { ContractsTab } from '@/components/admin/ContractsTab';
 import { PerformanceTab } from '@/components/admin/PerformanceTab';
 import { OffboardingTab } from '@/components/admin/OffboardingTab';
 import { HRSummary } from '@/components/admin/HRSummary';
+import { FormsShortcut } from '@/components/forms/FormsShortcut';
 
 type AdminTab = 'directory' | 'payslips' | 'leave' | 'contracts' | 'appraisals' | 'offboarding';
 
@@ -82,6 +83,8 @@ export function HR() {
           </button>
         ))}
       </div>
+
+      <FormsShortcut module={['hr', 'attendance']} title="HR Forms — Employment Contract · Employee Info · Appraisal · Leave · Offboarding" />
 
       <div className="bg-slate-50 rounded-xl p-5">
         {activeTab === 'directory' && <PeopleTab />}

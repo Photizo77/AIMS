@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
 import { INNOVATION_STAGES, INNOVATION_STAGE_LABELS } from '@/types';
 import { innovationService } from '@/services/innovationService';
+import { FormsShortcut } from '@/components/forms/FormsShortcut';
 
 type ColorKey = 'green' | 'navy' | 'orange' | 'mint';
 
@@ -44,6 +45,8 @@ export function Tasks() {
         <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">Innovations & Tasks</h1>
         <p className="text-base font-medium text-white">{scope === 'mine' ? 'Your assigned innovation projects and tasks' : 'Organization-wide innovation pipeline oversight'}</p>
       </div>
+
+      <FormsShortcut module="innovations" title="Innovation Forms — Project Proposal · Feasibility Study" />
 
       {/* Stats Row - Dynamically updates based on filtered projects */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">

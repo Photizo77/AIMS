@@ -97,6 +97,93 @@ const STATUS_BADGE: Record<RequisitionStatus, { label: string; cls: string }> = 
   rejected: { label: 'Rejected', cls: 'bg-red-100 text-red-600' },
 };
 
+// ── FULL REQUISITION DETAIL MODAL (ED / CD / Finance) ──
+function RequisitionDetailModal({ req, onClose }: { req: Requisition; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={onClose}>
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="px-6 py-4 bg-aims-navy text-white flex items-center justify-between sticky top-0">
+          <div>
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <span className="text-[10px] font-bold text-white/70 font-mono">{req.id}</span>
+              <span className={cn('text-[9px] font-bold px-1.5 py-0.5 rounded uppercase', STATUS_BADGE[req.status].cls)}>{STATUS_BADGE[req.status].label}</span>
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-white/15">{req.dept}</span>
+            </div>
+            <h3 className="text-lg font-extrabold">{req.title}</h3>
+          </div>
+          <button onClick={onClose} className="text-white/80 hover:text-white"><span className="material-symbols-outlined text-[22px]">close</span></button>
+        </div>
+
+        <div className="p-6 space-y-5">
+          {/* Parties & financial */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100"><p className="text-[10px] font-bold text-slate-500 uppercase">Requester</p><p className="text-sm font-bold text-slate-900 mt-0.5">{req.requester}</p></div>
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100"><p className="text-[10px] font-bold text-slate-500 uppercase">Department</p><p className="text-sm font-bold text-slate-900 mt-0.5">{req.dept}</p></div>
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100"><p className="text-[10px] font-bold text-slate-500 uppercase">Amount</p><p className="text-sm font-extrabold text-aims-navy mt-0.5">{fmtMoney(req.amount)}</p></div>
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100"><p className="text-[10px] font-bold text-slate-500 uppercase">Budget Line</p><p className="text-xs font-bold text-slate-900 mt-0.5 font-mono">{req.budgetLine}</p></div>
+          </div>
+
+          {/* Purpose */}
+          <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Purpose / Justification</p>
+            <p className="text-sm text-slate-700">{req.purpose}</p>
+          </div>
+
+          {/* Line items */}
+          <div>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Line Items</p>
+            <table className="w-full text-xs border border-slate-200 rounded-lg overflow-hidden">
+              <thead className="bg-slate-50"><tr><th className="px-3 py-1.5 text-left text-slate-500 font-bold">Item</th><th className="px-3 py-1.5 text-right text-slate-500 font-bold">Qty</th><th className="px-3 py-1.5 text-right text-slate-500 font-bold">Unit</th><th className="px-3 py-1.5 text-right text-slate-500 font-bold">Total</th></tr></thead>
+              <tbody className="divide-y divide-slate-100">
+                {req.lineItems.map((li, i) => <tr key={i}><td className="px-3 py-1.5 text-slate-700">{li.item}</td><td className="px-3 py-1.5 text-right text-slate-600">{li.qty}</td><td className="px-3 py-1.5 text-right text-slate-600">{li.unit}</td><td className="px-3 py-1.5 text-right font-semibold text-slate-900">{fmtMoney(li.total)}</td></tr>)}
+                <tr className="bg-slate-50 font-bold"><td colSpan={3} className="px-3 py-1.5 text-slate-700">Total</td><td className="px-3 py-1.5 text-right text-aims-navy">{fmtMoney(req.amount)}</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Attachments */}
+          <div>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Attachments ({req.attachments.length})</p>
+            {req.attachments.length === 0 && <p className="text-xs text-slate-400 italic">No attachments.</p>}
+            {req.attachments.map((att) => (
+              <div key={att.id} className="flex items-center justify-between p-2 bg-slate-50 rounded-lg border border-slate-100 mb-1">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="material-symbols-outlined text-[16px] text-slate-400">{att.fileType === 'PDF' ? 'picture_as_pdf' : att.fileType === 'ZIP' ? 'folder_zip' : 'description'}</span>
+                  <span className="text-xs font-semibold text-slate-900 truncate">{att.name}</span>
+                  <span className="text-[10px] text-slate-400">({att.size})</span>
+                </div>
+                <button className="text-aims-navy text-xs font-bold hover:underline">Download</button>
+              </div>
+            ))}
+          </div>
+
+          {/* ED decision + disbursement */}
+          {req.edDecision && (
+            <div className={cn('p-3 rounded-lg border', req.edDecision.action === 'approved' ? 'bg-aims-green/5 border-aims-green/20' : 'bg-red-50 border-red-200')}>
+              <p className="text-[10px] font-bold uppercase tracking-wider mb-1 text-slate-500">ED {req.edDecision.action} • {formatDate(req.edDecision.date)}</p>
+              <p className="text-xs text-slate-700 italic">"{req.edDecision.comment}"</p>
+            </div>
+          )}
+          {req.disbursementRef && (
+            <div className="p-2 bg-aims-green/5 rounded-lg border border-aims-green/20 text-xs"><span className="font-bold text-aims-green">Disbursement Ref:</span> <span className="font-mono text-slate-900">{req.disbursementRef}</span></div>
+          )}
+
+          {/* Audit trail */}
+          <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Audit Trail</p>
+            <div className="space-y-1 text-xs text-slate-600">
+              <p>Created: {formatDate(req.createdAt)}</p>
+              <p>Last updated: {formatDate(req.updatedAt)}</p>
+              <p>Days in current status: {req.daysInStatus}</p>
+              <p>{req.edDecision ? `Decision by ED on ${formatDate(req.edDecision.date)}` : 'Awaiting ED decision'}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── MAIN ROUTER: renders the right view per role ──
 export function Approvals() {
   const { user } = useAuth();
@@ -120,6 +207,7 @@ function FinanceRequisitionWorkspace({ userName }: { userName: string }) {
   const [filterAmount, setFilterAmount] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(() => Boolean((location.state as { new?: boolean } | null)?.new));
+  const [detail, setDetail] = useState<Requisition | null>(null);
 
   const visibleReqs = useMemo(() => requisitions.filter((r) => {
     if (activeTab === 'drafts' && !(r.status === 'draft' && r.requester === userName)) return false;
@@ -347,7 +435,7 @@ function FinanceRequisitionWorkspace({ userName }: { userName: string }) {
                   )}
 
                   <div className="pt-3 border-t border-slate-100 flex justify-end gap-2 flex-wrap">
-                    <button onClick={() => showToast({ title: 'Viewing record', message: r.id, type: 'info' })} className="px-3 py-1.5 text-xs font-bold text-aims-navy border border-aims-navy/20 rounded-lg hover:bg-aims-navy/5 flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">visibility</span>View Details</button>
+                    <button onClick={() => setDetail(r)} className="px-3 py-1.5 text-xs font-bold text-aims-navy border border-aims-navy/20 rounded-lg hover:bg-aims-navy/5 flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">visibility</span>View Full Details</button>
                     {r.status === 'draft' && <button onClick={() => handlePush(r.id)} className="px-3 py-1.5 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90 flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">send</span>Push to ED</button>}
                     {r.status === 'pushed' && (
                       <>
@@ -369,6 +457,8 @@ function FinanceRequisitionWorkspace({ userName }: { userName: string }) {
           );
         })}
       </div>
+
+      {detail && <RequisitionDetailModal req={detail} onClose={() => setDetail(null)} />}
     </div>
   );
 }
@@ -378,6 +468,7 @@ function EDApprovalQueue() {
   const { user } = useAuth();
   const { showToast, addNotification } = useNotifications();
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [detail, setDetail] = useState<Requisition | null>(null);
   const [, setFlagVersion] = useState(0);
   useEffect(() => subscribeFlags(() => setFlagVersion((v) => v + 1)), []);
   const requisitions = useRequisitions();
@@ -481,6 +572,7 @@ function EDApprovalQueue() {
                     </tbody>
                   </table>
                   <div className="flex justify-end gap-2">
+                    <button onClick={() => setDetail(r)} className="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50 flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">visibility</span>View Full Details</button>
                     <button onClick={() => decide(r.id, 'rejected')} className="px-4 py-2 bg-red-50 text-red-600 text-xs font-bold rounded-lg hover:bg-red-100 flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">close</span>Reject</button>
                     <button onClick={() => decide(r.id, 'returned')} className="px-4 py-2 bg-aims-orange text-white text-xs font-bold rounded-lg hover:bg-aims-orange/90 flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">undo</span>Push Back</button>
                     <button onClick={() => decide(r.id, 'approved')} className="px-4 py-2 bg-aims-green text-white text-xs font-bold rounded-lg hover:bg-aims-green/90 flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">check</span>Approve</button>
@@ -491,6 +583,7 @@ function EDApprovalQueue() {
           );
         })}
       </div>
+      {detail && <RequisitionDetailModal req={detail} onClose={() => setDetail(null)} />}
     </div>
   );
 }
@@ -498,6 +591,7 @@ function EDApprovalQueue() {
 // ── READ-ONLY VIEW (CD — Approvals in Progress) ──
 function ReadonlyApprovals() {
   const all = requisitions;
+  const [detail, setDetail] = useState<Requisition | null>(null);
   return (
     <div className="space-y-6">
       <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
@@ -523,15 +617,22 @@ function ReadonlyApprovals() {
                 <td className="px-4 py-3 font-bold text-slate-900 text-xs">{fmtMoney(r.amount)}</td>
                 <td className="px-4 py-3"><span className={cn('text-[9px] font-bold px-1.5 py-0.5 rounded uppercase', STATUS_BADGE[r.status].cls)}>{STATUS_BADGE[r.status].label}</span></td>
                 <td className="px-4 py-3 text-right">
-                  <button onClick={() => openFlagForED({ recordLabel: `${r.id} — ${r.title}`, sourceModule: 'approvals' })} className="text-[10px] font-bold text-aims-orange hover:underline flex items-center gap-1 justify-end">
-                    <span className="material-symbols-outlined text-[13px]">flag</span>Flag for ED
-                  </button>
+                  <div className="flex items-center justify-end gap-2">
+                    <button onClick={() => setDetail(r)} className="text-[10px] font-bold text-aims-navy hover:underline flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[13px]">visibility</span>View
+                    </button>
+                    <button onClick={() => openFlagForED({ recordLabel: `${r.id} — ${r.title}`, sourceModule: 'approvals' })} className="text-[10px] font-bold text-aims-orange hover:underline flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[13px]">flag</span>Flag for ED
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {detail && <RequisitionDetailModal req={detail} onClose={() => setDetail(null)} />}
     </div>
   );
 }

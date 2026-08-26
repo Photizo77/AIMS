@@ -6,7 +6,6 @@ import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
 import { GRANT_STAGES, formatCurrency, daysUntil, grantProgress, type GrantRecord } from '@/data/grants';
 import { grantService } from '@/services/grantService';
-import { openFlagForED } from '@/components/grants/FlagForEDModal';
 
 type ColorKey = 'green' | 'navy' | 'orange' | 'mint' | 'red';
 const CHIP: Record<ColorKey, string> = { green: 'bg-aims-green text-white', navy: 'bg-aims-navy text-white', orange: 'bg-aims-orange text-white', mint: 'bg-aims-mint text-aims-green', red: 'bg-red-500 text-white' };
@@ -18,11 +17,9 @@ export function GrantsPipelineBoard() {
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [searchQuery, setSearchQuery] = useState('');
-  const [summaryGrant, setSummaryGrant] = useState<GrantRecord | null>(null);
   const [grants, setGrants] = useState<GrantRecord[]>(() => grantService.getAllGrants());
 
   if (!user) return null;
-  const isCD = user.role === 'CD';
   const canExpressInterest = user.role === 'GRANT_WRITER' || user.role === 'GRANTS_MANAGER';
 
   const filtered = grants.filter((g) => {
@@ -42,7 +39,6 @@ export function GrantsPipelineBoard() {
   const getDeadlineColor = (days: number) => days <= 7 ? 'text-red-500 bg-red-50 border-red-200' : days <= 30 ? 'text-aims-orange bg-aims-orange/10 border-aims-orange/20' : 'text-slate-500 bg-slate-50 border-slate-200';
 
   const handleCardClick = (g: GrantRecord) => {
-    if (isCD) { setSummaryGrant(g); return; }
     navigate(`/grants/${g.id}`);
   };
 
@@ -146,7 +142,7 @@ export function GrantsPipelineBoard() {
                         {unassigned && canExpressInterest && (
                           <button onClick={() => handleExpressInterest(g)} className="text-[10px] font-bold px-2 py-1 rounded bg-aims-green text-white hover:bg-aims-green/90">Express Interest</button>
                         )}
-                        <button onClick={() => handleCardClick(g)} className="text-xs font-bold text-aims-navy hover:underline">{isCD ? 'Summary' : 'Open'}</button>
+                        <button onClick={() => handleCardClick(g)} className="text-xs font-bold text-aims-navy hover:underline">{'Open'}</button>
                       </div>
                     </td>
                   </tr>
@@ -157,36 +153,7 @@ export function GrantsPipelineBoard() {
         </div>
       )}
 
-      {/* CD Summary Popover (read-only, no detail page access) */}
-      {summaryGrant && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm" onClick={() => setSummaryGrant(null)}>
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="px-5 py-4 bg-aims-navy text-white flex items-center justify-between">
-              <h3 className="text-sm font-bold text-white">Grant Summary (Read-Only)</h3>
-              <button onClick={() => setSummaryGrant(null)} className="text-white/80 hover:text-white"><span className="material-symbols-outlined text-[20px]">close</span></button>
-            </div>
-            <div className="p-5 space-y-3">
-              <div><p className="text-base font-extrabold text-slate-900">{summaryGrant.title}</p><p className="text-xs text-slate-500 mt-0.5">{summaryGrant.funder} • {summaryGrant.pillar}</p></div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 bg-slate-50 rounded-lg border border-slate-100"><p className="text-[10px] font-bold text-slate-500 uppercase">Stage</p><p className="text-sm font-bold text-slate-900 capitalize mt-0.5">{summaryGrant.stage.replace('_', ' ')}</p></div>
-                <div className="p-3 bg-slate-50 rounded-lg border border-slate-100"><p className="text-[10px] font-bold text-slate-500 uppercase">Deadline</p><p className="text-sm font-bold text-slate-900 mt-0.5">{daysUntil(summaryGrant.deadline)}d remaining</p></div>
-                <div className="p-3 bg-slate-50 rounded-lg border border-slate-100"><p className="text-[10px] font-bold text-slate-500 uppercase">Requested</p><p className="text-sm font-bold text-slate-900 mt-0.5">{formatCurrency(summaryGrant.amountRequested)}</p></div>
-                <div className="p-3 bg-slate-50 rounded-lg border border-slate-100"><p className="text-[10px] font-bold text-slate-500 uppercase">Handler</p><p className="text-sm font-bold text-slate-900 mt-0.5">{summaryGrant.handler}</p></div>
-              </div>
-              <div>
-                <div className="flex justify-between text-xs mb-1"><span className="font-semibold text-slate-600">Checklist Progress</span><span className="font-bold text-slate-900">{grantProgress(summaryGrant)}%</span></div>
-                <div className="w-full bg-slate-100 rounded-full h-2"><div className="h-2 rounded-full bg-aims-green" style={{ width: `${grantProgress(summaryGrant)}%` }} /></div>
-              </div>
-              <p className="text-[10px] text-slate-400 italic">CD access level: summary view only. Contact the ED or grant handler for full details.</p>
-              {isCD && (
-                <button onClick={() => openFlagForED({ recordLabel: `${summaryGrant.id} — ${summaryGrant.title}`, sourceModule: 'grants' })} className="w-full mt-3 py-2 bg-aims-orange/10 border border-aims-orange/30 text-aims-orange text-xs font-bold rounded-lg hover:bg-aims-orange/20 flex items-center justify-center gap-1.5">
-                  <span className="material-symbols-outlined text-[15px]">flag</span>Flag for ED
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+
     </div>
   );
 }

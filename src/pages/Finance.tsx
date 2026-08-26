@@ -4,6 +4,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
 import { financeService, type FinanceRecordType } from '@/services/financeService';
+import { FormsShortcut } from '@/components/forms/FormsShortcut';
 
 interface Transaction {
   id: string;
@@ -159,6 +160,8 @@ export function Finance() {
         <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">Cash Flow Analytics</h1>
         <p className="text-base font-medium text-white">Income, expenditure, budget health & disbursement ledger — records are editable, changes require ED approval</p>
       </div>
+
+      <FormsShortcut module={['finance', 'procurement']} title="Finance & Procurement Forms — Requisition · Procurement Request · Expense Reimbursement" />
 
       {/* ── EDITABLE FINANCIAL RECORDS (ED-approval gated) ── */}
       <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">

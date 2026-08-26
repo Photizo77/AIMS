@@ -1,10 +1,15 @@
 // src/context/NotificationContext.tsx
 // ============================================================
 // AIMS — Notification & Toast System (Phase 2)
+// Notifications persist per device (localStorage) so a push raised while
+// another user is logged in pops up in the recipient's bell after login.
+// Notifications targeted at a person also dispatch an email through the
+// Ardhi email system (falls back to local mode when SMTP isn't configured).
 // ============================================================
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
 import type { Notification, NotificationType } from '@/types';
+import { sendEmail, nameToEmail, userIdToEmail } from '@/lib/email';
 
 // ─────────────────────────────────────────────
 // TOAST TYPE (temporary pop-up)
@@ -52,9 +57,26 @@ function generateId(): string {
 // ─────────────────────────────────────────────
 // PROVIDER
 // ─────────────────────────────────────────────
+const STORAGE_KEY = 'aims_notifications';
+
+function loadPersisted(): Notification[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw) as Notification[];
+  } catch { /* ignore */ }
+  return [];
+}
+
 export function NotificationProvider({ children }: { children: ReactNode }) {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>(loadPersisted);
   const [toasts, setToasts] = useState<Toast[]>([]);
+
+  // Persist so notifications survive logout/login and page reloads
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(notifications.slice(0, 100)));
+    } catch { /* ignore */ }
+  }, [notifications]);
 
   // ── Persistent Notifications ──
   const addNotification = useCallback(
@@ -66,6 +88,20 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         read: false,
       };
       setNotifications((prev) => [newNotification, ...prev]);
+
+      // Dispatch an email to the recipient through the Ardhi email system
+      const recipientEmail = notification.userId
+        ? userIdToEmail(notification.userId)
+        : notification.recipientName
+          ? nameToEmail(notification.recipientName)
+          : null;
+      if (recipientEmail) {
+        void sendEmail({
+          to: recipientEmail,
+          subject: `[AIMS] ${notification.title}`,
+          body: `${notification.message}\n\n— ARDHI Internal Management System (AIMS)\nReply from within the system or email as usual.`,
+        });
+      }
     },
     []
   );

@@ -71,6 +71,7 @@ export function InventoryHub() {
   const [activeTab, setActiveTab] = useState<TabKey>('assets');
   const [assetSearch, setAssetSearch] = useState('');
   const [reorders, setReorders] = useState(MOCK_REORDERS);
+  const [assetDetail, setAssetDetail] = useState<Asset | null>(null);
 
   const notify = (title: string, message: string, type: 'success' | 'info' | 'warning' = 'success') => showToast({ title, message, type });
 
@@ -118,7 +119,7 @@ export function InventoryHub() {
                     <td className="px-4 py-2.5 text-slate-600 text-xs font-bold">{a.value}</td>
                     <td className="px-4 py-2.5 text-right">
                       <div className="flex justify-end gap-1.5">
-                        <button onClick={() => notify('Asset Detail', `${a.name} (${a.tag}) · acquired ${a.acquired} from ${a.vendor} · custodian history on file.`)} className="text-[10px] font-bold text-aims-navy hover:underline">View</button>
+                        <button onClick={() => setAssetDetail(a)} className="text-[10px] font-bold text-aims-navy hover:underline">View</button>
                         <button onClick={() => notify('Asset Reassigned', `${a.name} reassigned to a new custodian.`)} className="text-[10px] font-bold text-aims-navy hover:underline">Reassign</button>
                         <button onClick={() => notify('Maintenance Scheduled', `Maintenance scheduled for ${a.name}.`)} className="text-[10px] font-bold text-aims-navy hover:underline">Schedule Maint.</button>
                       </div>
@@ -250,8 +251,7 @@ export function InventoryHub() {
         </div>
       )}
 
-      {/* ── STOCK-TAKE ── */}
-      {activeTab === 'stocktake' && (
+      {/* ── STOCK-TAKE ── */}      {activeTab === 'stocktake' && (
         <div className="space-y-4">
           <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
             <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
@@ -280,6 +280,60 @@ export function InventoryHub() {
             <button onClick={() => notify('Stock-Take Planned', 'Next stock-take scheduled (Nov 30).')} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90">Plan Stock-Take</button>
             <button onClick={() => notify('Auditors Assigned', 'Stock-take auditors assigned.')} className="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50">Assign Auditors</button>
             <button onClick={() => notify('Sheets Printed', 'Audit count sheets printed.')} className="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50">Print Audit Sheets</button>
+          </div>
+        </div>
+      )}
+
+      {/* Asset detail modal — full record */}
+      {assetDetail && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={() => setAssetDetail(null)}>
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="px-6 py-4 bg-aims-navy text-white flex items-center justify-between sticky top-0">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-[10px] font-bold text-white/70 font-mono">{assetDetail.tag}</span>
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-white/15 uppercase">{assetDetail.category}</span>
+                </div>
+                <h3 className="text-lg font-extrabold">{assetDetail.name}</h3>
+              </div>
+              <button onClick={() => setAssetDetail(null)} className="text-white/80 hover:text-white"><span className="material-symbols-outlined text-[22px]">close</span></button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 bg-slate-50 rounded-lg border border-slate-100"><p className="text-[10px] font-bold text-slate-500 uppercase">Current Custodian</p><p className="text-sm font-bold text-slate-900 mt-0.5">{assetDetail.custodian}</p></div>
+                <div className="p-3 bg-slate-50 rounded-lg border border-slate-100"><p className="text-[10px] font-bold text-slate-500 uppercase">Condition</p><p className="text-sm font-bold text-slate-900 mt-0.5">{assetDetail.condition}</p></div>
+                <div className="p-3 bg-slate-50 rounded-lg border border-slate-100"><p className="text-[10px] font-bold text-slate-500 uppercase">Acquisition</p><p className="text-sm font-bold text-slate-900 mt-0.5">{assetDetail.acquired} · {assetDetail.vendor}</p></div>
+                <div className="p-3 bg-slate-50 rounded-lg border border-slate-100"><p className="text-[10px] font-bold text-slate-500 uppercase">Value</p><p className="text-sm font-extrabold text-aims-navy mt-0.5">{assetDetail.value}</p></div>
+              </div>
+
+              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Custodian History</p>
+                <div className="space-y-1 text-xs text-slate-600">
+                  <p>• {assetDetail.custodian} ({assetDetail.acquired} — present)</p>
+                  <p>• Previous custodians: [view full history]</p>
+                </div>
+              </div>
+
+              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Location History</p>
+                <div className="space-y-1 text-xs text-slate-600">
+                  <p>• ARDHI Office — assigned workstation (since {assetDetail.acquired})</p>
+                </div>
+              </div>
+
+              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Condition Review Log</p>
+                <div className="space-y-1 text-xs text-slate-600">
+                  <p>• Sep 30: {assetDetail.condition} ({assetDetail.custodian})</p>
+                  <p>• Jun 30: {assetDetail.condition} ({assetDetail.custodian})</p>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                <button onClick={() => notify('Asset Reassigned', `${assetDetail.name} reassigned.`)} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg">Reassign</button>
+                <button onClick={() => { notify('Disposal Requested', `${assetDetail.name} disposal/retirement routed for approval.`); setAssetDetail(null); }} className="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg">Retire / Dispose</button>
+              </div>
+            </div>
           </div>
         </div>
       )}

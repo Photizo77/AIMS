@@ -1,6 +1,7 @@
 // src/pages/Email.tsx
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useNotifications } from '@/context/NotificationContext';
+import { sendEmail } from '@/lib/email';
 import { cn } from '@/lib/utils';
 
 type Folder = 'inbox' | 'starred' | 'snoozed' | 'sent' | 'drafts' | 'important' | 'spam' | 'trash' | 'all';
@@ -182,12 +183,14 @@ export function EmailPage() {
     setShowEmojiPicker(false);
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!composeTo.trim() || !composeSubject.trim()) {
       showToast({ title: 'Missing Fields', message: 'Recipient and subject are required.', type: 'error' });
       return;
     }
     const savedTo = composeTo;
+    const savedSubject = composeSubject;
+    const savedBody = editorRef.current?.innerText?.trim() ?? '';
     setShowComposer(false);
     setComposeTo('');
     setComposeSubject('');
@@ -197,7 +200,14 @@ export function EmailPage() {
     setUndoSendVisible(true);
     if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
     undoTimerRef.current = setTimeout(() => { setUndoSendVisible(false); undoTimerRef.current = null; }, 50000);
-    showToast({ title: 'Message Sent', message: `To: ${savedTo}`, type: 'success' });
+
+    // Send through the Ardhi email system (SMTP via Netlify; local fallback when not configured)
+    const result = await sendEmail({ to: savedTo, subject: savedSubject, body: savedBody });
+    showToast({
+      title: result.mode === 'smtp' ? 'Email Sent' : 'Email Queued (Local Mode)',
+      message: `To: ${savedTo} • ${result.message}`,
+      type: result.mode === 'smtp' ? 'success' : 'info',
+    });
   };
 
   const handleUndoSend = () => {

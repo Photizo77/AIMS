@@ -12,6 +12,7 @@ import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
 import { GRANT_STAGES, formatCurrency, daysUntil, grantProgress, type GrantRecord } from '@/data/grants';
 import { grantService } from '@/services/grantService';
+import { openFlagForED } from '@/components/grants/FlagForEDModal';
 
 type TabKey = 'overview' | 'checklist' | 'documents' | 'comments' | 'activity';
 
@@ -179,6 +180,11 @@ export function GrantDetail() {
           {isUnassigned && user.role === 'GRANT_WRITER' && (
             <button onClick={handleExpressInterest} className="px-4 py-2 bg-aims-green text-white text-xs font-bold rounded-lg hover:bg-aims-green/90 flex items-center gap-1.5">
               <span className="material-symbols-outlined text-[16px]">handshake</span>Express Interest — Auto-Assign Me
+            </button>
+          )}
+          {user.role === 'CD' && (
+            <button onClick={() => openFlagForED({ recordLabel: `${grant.id} — ${grant.title}`, sourceModule: 'grants' })} className="px-4 py-2 bg-aims-orange text-white text-xs font-bold rounded-lg hover:bg-aims-orange/90 flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-[16px]">flag</span>Flag for ED
             </button>
           )}
           {isHandler && grant.stage === 'identified' && (

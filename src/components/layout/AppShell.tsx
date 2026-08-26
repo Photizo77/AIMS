@@ -6,6 +6,7 @@ import { SideNavBar } from './SideNavBar';
 import { Toaster } from '@/components/ui/Toaster';
 import { GrantsAssistant } from '@/components/grants/GrantsAssistant';
 import { FlagForEDModal } from '@/components/grants/FlagForEDModal';
+import { FormLibraryModal } from '@/components/forms/FormLibraryModal';
 import { cn } from '@/lib/utils';
 
 export function AppShell() {
@@ -52,6 +53,9 @@ export function AppShell() {
 
       {/* Flag-for-ED modal — available on every page (CD capability) */}
       <FlagForEDModal />
+
+      {/* ARDHI Forms Library modal — opens any form in context */}
+      <FormLibraryModal />
     </div>
   );
 }
