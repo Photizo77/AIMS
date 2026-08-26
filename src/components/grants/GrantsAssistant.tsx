@@ -8,6 +8,7 @@
 // ============================================================
 
 import { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
   buildGrantsSystemPrompt,
@@ -47,7 +48,7 @@ const WELCOME: AssistantMessage = {
   role: 'assistant',
   source: 'local',
   content:
-    "Hi! I'm the ARDHI Grants Assistant — tuned on ARDHI's own documents (Organisational Profile, 5-Year Strategic Plan 2026-2031, resource mobilisation plan) and the Grants Tracker (Aug 2026).\n\nAsk me about our grants history, missed deadlines, live opportunities, or anything about the organisation.",
+    'Good day. I am the ARDHI Grants Assistant, an internal knowledge resource trained on ARDHI\'s documents (Organisational Profile, 5-Year Strategic Plan 2026-2031, resource mobilisation plan) and the Grants Tracker (August 2026).\n\nI can provide details on our grant history, opportunities identified but not pursued, live funding calls, and organisational information. For any specific grant, I will outline our alignment with the ARDHI pillars, the eligibility criteria, and any similar applications we have made previously.',
 };
 
 async function callAiChat(history: ChatMessage[], userText: string, model: string): Promise<{ reply: string; modelLabel: string } | null> {
@@ -76,11 +77,13 @@ async function callAiChat(history: ChatMessage[], userText: string, model: strin
 }
 
 export function GrantsAssistant() {
+  const location = useLocation();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<AssistantMessage[]>([WELCOME]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [modelId, setModelId] = useState('deepseek-chat');
+  const [fabVisible, setFabVisible] = useState(true);
   const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -91,10 +94,30 @@ export function GrantsAssistant() {
 
   // Open on demand from dashboard quick-access buttons
   useEffect(() => {
-    const handler = () => setOpen(true);
+    const handler = () => { setFabVisible(true); setOpen(true); };
     window.addEventListener('aims:open-grants-assistant', handler);
     return () => window.removeEventListener('aims:open-grants-assistant', handler);
   }, []);
+
+  // Hide the floating button when the user scrolls down; restore it on scroll up
+  useEffect(() => {
+    let lastY = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (open) { lastY = y; return; } // keep visible while the panel is open (doubles as the close control)
+      if (y > lastY + 12 && fabVisible) setFabVisible(false);
+      else if (y < lastY - 12 && !fabVisible) setFabVisible(true);
+      lastY = y;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [open, fabVisible]);
+
+  // Reset on navigation: restore the button and close the panel
+  useEffect(() => {
+    setFabVisible(true);
+    setOpen(false);
+  }, [location.pathname]);
 
   const handleSend = async (text: string) => {
     const trimmed = text.trim();
@@ -122,12 +145,15 @@ export function GrantsAssistant() {
 
   return (
     <>
-      {/* Floating action button */}
+      {/* Floating action button — hides on scroll down, reappears on scroll up */}
       <button
         onClick={() => setOpen(!open)}
         title="ARDHI Grants Assistant"
         aria-label="Open grants assistant chat"
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-[#286b25] text-white shadow-xl hover:scale-105 hover:bg-[#1f5520] transition-all flex items-center justify-center"
+        className={cn(
+          'fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-[#286b25] text-white shadow-xl hover:scale-105 hover:bg-[#1f5520] transition-all duration-300 flex items-center justify-center',
+          fabVisible ? 'opacity-100 translate-y-0' : 'opacity-0 pointer-events-none translate-y-4'
+        )}
       >
         <span className="material-symbols-outlined text-[26px]">{open ? 'close' : 'smart_toy'}</span>
         {!open && (
@@ -227,7 +253,7 @@ export function GrantsAssistant() {
                   handleSend(input);
                 }
               }}
-              placeholder="Ask about grants, deadlines, ARDHI…"
+              placeholder="Type your question regarding grants, deadlines or ARDHI…"
               rows={1}
               className="flex-1 text-sm border border-slate-200 rounded-xl px-3 py-2.5 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-aims-navy/30 resize-none max-h-28"
             />
