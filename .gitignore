@@ -1,9 +1,19 @@
-node_modules
+# Dependencies
+node_modules/
 
-# Local Netlify folder
-.netlify
-node_modules
-node_modules
-node_modules
-node_modules
-node_modules
+# Build output
+dist/
+
+# Local Netlify / Vercel folders
+.netlify/
+.vercel/
+
+# Logs & OS
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
