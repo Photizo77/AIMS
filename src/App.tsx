@@ -12,6 +12,8 @@ import { LoginMFA } from '@/pages/auth/LoginMFA';
 // Core Pages
 import { Dashboard } from '@/pages/Dashboard';
 import { UserManagement } from '@/pages/UserManagement';
+import { Calendar } from '@/pages/Calendar';
+import { Reports } from '@/pages/Reports';
 import { Feed } from '@/pages/Feed';
 import { EmailPage } from '@/pages/Email';
 import { Tasks } from '@/pages/Tasks'; // The Innovator "My Work" Module
@@ -48,6 +50,8 @@ export function App() {
               <Route element={<AppShell />}>
                 <Route path="/dashboard" element={<ProtectedRoute module="dashboard"><Dashboard /></ProtectedRoute>} />
                 <Route path="/user-management" element={<ProtectedRoute module="hr_admin"><UserManagement /></ProtectedRoute>} />
+                <Route path="/calendar" element={<ProtectedRoute module="calendar"><Calendar /></ProtectedRoute>} />
+                <Route path="/reports" element={<ProtectedRoute module="reports"><Reports /></ProtectedRoute>} />
                 <Route path="/feed" element={<ProtectedRoute module="feed"><Feed /></ProtectedRoute>} />
                 <Route path="/email" element={<ProtectedRoute><EmailPage /></ProtectedRoute>} />
                 

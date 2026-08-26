@@ -8,6 +8,8 @@
 
 export type FinanceRecordType = 'income' | 'expense' | 'budget';
 
+import { loadJSON, saveJSON, STORAGE_KEYS } from '@/lib/storage';
+
 export interface FinanceRecord {
   id: string;
   type: FinanceRecordType;
@@ -65,15 +67,21 @@ const SEED_BUDGETS: BudgetRecord[] = [
   { id: 'b6', dept: 'Finance', budget: 280000, actual: 180000, forecastPct: 78 },
 ];
 
-let income: FinanceRecord[] = SEED_INCOME.map((r) => ({ ...r }));
-let expenses: FinanceRecord[] = SEED_EXPENSES.map((r) => ({ ...r }));
-let budgets: BudgetRecord[] = SEED_BUDGETS.map((r) => ({ ...r }));
-let pendingEdits: PendingFinanceEdit[] = [];
+interface PersistedFinance { income?: FinanceRecord[]; expenses?: FinanceRecord[]; budgets?: BudgetRecord[]; pendingEdits?: PendingFinanceEdit[] }
+const persistedFinance = loadJSON<PersistedFinance | null>(STORAGE_KEYS.finance, null);
+let income: FinanceRecord[] = (persistedFinance?.income ?? SEED_INCOME).map((r) => ({ ...r }));
+let expenses: FinanceRecord[] = (persistedFinance?.expenses ?? SEED_EXPENSES).map((r) => ({ ...r }));
+let budgets: BudgetRecord[] = (persistedFinance?.budgets ?? SEED_BUDGETS).map((r) => ({ ...r }));
+let pendingEdits: PendingFinanceEdit[] = persistedFinance?.pendingEdits ?? [];
 
 let idCounter = 0;
 function nextId(prefix: string): string {
   idCounter += 1;
   return `${prefix}-${Date.now()}-${idCounter}`;
+}
+
+function saveFinance(): void {
+  saveJSON(STORAGE_KEYS.finance, { income, expenses, budgets, pendingEdits });
 }
 
 function fmt(n: number): string {
@@ -88,10 +96,8 @@ export const financeService = {
   getBudgets: (): BudgetRecord[] => budgets,
   getPendingEdits: (): PendingFinanceEdit[] => pendingEdits,
 
-  totals: {
-    totalIncome: income.reduce((s, r) => s + r.amount, 0),
-    totalExpense: expenses.reduce((s, r) => s + r.amount, 0),
-  },
+  totalIncome: () => income.reduce((s, r) => s + r.amount, 0),
+  totalExpense: () => expenses.reduce((s, r) => s + r.amount, 0),
 
   /**
    * Finance submits a change to a record. The change is queued as PENDING ED
@@ -129,6 +135,7 @@ export const financeService = {
       status: 'pending',
     };
     pendingEdits = [edit, ...pendingEdits];
+    saveFinance();
     return edit;
   },
 
@@ -150,6 +157,7 @@ export const financeService = {
     }
     edit.status = 'approved';
     edit.edNote = edNote;
+    saveFinance();
     return edit;
   },
 
@@ -158,6 +166,7 @@ export const financeService = {
     if (!edit || edit.status !== 'pending') return undefined;
     edit.status = 'rejected';
     edit.edNote = edNote;
+    saveFinance();
     return edit;
   },
 };

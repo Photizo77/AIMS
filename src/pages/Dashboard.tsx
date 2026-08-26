@@ -574,8 +574,8 @@ function FinanceDashboard() {
   const pendingCount = awaitingED.length;
   const returnedCount = returnedToMe.length;
 
-  const totalIncome = financeService.totals.totalIncome;
-  const totalExpense = financeService.totals.totalExpense;
+  const totalIncome = financeService.totalIncome();
+  const totalExpense = financeService.totalExpense();
   const net = totalIncome - totalExpense;
 
   const getAgingColor = (days: number) => (days >= 3 ? 'bg-red-50 text-red-600 border-red-200' : days >= 1 ? 'bg-aims-orange/15 text-aims-orange border-aims-orange/30' : 'bg-aims-green/15 text-aims-green border-aims-green/30');

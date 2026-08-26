@@ -14,8 +14,9 @@ import { GRANT_STAGES, formatCurrency, daysUntil, grantProgress, type GrantRecor
 import { grantService } from '@/services/grantService';
 import { openFlagForED } from '@/components/grants/FlagForEDModal';
 import { grantRiskScore, draftProblemStatement } from '@/lib/aiEngine';
+import { ProposalWorkspace } from '@/components/grants/ProposalWorkspace';
 
-type TabKey = 'overview' | 'checklist' | 'documents' | 'comments' | 'activity';
+type TabKey = 'overview' | 'proposal' | 'checklist' | 'documents' | 'comments' | 'activity';
 
 const STAGE_LABELS = GRANT_STAGES.reduce((acc, s) => ({ ...acc, [s.key]: s.label }), {} as Record<string, string>);
 
@@ -80,6 +81,7 @@ export function GrantDetail() {
 
   const TABS: { key: TabKey; label: string; icon: string }[] = [
     { key: 'overview', label: 'Overview', icon: 'info' },
+    { key: 'proposal', label: 'Proposal', icon: 'edit_document' },
     { key: 'checklist', label: 'Checklist', icon: 'checklist' },
     { key: 'documents', label: 'Documents', icon: 'folder' },
     { key: 'comments', label: 'Comments', icon: 'chat_bubble' },
@@ -328,6 +330,9 @@ export function GrantDetail() {
               )}
             </div>
           )}
+
+          {/* Proposal — sectioned workspace with AI + compliance pack */}
+          {activeTab === 'proposal' && <ProposalWorkspace grantId={grant.id} />}
 
           {/* Checklist */}
           {activeTab === 'checklist' && (

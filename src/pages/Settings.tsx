@@ -2,11 +2,18 @@
 import { useRef, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
+import { exportAllData, importAllData, downloadFile, toCSV } from '@/lib/storage';
+import { grantService } from '@/services/grantService';
+import { innovationService } from '@/services/innovationService';
+import { financeService } from '@/services/financeService';
+import { getAllRequisitions } from '@/services/requisitionService';
+import { STAFF_ROSTER } from '@/data/roster';
 
 export function Settings() {
   const { user, updateAvatar } = useAuth();
   const { showToast } = useNotifications();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const importRef = useRef<HTMLInputElement>(null);
   const [imgError, setImgError] = useState(false);
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -19,11 +26,50 @@ export function Settings() {
     }
   };
 
+  // ── Data Vault: backup / restore / per-domain export ──
+  const handleExportBackup = () => {
+    const data = exportAllData();
+    downloadFile(`aims-backup-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(data, null, 2));
+    showToast({ title: 'Backup Exported', message: 'Full system backup downloaded (JSON).', type: 'success' });
+  };
+
+  const handleImportBackup = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      try {
+        const data = JSON.parse(String(reader.result)) as Record<string, unknown>;
+        importAllData(data);
+        showToast({ title: 'Backup Restored', message: 'Data imported — refresh the page to reload.', type: 'success' });
+      } catch {
+        showToast({ title: 'Import Failed', message: 'The file is not a valid AIMS backup.', type: 'error' });
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  const handleExportCSV = (domain: string) => {
+    if (domain === 'grants') {
+      downloadFile('grants.csv', toCSV(grantService.getAllGrants().map((g) => ({ id: g.id, title: g.title, funder: g.funder, stage: g.stage, deadline: g.deadline, requested: g.amountRequested, handler: g.handler }))), 'text/csv');
+    } else if (domain === 'projects') {
+      downloadFile('innovations.csv', toCSV(innovationService.getAllProjects().map((p) => ({ id: p.id, title: p.title, stage: p.stage, lead: p.leadName, progress: p.progressPercent, daysInStage: p.daysInStage, budget: p.budget ?? '' }))), 'text/csv');
+    } else if (domain === 'requisitions') {
+      downloadFile('requisitions.csv', toCSV(getAllRequisitions().map((r) => ({ id: r.id, title: r.title, dept: r.dept, amount: r.amount, status: r.status, requester: r.requester }))), 'text/csv');
+    } else if (domain === 'staff') {
+      downloadFile('staff.csv', toCSV(STAFF_ROSTER.map((s) => ({ name: s.name, email: s.email, role: s.role, department: s.department, position: s.position, status: s.status }))), 'text/csv');
+    } else if (domain === 'finance') {
+      downloadFile('finance.csv', toCSV(financeService.getBudgets().map((b) => ({ department: b.dept, budget: b.budget, spent: b.actual, forecastPct: b.forecastPct }))), 'text/csv');
+    }
+    showToast({ title: 'Exported', message: `${domain} exported as CSV.`, type: 'success' });
+  };
+
   if (!user) return null;
 
   return (
     <div className="max-w-2xl mx-auto">
-      <div className="mb-6"><h1 className="text-2xl font-extrabold text-slate-900">Settings</h1><p className="text-sm text-slate-500 mt-1">Manage your profile and preferences</p></div>
+      <div className="mb-6"><h1 className="text-2xl font-extrabold text-slate-900">Settings</h1><p className="text-sm text-slate-500 mt-1">Manage your profile, preferences and data</p></div>
 
       {/* PROFILE PHOTO */}
       <div className="bg-white rounded-xl border border-slate-200 p-6 mb-6">
@@ -54,7 +100,7 @@ export function Settings() {
       </div>
 
       {/* NOTIFICATION PREFERENCES */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
+      <div className="bg-white rounded-xl border border-slate-200 p-6 mb-6">
         <h2 className="text-base font-bold text-slate-900 mb-4">Notification Preferences</h2>
         <div className="space-y-3">
           {[
@@ -67,6 +113,27 @@ export function Settings() {
               <span className="text-sm font-medium text-slate-700">{pref.label}</span>
               <input type="checkbox" defaultChecked={pref.defaultChecked} className="w-4 h-4 rounded border-slate-300 text-aims-green focus:ring-aims-green" />
             </label>
+          ))}
+        </div>
+      </div>
+
+      {/* DATA VAULT — backup & restore */}
+      <div className="bg-white rounded-xl border border-slate-200 p-6">
+        <h2 className="text-base font-bold text-slate-900 mb-1">Data Vault — Backup & Restore</h2>
+        <p className="text-xs text-slate-500 mb-4">Everything (grants, proposals, projects, requisitions, finance, feed, notifications) lives in this browser. Export a backup regularly — restore it on any device.</p>
+        <div className="flex flex-wrap gap-2 mb-4">
+          <button onClick={handleExportBackup} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90 flex items-center gap-1.5">
+            <span className="material-symbols-outlined text-[15px]">download</span>Export Full Backup (JSON)
+          </button>
+          <button onClick={() => importRef.current?.click()} className="px-4 py-2 bg-aims-green text-white text-xs font-bold rounded-lg hover:bg-aims-green/90 flex items-center gap-1.5">
+            <span className="material-symbols-outlined text-[15px]">upload</span>Restore from Backup
+          </button>
+          <input ref={importRef} type="file" accept="application/json" onChange={handleImportBackup} className="hidden" />
+        </div>
+        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Per-domain CSV export</p>
+        <div className="flex flex-wrap gap-2">
+          {(['grants', 'projects', 'requisitions', 'finance', 'staff'] as const).map((d) => (
+            <button key={d} onClick={() => handleExportCSV(d)} className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold text-slate-600 hover:bg-slate-100 capitalize">{d}.csv</button>
           ))}
         </div>
       </div>

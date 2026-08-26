@@ -19,6 +19,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
 import { ExecutiveBrief } from '@/components/ai/ExecutiveBrief';
+import { ACTIVE_STAFF } from '@/data/roster';
 
 interface ChatMessage {
   id: string;
@@ -56,19 +57,8 @@ const CHANNELS: ChannelDef[] = [
 
 interface Person { id: string; name: string; role: string; dept: string }
 
-const ALL_USERS: Person[] = [
-  { id: 'user-cd-001', name: 'Nassir Mwanje', role: 'CD', dept: 'Executive' },
-  { id: 'user-ed-001', name: 'Peter Byamugisha', role: 'ED', dept: 'Executive' },
-  { id: 'user-admin-001', name: 'Grace Aceng', role: 'COMPANY_ADMIN', dept: 'HR & Admin' },
-  { id: 'user-sysadmin-001', name: 'Okello Komakech', role: 'SYS_ADMIN', dept: 'IT' },
-  { id: 'user-finance-001', name: 'Amos Ojok', role: 'FINANCE', dept: 'Finance' },
-  { id: 'user-gm-001', name: 'Sarah Aciro', role: 'GRANTS_MANAGER', dept: 'Grants' },
-  { id: 'user-gw-001', name: 'Janet Apio', role: 'GRANT_WRITER', dept: 'Grants' },
-  { id: 'user-innov-001', name: 'Pius Odong', role: 'INNOVATOR', dept: 'Innovation' },
-  { id: 'u-florence', name: 'Florence Adong', role: 'GRANT_WRITER', dept: 'Grants' },
-  { id: 'u-isaac', name: 'Isaac Tumusiime', role: 'FINANCE', dept: 'Finance' },
-  { id: 'u-grace-n', name: 'Grace Nakamya', role: 'COMPANY_ADMIN', dept: 'HR & Admin' },
-];
+// Unified staff roster — single source of truth for mentions and typing
+const ALL_USERS: Person[] = ACTIVE_STAFF.map((s) => ({ id: s.id, name: s.name, role: s.role, dept: s.department }));
 
 // ── Channel access rules ──
 interface ChannelAccess { id: string; canPost: boolean; canModerate: boolean }

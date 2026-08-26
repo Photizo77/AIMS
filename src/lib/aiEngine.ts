@@ -259,8 +259,8 @@ export function requisitionPriceFlags(lineItems: { item: string; unit: string; t
 
 /** Cash-flow forecast from actual income/expenditure + grant pipeline */
 export function cashFlowForecast(): { monthlyBurn: number; monthsOfRunway: number; gapWarning: boolean; detail: string } {
-  const income = financeService.totals.totalIncome;
-  const expense = financeService.totals.totalExpense;
+  const income = financeService.totalIncome();
+  const expense = financeService.totalExpense();
   const monthlyBurn = expense / 8; // YTD ~8 months (Jan-Aug)
   const monthlyInflow = income / 8;
   const cash = 5200000; // liquid cash position (USD, per finance persona)
@@ -326,6 +326,86 @@ export function contractRenewalAdvice(): AiInsight[] {
     });
   }
   return insights;
+}
+
+// ─────────────────────────────────────────────
+// GRANT PROPOSAL — per-section AI assist
+// ─────────────────────────────────────────────
+export async function generateSectionText(sectionKey: string, grantId: string): Promise<string> {
+  const g = grantService.getGrantById(grantId);
+  const title = g?.title ?? 'Grant';
+  const pillar = g?.pillar ?? 'community development';
+  const templates: Record<string, string> = {
+    problem: [
+      `DRAFT — Problem Statement (${title})`,
+      '',
+      `ARDHI Law and Policy Initiative is a Ugandan NGO driving community resilience through advocacy, research and innovation. The proposed intervention under "${pillar}" responds to a pressing community challenge: ${g?.description ?? 'persistent systemic barriers that limit access to resources, information and legal protection.'}`,
+      '',
+      'Without intervention, affected households — particularly women, youth and persons with disabilities — remain exposed to risks that undermine food security, tenure and livelihoods.',
+      '',
+      "ARDHI's integrated advocacy–research–innovation model is positioned to address this gap: research documents the problem, innovation pilots a tested response, and advocacy institutionalises the fix.",
+    ].join('\n'),
+    objectives: [
+      `DRAFT — Objectives (${title})`,
+      '',
+      'Overall goal: To strengthen community resilience in [target area] through [pillar].',
+      '',
+      'Specific objectives:',
+      '1. Increase access to [service/resource] for at least [X] households by [date];',
+      '2. Strengthen local institutional capacity to sustain results beyond the project;',
+      '3. Generate and publish evidence that informs policy and practice in [pillar].',
+    ].join('\n'),
+    methodology: [
+      `DRAFT — Methodology (${title})`,
+      '',
+      'ARDHI delivers through its three connected pillars:',
+      '- Research: baseline studies and continuous monitoring to generate credible evidence;',
+      '- Innovation: low-cost, replicable pilots tested with communities and institutions;',
+      '- Advocacy: coalition-based engagement to convert proven models into policy and practice.',
+      '',
+      'Delivery is local — Ugandan staff and trained community paralegals/mediators work through existing institutions, and every project includes an exit and handover plan from day one.',
+    ].join('\n'),
+    budget_narrative: [
+      `DRAFT — Budget Narrative (${title})`,
+      '',
+      'The budget is built bottom-up from real anticipated costs, consistent with ARDHI\'s financial policies:',
+      '- Personnel: costs reflect the actual roles required to deliver and monitor the project;',
+      '- Program: field activities, materials and community engagement at verified unit costs;',
+      '- Operations: lean shared-office and administration costs;',
+      '- M&E: digital data collection and disaggregated analysis;',
+      '- Overhead: within funder caps (indirect costs capped at 13% where applicable).',
+      '',
+      'Co-financing and in-kind contributions are identified separately from the requested amount.',
+    ].join('\n'),
+    me: [
+      `DRAFT — Monitoring & Evaluation (${title})`,
+      '',
+      'ARDHI maintains a full MEL framework (Annex 14) with digital data collection and disaggregated reporting.',
+      '',
+      'Indicators will track: reach (by sex/age/disability), outcomes (knowledge, rights secured, disputes resolved), and sustainability (structures still functioning after support ends).',
+      '',
+      'Learning is published — including what did not work — and feeds the institutional knowledge repository.',
+    ].join('\n'),
+    sustainability: [
+      `DRAFT — Sustainability (${title})`,
+      '',
+      'Sustainability is planned across five dimensions:',
+      '1. Institutional — work through existing local structures and institutions;',
+      '2. Human & technical — train and certify local people, trainers-of-trainers;',
+      '3. Financial — low-cost models and links to district budgets;',
+      '4. Policy & legal — convert practice into ordinances, byelaws and procedures;',
+      '5. Social & cultural — community ownership with local champions.',
+      '',
+      'A handover memorandum and post-project follow-up (6, 12, 24 months) are built into the plan.',
+    ].join('\n'),
+  };
+
+  const template = templates[sectionKey] ?? 'Draft section content.';
+  const llm = await aiGenerate(
+    `Write a professional draft for the "${sectionKey}" section of a grant proposal titled "${title}" (pillar: ${pillar}). Organisation: ARDHI Law and Policy Initiative, a Ugandan NGO using advocacy, research and innovation. 3-5 paragraphs.`,
+    'You are the ARDHI grant writing assistant. Be concise, professional and specific to ARDHI\'s model.'
+  );
+  return llm ?? template;
 }
 
 // ─────────────────────────────────────────────

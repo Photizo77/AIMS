@@ -39,6 +39,8 @@ const MODULE_ACCESS: Record<string, Role[]> = {
   research: ['CD', 'ED', 'SYS_ADMIN', 'COMPANY_ADMIN', 'FINANCE', 'GRANTS_MANAGER', 'GRANT_WRITER', 'INNOVATOR'],
   forms: ['CD', 'ED', 'SYS_ADMIN', 'COMPANY_ADMIN', 'FINANCE', 'GRANTS_MANAGER', 'GRANT_WRITER', 'INNOVATOR'],
   inventory: ['CD', 'ED', 'SYS_ADMIN', 'COMPANY_ADMIN'],
+  calendar: ['CD', 'ED', 'SYS_ADMIN', 'COMPANY_ADMIN', 'FINANCE', 'GRANTS_MANAGER', 'GRANT_WRITER', 'INNOVATOR'],
+  reports: ['CD', 'ED', 'SYS_ADMIN', 'COMPANY_ADMIN', 'FINANCE'],
   crm: ['CD', 'ED', 'COMPANY_ADMIN'],
   analytics: ['CD', 'ED', 'SYS_ADMIN', 'COMPANY_ADMIN', 'FINANCE', 'GRANTS_MANAGER', 'GRANT_WRITER', 'INNOVATOR'],
   rbac: ['SYS_ADMIN'],

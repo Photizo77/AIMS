@@ -2,16 +2,13 @@
 import { useState } from 'react';
 import type { User } from '@/types';
 import { ROLE_LABELS } from '@/config/roles';
+import { ACTIVE_STAFF } from '@/data/roster';
 
-const MOCK_EMPLOYEES: (User & { position: string })[] = [
-  { id: 'u1', name: 'Nassir Mwanje', email: 'cd@aims.org', role: 'CD', department: 'Executive', position: 'Country Director', avatarUrl: 'https://api.dicebear.com/9.x/notionists/svg?seed=Nassir&backgroundColor=c1dbc3', status: 'active', createdAt: '2025-01-15' },
-  { id: 'u2', name: 'Peter Byamugisha', email: 'ed@aims.org', role: 'ED', department: 'Executive', position: 'Executive Director', avatarUrl: 'https://api.dicebear.com/9.x/notionists/svg?seed=Peter&backgroundColor=c1dbc3', status: 'active', createdAt: '2025-01-15' },
-  { id: 'u3', name: 'Grace Aceng', email: 'admin@aims.org', role: 'COMPANY_ADMIN', department: 'Administration', position: 'Company Administrator', avatarUrl: 'https://api.dicebear.com/9.x/notionists/svg?seed=Grace&backgroundColor=c1dbc3', status: 'active', createdAt: '2025-02-01' },
-  { id: 'u4', name: 'Amos Ojok', email: 'finance@aims.org', role: 'FINANCE', department: 'Finance', position: 'Finance Officer', avatarUrl: 'https://api.dicebear.com/9.x/notionists/svg?seed=Amos&backgroundColor=c1dbc3', status: 'active', createdAt: '2025-03-10' },
-  { id: 'u5', name: 'Sarah Aciro', email: 'grantsmanager@aims.org', role: 'GRANTS_MANAGER', department: 'Grants', position: 'Grants Manager', avatarUrl: 'https://api.dicebear.com/9.x/notionists/svg?seed=Sarah&backgroundColor=c1dbc3', status: 'active', createdAt: '2025-04-20' },
-  { id: 'u6', name: 'Janet Apio', email: 'grants@aims.org', role: 'GRANT_WRITER', department: 'Grants', position: 'Grant Writer', avatarUrl: 'https://api.dicebear.com/9.x/notionists/svg?seed=Janet&backgroundColor=c1dbc3', status: 'active', createdAt: '2025-05-05' },
-  { id: 'u7', name: 'Pius Odong', email: 'innovation@aims.org', role: 'INNOVATOR', department: 'Innovation', position: 'Lead Innovator', avatarUrl: 'https://api.dicebear.com/9.x/notionists/svg?seed=Pius&backgroundColor=c1dbc3', status: 'active', createdAt: '2025-05-05' },
-];
+// Unified staff roster — the single source of truth for people
+const MOCK_EMPLOYEES: (User & { position: string })[] = ACTIVE_STAFF.map((s) => ({
+  id: s.id, name: s.name, email: s.email, role: s.role, department: s.department,
+  position: s.position, status: s.status, createdAt: '2025-01-15',
+}));
 
 export function PeopleTab() {
   const [searchQuery, setSearchQuery] = useState('');

@@ -13,6 +13,8 @@ const CD_NAV_ITEMS: NavItem[] = [
   { title: 'Inventory', href: '/dashboard?view=inventory', icon: 'inventory_2', roles: ['CD'] },
   { title: 'Feed', href: '/feed', icon: 'feed', roles: ['CD'] },
   { title: 'Email', href: '/email', icon: 'mail', roles: ['CD'] },
+  { title: 'Calendar', href: '/calendar', icon: 'calendar_month', roles: ['CD'] },
+  { title: 'Reports', href: '/reports', icon: 'summarize', roles: ['CD'] },
   { title: 'Settings', href: '/settings', icon: 'settings', roles: ['CD'] },
 ];
 
@@ -28,6 +30,8 @@ const ED_NAV_ITEMS: NavItem[] = [
   { title: 'Documents', href: '/documents', icon: 'folder', roles: ['ED'] },
   { title: 'Feed', href: '/feed', icon: 'feed', roles: ['ED'] },
   { title: 'Email', href: '/email', icon: 'mail', roles: ['ED'] },
+  { title: 'Calendar', href: '/calendar', icon: 'calendar_month', roles: ['ED'] },
+  { title: 'Reports', href: '/reports', icon: 'summarize', roles: ['ED'] },
   { title: 'Settings', href: '/settings', icon: 'settings', roles: ['ED'] },
 ];
 
@@ -50,6 +54,8 @@ const SYS_ADMIN_NAV_ITEMS: NavItem[] = [
   { title: 'System Configuration', href: '/rbac', icon: 'admin_panel_settings', roles: ['SYS_ADMIN'] },
   { title: 'Full Route Access', href: '/rbac?tab=routes', icon: 'bug_report', roles: ['SYS_ADMIN'] },
   { title: 'Feed', href: '/feed', icon: 'feed', roles: ['SYS_ADMIN'] },
+  { title: 'Calendar', href: '/calendar', icon: 'calendar_month', roles: ['SYS_ADMIN'] },
+  { title: 'Reports', href: '/reports', icon: 'summarize', roles: ['SYS_ADMIN'] },
   { title: 'Email', href: '/email', icon: 'mail', roles: ['SYS_ADMIN'] },
   { title: 'Settings', href: '/settings', icon: 'settings', roles: ['SYS_ADMIN'] },
 ];
@@ -69,6 +75,7 @@ const GRANT_WRITER_NAV_ITEMS: NavItem[] = [
   { title: 'Grants', href: '/grants', icon: 'volunteer_activism', roles: ['GRANT_WRITER', 'GRANTS_MANAGER'] },
   { title: 'AI Assistant', href: '/ai-assistant', icon: 'smart_toy', roles: ['GRANT_WRITER', 'GRANTS_MANAGER'] },
   { title: 'My Attendance', href: '/attendance', icon: 'schedule', roles: ['GRANT_WRITER', 'GRANTS_MANAGER'] },
+  { title: 'Calendar', href: '/calendar', icon: 'calendar_month', roles: ['GRANT_WRITER', 'GRANTS_MANAGER'] },
   { title: 'Feed', href: '/feed', icon: 'feed', roles: ['GRANT_WRITER', 'GRANTS_MANAGER'] },
   { title: 'Email', href: '/email', icon: 'mail', roles: ['GRANT_WRITER', 'GRANTS_MANAGER'] },
   { title: 'Settings', href: '/settings', icon: 'settings', roles: ['GRANT_WRITER', 'GRANTS_MANAGER'] },
@@ -78,6 +85,7 @@ const INNOVATOR_NAV_ITEMS: NavItem[] = [
   { title: 'Dashboard', href: '/dashboard', icon: 'dashboard', roles: ['INNOVATOR'] },
   { title: 'Innovations & Tasks', href: '/tasks', icon: 'lightbulb', roles: ['INNOVATOR'] },
   { title: 'My Attendance', href: '/attendance', icon: 'schedule', roles: ['INNOVATOR'] },
+  { title: 'Calendar', href: '/calendar', icon: 'calendar_month', roles: ['INNOVATOR'] },
   { title: 'Feed', href: '/feed', icon: 'feed', roles: ['INNOVATOR'] },
   { title: 'Email', href: '/email', icon: 'mail', roles: ['INNOVATOR'] },
   { title: 'Settings', href: '/settings', icon: 'settings', roles: ['INNOVATOR'] },

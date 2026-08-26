@@ -7,8 +7,10 @@
 // ============================================================
 
 import { MOCK_GRANTS, type GrantRecord } from '@/data/grants';
+import { loadJSON, saveJSON, STORAGE_KEYS } from '@/lib/storage';
 
-let grants: GrantRecord[] = MOCK_GRANTS.map((g) => ({
+const persistedGrants = loadJSON<GrantRecord[] | null>(STORAGE_KEYS.grants, null);
+let grants: GrantRecord[] = (persistedGrants && persistedGrants.length > 0 ? persistedGrants : MOCK_GRANTS).map((g) => ({
   ...g,
   milestones: g.milestones.map((m) => ({ ...m })),
   activity: g.activity.map((a) => ({ ...a })),
@@ -30,6 +32,10 @@ function addActivity(g: GrantRecord, actor: string, action: string): void {
   g.activity = [...g.activity, { id: nextId('a'), actor, action, timestamp: nowIso() }];
 }
 
+function saveGrants(): void {
+  saveJSON(STORAGE_KEYS.grants, grants);
+}
+
 export const grantService = {
   /** ALL grants (org-wide views: dashboard, ED/CD, pipeline board) */
   getAllGrants: (): GrantRecord[] => grants,
@@ -49,6 +55,7 @@ export const grantService = {
     if (!g || (g.handler && g.handler !== 'Unassigned')) return g;
     g.handler = userName;
     addActivity(g, userName, `Expressed interest — auto-assigned as handler for this grant`);
+    saveGrants();
     return g;
   },
 
@@ -60,6 +67,7 @@ export const grantService = {
       g.stage = 'drafting';
       addActivity(g, userName, 'Moved from Identified to Drafting');
     }
+    saveGrants();
     return g;
   },
 
@@ -71,6 +79,7 @@ export const grantService = {
       g.stage = 'submitted';
       addActivity(g, userName, 'Pushed to ED — awaiting executive review');
     }
+    saveGrants();
     return g;
   },
 
@@ -95,6 +104,7 @@ export const grantService = {
       g.edNotes = note;
       addActivity(g, edName, `Requested changes — grant returned to Drafting. ${note ? `Notes: ${note}` : ''}`);
     }
+    saveGrants();
     return g;
   },
 
@@ -107,6 +117,7 @@ export const grantService = {
     );
     const m = g.milestones.find((x) => x.id === milestoneId);
     if (m) addActivity(g, userName, `${m.completed ? 'Completed' : 'Reopened'} milestone: ${m.title}`);
+    saveGrants();
     return g;
   },
 
@@ -119,6 +130,7 @@ export const grantService = {
       { id: nextId('m'), title, dueDate: new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10), completed: false, assignee: userName },
     ];
     addActivity(g, userName, `Added milestone: ${title}`);
+    saveGrants();
     return g;
   },
 
@@ -131,6 +143,7 @@ export const grantService = {
       { id: nextId('c'), author: userName, role, content, timestamp: nowIso() },
     ];
     addActivity(g, userName, 'Added a comment to the grant discussion');
+    saveGrants();
     return g;
   },
 
@@ -143,6 +156,7 @@ export const grantService = {
       { id: nextId('d'), title, fileType: title.endsWith('.pdf') ? 'PDF' : title.endsWith('.xlsx') ? 'XLSX' : 'DOCX', size: `${(Math.random() * 900 + 100).toFixed(0)} KB`, uploadedBy: userName, uploadedAt: new Date().toISOString().slice(0, 10), version: (g.documents?.length ?? 0) + 1 },
     ];
     addActivity(g, userName, `Uploaded document: ${title}`);
+    saveGrants();
     return g;
   },
 };

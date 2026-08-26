@@ -7,6 +7,7 @@ import { Toaster } from '@/components/ui/Toaster';
 import { GrantsAssistant } from '@/components/grants/GrantsAssistant';
 import { FlagForEDModal } from '@/components/grants/FlagForEDModal';
 import { FormLibraryModal } from '@/components/forms/FormLibraryModal';
+import { GlobalSearch } from '@/components/layout/GlobalSearch';
 import { cn } from '@/lib/utils';
 
 export function AppShell() {
@@ -56,6 +57,9 @@ export function AppShell() {
 
       {/* ARDHI Forms Library modal — opens any form in context */}
       <FormLibraryModal />
+
+      {/* Global search (Ctrl+K) */}
+      <GlobalSearch />
     </div>
   );
 }

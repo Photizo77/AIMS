@@ -1,5 +1,6 @@
 // src/services/innovationService.ts
 import type { InnovationProject, InnovationStage, InnovationMilestone, InnovationComment, InnovationDocument } from '@/types';
+import { loadJSON, saveJSON, STORAGE_KEYS } from '@/lib/storage';
 
 // ═══════════════════════════════════════════
 // ORGANIZATION INNOVATION PIPELINE
@@ -16,6 +17,8 @@ const SEED_PROJECTS: InnovationProject[] = [
     leadName: 'Pius Odong',
     contributorNames: ['Florence Adong', 'Isaac Tumusiime'],
     progressPercent: 62,
+    budget: 18500000,
+    budgetSpent: 9800000,
     daysInStage: 9,
     createdAt: '2026-08-01',
     updatedAt: '2026-08-15',
@@ -42,6 +45,8 @@ const SEED_PROJECTS: InnovationProject[] = [
     leadName: 'Florence Adong',
     contributorNames: ['Pius Odong', 'Grace Nakamya'],
     progressPercent: 78,
+    budget: 42000000,
+    budgetSpent: 21000000,
     daysInStage: 4,
     createdAt: '2026-07-20',
     updatedAt: '2026-08-10',
@@ -98,6 +103,8 @@ const SEED_PROJECTS: InnovationProject[] = [
     leadName: 'Pius Odong',
     contributorNames: ['Grace Nakamya'],
     progressPercent: 91,
+    budget: 56000000,
+    budgetSpent: 34000000,
     daysInStage: 22,
     createdAt: '2026-04-01',
     updatedAt: '2026-08-12',
@@ -168,7 +175,8 @@ const SEED_PROJECTS: InnovationProject[] = [
 ];
 
 // Mutable in-memory store (replaces MOCK_PROJECTS so persona actions persist during the session)
-let projects: InnovationProject[] = SEED_PROJECTS.map((p) => ({
+const persistedProjects = loadJSON<InnovationProject[] | null>(STORAGE_KEYS.projects, null);
+let projects: InnovationProject[] = (persistedProjects && persistedProjects.length > 0 ? persistedProjects : SEED_PROJECTS).map((p) => ({
   ...p,
   milestones: p.milestones.map((m) => ({ ...m })),
   activityLog: p.activityLog.map((a) => ({ ...a })),
@@ -180,6 +188,10 @@ let idCounter = 0;
 function nextId(prefix: string): string {
   idCounter += 1;
   return `${prefix}-${Date.now()}-${idCounter}`;
+}
+
+function saveProjects(): void {
+  saveJSON(STORAGE_KEYS.projects, projects);
 }
 
 function recomputeProgress(project: InnovationProject): void {
@@ -220,6 +232,7 @@ export const innovationService = {
     );
     recomputeProgress(project);
     project.updatedAt = new Date().toISOString().slice(0, 10);
+    saveProjects();
     return project;
   },
 
@@ -236,6 +249,7 @@ export const innovationService = {
       { id: nextId('a'), timestamp: new Date().toISOString(), actorName: comment.authorName, type: 'comment', description: comment.content },
     ];
     project.updatedAt = new Date().toISOString().slice(0, 10);
+    saveProjects();
     return project;
   },
 
@@ -252,6 +266,7 @@ export const innovationService = {
       { id: nextId('a'), timestamp: new Date().toISOString(), actorName: doc.uploadedBy, type: 'document_linked', description: `Uploaded ${doc.title}` },
     ];
     project.updatedAt = new Date().toISOString().slice(0, 10);
+    saveProjects();
     return project;
   },
 
@@ -284,6 +299,7 @@ export const innovationService = {
       },
     ];
     project.updatedAt = new Date().toISOString().slice(0, 10);
+    saveProjects();
     return project;
   },
 
@@ -299,6 +315,7 @@ export const innovationService = {
       ];
     }
     project.updatedAt = new Date().toISOString().slice(0, 10);
+    saveProjects();
     return project;
   },
 
@@ -308,6 +325,7 @@ export const innovationService = {
     if (!project) return undefined;
     project.contributorNames = project.contributorNames.filter((c) => c !== name);
     project.updatedAt = new Date().toISOString().slice(0, 10);
+    saveProjects();
     return project;
   },
 
@@ -318,6 +336,17 @@ export const innovationService = {
     project.milestones = [...project.milestones, { ...milestone, id: nextId('m') }];
     recomputeProgress(project);
     project.updatedAt = new Date().toISOString().slice(0, 10);
+    saveProjects();
+    return project;
+  },
+
+  /** Set the project budget (UGX) — links innovations to finance */
+  setBudget: (projectId: string, budget: number): InnovationProject | undefined => {
+    const project = projects.find((p) => p.id === projectId);
+    if (!project) return undefined;
+    project.budget = budget;
+    project.updatedAt = new Date().toISOString().slice(0, 10);
+    saveProjects();
     return project;
   },
 };

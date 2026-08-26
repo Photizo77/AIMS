@@ -12,6 +12,7 @@ import { useNotifications } from '@/context/NotificationContext';
 import { INNOVATION_STAGES, INNOVATION_STAGE_LABELS, type InnovationProject } from '@/types';
 import { cn } from '@/lib/utils';
 import { innovationService } from '@/services/innovationService';
+import { addRequisition } from '@/services/requisitionService';
 
 // Known team members available for handoff / team management
 const STAFF_ROSTER = ['Pius Odong', 'Florence Adong', 'Isaac Tumusiime', 'Janet Apio', 'Grace Nakamya', 'Sarah Aciro', 'Amos Ojok', 'Okello Komakech'];
@@ -134,6 +135,31 @@ export function ProjectDetail() {
     setHandoffMessage('');
   };
 
+  const handleRequestFunding = () => {
+    const amount = project.budget ?? 0;
+    if (amount <= 0) {
+      showToast({ title: 'No Budget Set', message: 'Set a project budget before requesting funding.', type: 'warning' });
+      return;
+    }
+    const req = addRequisition({
+      title: `Funding — ${project.title}`,
+      dept: 'Innovation',
+      requester: user.name,
+      amount,
+      purpose: `Project funding for "${project.title}" (${INNOVATION_STAGE_LABELS[project.stage]} stage).`,
+      budgetLine: 'GL-5421 R&D Equipment',
+    });
+    addNotification({
+      userId: 'user-finance-001',
+      title: 'Project Funding Request',
+      message: `${user.name} raised requisition ${req.id} for "${project.title}" (UGX ${amount.toLocaleString()}).`,
+      type: 'approval',
+      link: '/approvals',
+      actionUrl: '/approvals',
+    });
+    showToast({ title: 'Funding Request Raised', message: `Requisition ${req.id} drafted — Finance has been notified.`, type: 'success' });
+  };
+
   const handleAddContributor = () => {
     if (!teamMember.trim()) return;
     const updated = innovationService.addContributor(project.id, teamMember.trim());
@@ -171,13 +197,21 @@ export function ProjectDetail() {
               <span>Lead: {project.leadName}</span>
               <span>Progress: {progress}%</span>
               <span>{project.daysInStage}d in stage</span>
+              {project.budget != null && <span>Budget: UGX {(project.budget / 1000000).toFixed(1)}M</span>}
             </div>
           </div>
-          {isLead && nextStage && (
-            <button onClick={() => setShowHandoffModal(true)} className="px-5 py-2.5 bg-aims-green text-white rounded-xl text-xs font-bold hover:bg-aims-green/90 transition-colors flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[16px]">send</span>Push to {INNOVATION_STAGE_LABELS[nextStage]}
-            </button>
-          )}
+          <div className="flex gap-2">
+            {canEdit && (
+              <button onClick={handleRequestFunding} className="px-5 py-2.5 bg-aims-orange text-white rounded-xl text-xs font-bold hover:bg-aims-orange/90 transition-colors flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[16px]">request_quote</span>Request Funding
+              </button>
+            )}
+            {isLead && nextStage && (
+              <button onClick={() => setShowHandoffModal(true)} className="px-5 py-2.5 bg-aims-green text-white rounded-xl text-xs font-bold hover:bg-aims-green/90 transition-colors flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[16px]">send</span>Push to {INNOVATION_STAGE_LABELS[nextStage]}
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

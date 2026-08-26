@@ -297,6 +297,9 @@ export interface InnovationProject {
   contributorNames: string[];
   progressPercent: number;
   daysInStage: number;
+  /** Project budget (UGX) — links innovations to finance */
+  budget?: number;
+  budgetSpent?: number;
   milestones: InnovationMilestone[];
   activityLog: InnovationActivityEntry[];
   comments: InnovationComment[];
