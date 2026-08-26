@@ -43,19 +43,28 @@ export function AttendanceProvider({ children }: { children: ReactNode }) {
     }
   }, [state, user]);
 
-  // Auto check-in when the user logs in — login reflects in attendance
+  // Auto check-in when the user logs in; record check-out when they log out.
+  // Login -> check-in, logout -> check-out => a full-day attendance record for
+  // offsite staff (no idle auto-logout; the person decides when to log off).
   useEffect(() => {
-    if (user && lastUserId.current !== user.id) {
-      lastUserId.current = user.id;
-      const now = new Date();
-      const timeString = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-      setState({
-        isCheckedIn: true,
-        checkInTime: timeString,
-        checkOutTime: null,
-        checkInMode: 'remote',
-        location: 'System login — office session',
-      });
+    if (user) {
+      if (lastUserId.current !== user.id) {
+        lastUserId.current = user.id;
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        setState({
+          isCheckedIn: true,
+          checkInTime: timeString,
+          checkOutTime: null,
+          checkInMode: 'remote',
+          location: 'System login — office session',
+        });
+      }
+    } else if (lastUserId.current) {
+      lastUserId.current = null;
+      setState((prev) => (prev.isCheckedIn
+        ? { ...prev, isCheckedIn: false, checkOutTime: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) }
+        : prev));
     }
   }, [user]);
 

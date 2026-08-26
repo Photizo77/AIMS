@@ -83,8 +83,39 @@ export function GrantsAssistant() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [modelId, setModelId] = useState('deepseek-chat');
-  const [fabVisible, setFabVisible] = useState(true);
   const listRef = useRef<HTMLDivElement>(null);
+
+  // ── Draggable floating button — position is user-controlled & persisted ──
+  const FAB_STORAGE = 'aims_fab_pos';
+  const [fabPos, setFabPos] = useState<{ x: number; y: number } | null>(() => {
+    try {
+      const raw = localStorage.getItem(FAB_STORAGE);
+      if (raw) return JSON.parse(raw) as { x: number; y: number };
+    } catch { /* ignore */ }
+    return null;
+  });
+  const fabRef = useRef<HTMLButtonElement>(null);
+  const dragRef = useRef<{ dx: number; dy: number } | null>(null);
+  const movedRef = useRef(false);
+
+  const handleFabPointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
+    const rect = fabRef.current?.getBoundingClientRect();
+    dragRef.current = { dx: e.clientX - (rect?.left ?? 0), dy: e.clientY - (rect?.top ?? 0) };
+    movedRef.current = false;
+    (e.currentTarget as HTMLButtonElement).setPointerCapture(e.pointerId);
+  };
+  const handleFabPointerMove = (e: React.PointerEvent<HTMLButtonElement>) => {
+    if (!dragRef.current) return;
+    const next = { x: e.clientX - dragRef.current.dx, y: e.clientY - dragRef.current.dy };
+    if (Math.abs(next.x - (fabPos?.x ?? 0)) > 3 || Math.abs(next.y - (fabPos?.y ?? 0)) > 3) movedRef.current = true;
+    setFabPos(next);
+  };
+  const handleFabPointerUp = () => {
+    dragRef.current = null;
+    try {
+      if (fabPos) localStorage.setItem(FAB_STORAGE, JSON.stringify(fabPos));
+    } catch { /* ignore */ }
+  };
 
   useEffect(() => {
     if (listRef.current) {
@@ -94,28 +125,13 @@ export function GrantsAssistant() {
 
   // Open on demand from dashboard quick-access buttons
   useEffect(() => {
-    const handler = () => { setFabVisible(true); setOpen(true); };
+    const handler = () => { setOpen(true); };
     window.addEventListener('aims:open-grants-assistant', handler);
     return () => window.removeEventListener('aims:open-grants-assistant', handler);
   }, []);
 
-  // Hide the floating button when the user scrolls down; restore it on scroll up
+  // Reset on navigation: close the panel (the button stays where the user put it)
   useEffect(() => {
-    let lastY = window.scrollY;
-    const onScroll = () => {
-      const y = window.scrollY;
-      if (open) { lastY = y; return; } // keep visible while the panel is open (doubles as the close control)
-      if (y > lastY + 12 && fabVisible) setFabVisible(false);
-      else if (y < lastY - 12 && !fabVisible) setFabVisible(true);
-      lastY = y;
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, [open, fabVisible]);
-
-  // Reset on navigation: restore the button and close the panel
-  useEffect(() => {
-    setFabVisible(true);
     setOpen(false);
   }, [location.pathname]);
 
@@ -145,14 +161,20 @@ export function GrantsAssistant() {
 
   return (
     <>
-      {/* Floating action button — hides on scroll down, reappears on scroll up */}
+      {/* Floating assistant button — always present while logged in, draggable anywhere */}
       <button
-        onClick={() => setOpen(!open)}
-        title="ARDHI Grants Assistant"
+        ref={fabRef}
+        onClick={() => { if (movedRef.current) { movedRef.current = false; return; } setOpen(!open); }}
+        onPointerDown={handleFabPointerDown}
+        onPointerMove={handleFabPointerMove}
+        onPointerUp={handleFabPointerUp}
+        onPointerCancel={handleFabPointerUp}
+        title="ARDHI Grants Assistant — drag to move"
         aria-label="Open grants assistant chat"
+        style={fabPos ? { left: fabPos.x, top: fabPos.y } : undefined}
         className={cn(
-          'fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-[#286b25] text-white shadow-xl hover:scale-105 hover:bg-[#1f5520] transition-all duration-300 flex items-center justify-center',
-          fabVisible ? 'opacity-100 translate-y-0' : 'opacity-0 pointer-events-none translate-y-4'
+          'fixed z-50 w-14 h-14 rounded-full bg-[#286b25] text-white shadow-xl hover:scale-105 hover:bg-[#1f5520] transition-all duration-150 flex items-center justify-center touch-none select-none cursor-grab active:cursor-grabbing',
+          fabPos ? '' : 'bottom-6 right-6'
         )}
       >
         <span className="material-symbols-outlined text-[26px]">{open ? 'close' : 'smart_toy'}</span>
