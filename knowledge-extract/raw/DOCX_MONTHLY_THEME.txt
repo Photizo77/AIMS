@@ -1,0 +1,1 @@
+EXTRACT ERROR: Exception calling "OpenRead" with "1" argument(s): "The process cannot access the file 'C:\Users\user\Desktop\ARDHI\MONTHLY THEME.docx' because it is being used by another process."

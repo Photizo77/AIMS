@@ -1,0 +1,662 @@
+ARDHI LAW AND POLICY INITIATIVE
+Advocacy  |  Research  |  Innovation
+www.ardhi.org.ug
+ANNEX 12
+GENDER AND SOCIAL INCLUSION POLICY
+Gender equality, disability inclusion and social inclusion in ARDHI programmes and workplace
+
+Document control
+ | Details
+ | 
+Document title
+ | Annex 12: Gender and Social Inclusion Policy
+ | 
+Owner
+ | Gender and Social Inclusion Focal Person, under the Country Director
+ | 
+Approved by
+ | ARDHI Board of Directors
+ | 
+Version
+ | 1.0
+ | 
+Date of issue
+ | August 2026
+ | 
+Next review
+ | August 2028
+ | 
+Applies to
+ | All ARDHI staff, board members, volunteers, interns, consultants, contractors, partners, suppliers and any person acting on behalf of ARDHI
+ | 
+Status
+ | Approved for use in donor submissions and programme implementation
+ | 
+
+Table of Contents
+If the entries below do not appear, click inside the contents area and press F9 to update the field.
+	TOC \h \o "1-3"1. Introduction	 PAGEREF _Toc238246096 \h 1
+	1.1 Purpose	 PAGEREF _Toc238246097 \h 1
+	1.2 Scope	 PAGEREF _Toc238246098 \h 1
+	1.3 Policy and legal basis	 PAGEREF _Toc238246099 \h 1
+	2. Definitions	 PAGEREF _Toc238246100 \h 1
+	3. Guiding Principles	 PAGEREF _Toc238246101 \h 1
+	Equality of rights and of results	 PAGEREF _Toc238246102 \h 1
+	Deliberate targeting	 PAGEREF _Toc238246103 \h 1
+	Nothing about them without them	 PAGEREF _Toc238246104 \h 1
+	Do no harm	 PAGEREF _Toc238246105 \h 1
+	Respect and dignity	 PAGEREF _Toc238246106 \h 1
+	Accountability	 PAGEREF _Toc238246107 \h 1
+	4. Programme Commitments	 PAGEREF _Toc238246108 \h 1
+	4.1 Minimum standards for every ARDHI project	 PAGEREF _Toc238246109 \h 1
+	4.2 Gender responsive land and legal programming	 PAGEREF _Toc238246110 \h 1
+	4.3 Disability inclusion	 PAGEREF _Toc238246111 \h 1
+	4.4 Youth inclusion	 PAGEREF _Toc238246112 \h 1
+	4.5 Other groups at risk of exclusion	 PAGEREF _Toc238246113 \h 1
+	5. Workplace Commitments	 PAGEREF _Toc238246114 \h 1
+	5.1 Recruitment and staffing	 PAGEREF _Toc238246115 \h 1
+	5.2 Conditions of work	 PAGEREF _Toc238246116 \h 1
+	5.3 Voice and culture	 PAGEREF _Toc238246117 \h 1
+	6. Roles and Responsibilities	 PAGEREF _Toc238246118 \h 1
+	7. Measuring and Reporting Inclusion	 PAGEREF _Toc238246119 \h 1
+	7.1 The ARDHI GESI marker	 PAGEREF _Toc238246120 \h 1
+	7.2 Core GESI indicators	 PAGEREF _Toc238246121 \h 1
+	7.3 Reporting	 PAGEREF _Toc238246122 \h 1
+	8. Complaints, Grievances and Non Compliance	 PAGEREF _Toc238246123 \h 1
+	9. Implementation, Resourcing and Review	 PAGEREF _Toc238246124 \h 1
+	Appendix A: GESI Analysis Framework	 PAGEREF _Toc238246125 \h 1
+	Appendix B: GESI Action Plan Template	 PAGEREF _Toc238246126 \h 1
+	Appendix C: Venue and Activity Accessibility Checklist	 PAGEREF _Toc238246127 \h 1
+	Appendix D: Disaggregated Participation Record	 PAGEREF _Toc238246128 \h 1
+
+About ARDHI
+We are a Ugandan based NGO that drives community resilience through advocacy and systems innovations in the areas of agriculture and food security, waste management, disaster preparedness, and land governance.
+Vision
+A future where research informs action, and action delivers justice.
+Mission
+Impacting communities through research, innovations and advocacy particularly in areas of smart agriculture, waste management, disaster preparedness, health and land governance.
+Our Values
+Sustainability: Champion policies and actions that safeguard natural resources.
+Equity: Foster inclusive environments and advocate for fair access to resources, ensuring marginalized voices are represented and empowered.
+Innovation: Pioneer creative solutions and leverage emerging technologies to address complex systemic challenges.
+Collaboration: Forge purposeful partnerships to amplify collective impact and drive lasting change.
+Our Theory of Change
+ARDHI is not a Think Tank, but a Think and Act Tank. Established in 2024 and fully registered in 2025, we operate on the belief that if we combine advocacy to shift rules, research to generate empirical evidence, and innovation to pilot practical models across agriculture, waste, disaster preparedness, health, and land governance, communities can gain the tools, voice, and systems they need to solve persistent problems. Lasting impact requires more than just ideas, it requires pressure, proof, and prototypes working together.
+Our offices are located at Plot 1207, Ggaba Road, Next to the American Embassy, Kampala, Uganda. For general enquiries, contact us at info@ardhi.org.ug or visit www.ardhi.org.ug.
+
+1. Introduction
+Land is the foundation of livelihood, identity and security in Uganda, yet access to it is not shared equally. Women hold and use most agricultural land but own only a small share of it. Widows and separated women are evicted by relatives. Young people inherit late or not at all. Persons with disabilities are left out of meetings held in places they cannot reach and in formats they cannot follow. Pastoralists, fisherfolk, forest dependent communities, refugees and host communities face rules that were written without them. Ethnic minorities and people living in informal settlements are often invisible in land records altogether.
+ARDHI Law and Policy Initiative exists to change the status quo through advocacy, research and innovation. A land justice organisation that does not deliberately include the people who are most often excluded will simply repeat the pattern it is trying to break. This Gender and Social Inclusion Policy sets out how ARDHI makes inclusion a working practice rather than a statement of intent.
+Inclusion is not an add on to our programmes. It is the test of whether our programmes worked at all.
+1.1 Purpose
+To set out ARDHI commitments on gender equality, disability inclusion and social inclusion in both our programmes and our workplace.
+To give staff practical standards and tools they can apply to any activity.
+To establish minimum requirements that every ARDHI project, proposal and partner must meet.
+To define how ARDHI measures, reports on and learns from inclusion performance.
+1.2 Scope
+This policy applies to all ARDHI staff, board members, volunteers, interns, consultants, partners, sub grantees and suppliers, and to every project, research study, advocacy campaign, publication, event and recruitment process carried out in the name of ARDHI.
+1.3 Policy and legal basis
+
+Framework
+ | Commitment relevant to ARDHI
+ | 
+Constitution of Uganda, 1995, Articles 21, 32, 33 and 237
+ | Equality and freedom from discrimination, affirmative action for marginalised groups, rights of women including in relation to property, and land vested in the citizens of Uganda.
+ | 
+Land Act, Cap 236, sections 27, 38A and 39
+ | Protection of the customary land rights of women, children and persons with disabilities, security of occupancy for spouses, and spousal consent for transactions on family land.
+ | 
+Persons with Disabilities Act, 2020
+ | Reasonable accommodation, accessibility, and prohibition of discrimination.
+ | 
+National Land Policy, 2013
+ | Equitable access to land and protection of the land rights of women, children, persons with disabilities, pastoralists and minorities.
+ | 
+Uganda Gender Policy, 2007 and the National Development Plan
+ | Gender mainstreaming across sectors and institutions.
+ | 
+Employment Act, 2006 and Employment (Sexual Harassment) Regulations, 2012
+ | Equal opportunity, equal pay for work of equal value, and a harassment free workplace.
+ | 
+Convention on the Elimination of All Forms of Discrimination against Women
+ | Substantive equality, including equal rights in land and property.
+ | 
+Convention on the Rights of Persons with Disabilities
+ | Participation, accessibility and reasonable accommodation.
+ | 
+Voluntary Guidelines on the Responsible Governance of Tenure (VGGT)
+ | Gender equality and non discrimination as core principles of tenure governance.
+ | 
+Sustainable Development Goals 1.4, 5.a, 10.2 and 16.3
+ | Equal rights to land, access to justice, and reduced inequality.
+ | 
+
+2. Definitions
+
+Term
+ | Meaning used in this policy
+ | 
+Gender
+ | The social roles, behaviours and expectations attached to being a woman, a man, a girl or a boy in a given society. Gender roles are learned and can change.
+ | 
+Gender equality
+ | Women, men, girls and boys enjoy the same rights, resources, opportunities and protection. It does not mean treating everyone the same, because equal treatment of unequal starting points produces unequal results.
+ | 
+Gender equity
+ | The fair treatment needed to reach equality, which may require different or additional measures for those who start from a disadvantage.
+ | 
+Social inclusion
+ | Removing the barriers of attitude, environment and institution that stop any group from taking part in and benefiting from a programme.
+ | 
+Intersectionality
+ | The way several characteristics combine to deepen exclusion, for example an older widow with a physical disability living on customary land.
+ | 
+Reasonable accommodation
+ | The practical adjustment that allows a person with a disability to take part on an equal basis, such as a sign language interpreter, a ground floor venue or materials in large print.
+ | 
+Gender mainstreaming
+ | Making the concerns of women and men an integral part of design, implementation, monitoring and evaluation, so that all groups benefit and inequality is not repeated.
+ | 
+Transformative approach
+ | Going beyond counting women in a room, and working on the norms, laws and power relations that keep exclusion in place.
+ | 
+GESI
+ | Gender Equality and Social Inclusion, used as a single working term in this policy.
+ | 
+
+3. Guiding Principles
+Equality of rights and of results
+ARDHI measures success by what different groups actually obtain, not by how many were invited. A training where thirty women attended but no woman spoke has not succeeded.
+Deliberate targeting
+Where a group faces a specific barrier, ARDHI designs a specific response rather than assuming that a general activity will reach them.
+Nothing about them without them
+Women, young people, persons with disabilities and other excluded groups take part in designing, delivering and reviewing the activities that concern them. ARDHI works with and through organisations led by these groups, including women land rights networks and organisations of persons with disabilities.
+Do no harm
+Work on gender can provoke backlash inside households and communities. Every activity is screened for the risk it may create for participants, and men and traditional leaders are engaged as allies rather than treated as opponents.
+Respect and dignity
+Language, images and examples used by ARDHI never present any group as helpless, and never use disability, poverty or widowhood as a spectacle.
+Accountability
+Inclusion targets sit in workplans, budgets and performance appraisals. What is not measured and funded does not happen.
+
+4. Programme Commitments
+4.1 Minimum standards for every ARDHI project
+
+No.
+ | Minimum standard
+ | Means of verification
+ | 
+1
+ | A GESI analysis is completed before design is finalised, using the framework in Appendix A.
+ | GESI analysis report on the project file
+ | 
+2
+ | At least one project outcome or output addresses the rights of women, youth or persons with disabilities.
+ | Logframe
+ | 
+3
+ | All indicators that count people are disaggregated by sex, age band and disability status.
+ | MEL plan and data sets
+ | 
+4
+ | At least 50 percent of direct participants are women, and at least 40 percent of leadership or decision making positions created by the project are held by women.
+ | Attendance and governance records
+ | 
+5
+ | At least 10 percent of participants are persons with disabilities, or the local prevalence rate where it is higher.
+ | Registration data using the Washington Group short set
+ | 
+6
+ | At least 25 percent of participants are young people aged 18 to 30.
+ | Registration data
+ | 
+7
+ | A dedicated GESI budget line of not less than 5 percent of direct project costs.
+ | Approved budget
+ | 
+8
+ | Reasonable accommodation costs are budgeted and are never charged to the participant.
+ | Approved budget and payment records
+ | 
+9
+ | Activity venues are physically accessible, and timing suits care responsibilities.
+ | Venue accessibility checklist
+ | 
+10
+ | Information is available in the main local language and in at least one non written format.
+ | Materials on file
+ | 
+11
+ | Feedback and complaints channels are usable by people who cannot read and write.
+ | Complaints log
+ | 
+12
+ | Every evaluation reports on who benefited and who did not, and why.
+ | Evaluation report
+ | 4.2 Gender responsive land and legal programming
+Support women to be named on certificates of customary ownership, on communal land association membership lists and on titles, jointly with a spouse where the household agrees, and in their own right where the land is theirs.
+Insist on documented spousal consent in all land transactions supported by ARDHI, and explain the legal effect of consent to both spouses separately.
+Provide legal aid and mediation on widow and orphan dispossession, boundary disputes, forced eviction and land grabbing, with a target that at least 60 percent of legal aid clients are women.
+Work with clan leaders, area land committees and local council courts on customary rules that discriminate, and record agreed reforms in writing.
+Build the capacity of women to sit on area land committees, land boards, communal land association executives and clan structures, and follow up whether they are able to speak and vote.
+Address unpaid care work as a barrier to participation by holding activities at times chosen by women and by providing child friendly arrangements where needed.
+4.3 Disability inclusion
+Use the Washington Group short set of questions to identify participants with disabilities rather than asking a single yes or no question.
+Budget for sign language interpretation, guides, accessible transport, large print, audio versions and simplified summaries.
+Check every venue against the accessibility checklist in Appendix C before it is booked.
+Partner with organisations of persons with disabilities in design and delivery, and pay them properly for that role.
+Ensure the ARDHI website, digital tools and mobile data collection forms follow accessible design principles.
+4.4 Youth inclusion
+Recognise that young people are affected by delayed inheritance, by exclusion from clan decision making and by insecure rental and informal settlement tenure.
+Create paid internship and paralegal positions for young women and men in every project of twelve months or more.
+Use radio, community drama, short video and social media alongside meetings, because these reach young people better.
+4.5 Other groups at risk of exclusion
+
+Group
+ | Typical barrier
+ | ARDHI response
+ | 
+Widows and separated women
+ | Eviction by in laws, loss of matrimonial property, weak documentation
+ | Targeted legal aid, succession planning support, will writing clinics, community dialogues
+ | 
+Older persons
+ | Mobility, hearing and literacy barriers, pressure to transfer land
+ | Home visits, larger print, transport support, safeguards against coerced transfers
+ | 
+Persons living with HIV
+ | Property grabbing, stigma, exclusion from meetings
+ | Confidential legal support, work with support groups, non stigmatising language
+ | 
+Refugees and host communities
+ | Insecure occupancy on hosting land, unfamiliar legal system, language
+ | Interpretation, plain language guides, joint host and refugee dialogues
+ | 
+Pastoralists and fisherfolk
+ | Mobility, seasonal absence, non recognition of communal tenure
+ | Activities scheduled around seasonal calendars, support for communal land associations
+ | 
+Ethnic and indigenous minorities
+ | Non recognition of customary systems, language exclusion
+ | Documentation of customary tenure, materials in the community language
+ | 
+Residents of informal settlements
+ | No recognised tenure document, threat of eviction
+ | Community mapping, occupancy documentation, eviction response support
+ | 
+
+5. Workplace Commitments
+5.1 Recruitment and staffing
+Job adverts state that ARDHI is an equal opportunity employer and that women, young people and persons with disabilities are encouraged to apply.
+Shortlists for every position include qualified women wherever they applied. Where a shortlist has no woman, the hiring manager records the reason in writing.
+Interview panels have at least one woman and use the same scored questions for all candidates.
+Where two candidates score equally, preference goes to the candidate from the group that is under represented in that team.
+ARDHI aims for at least 50 percent women across staff, at least 40 percent women in senior management and at least 5 percent staff with disabilities.
+Reasonable accommodation is offered at application, at interview and in employment.
+5.2 Conditions of work
+Equal pay for work of equal value, tested through an annual pay review by grade and sex.
+Maternity and paternity leave at least at the level required by the Employment Act, and flexible return to work arrangements.
+A private, clean space for nursing mothers at the head office.
+Flexible and hybrid working where the role allows it.
+Accessible offices, meeting rooms and sanitation.
+Zero tolerance of sexual harassment, applied through Annex 11: Safeguarding Policy.
+5.3 Voice and culture
+A staff GESI committee, chaired by a member of management and with elected staff representatives, meets quarterly.
+An annual anonymous staff survey covers respect, safety, fairness of promotion and experience of discrimination.
+GESI performance is a scored objective in the appraisal of every manager.
+Meetings are chaired so that junior staff and women are heard, and speaking time is monitored by the chair.
+
+6. Roles and Responsibilities
+
+Role
+ | Responsibility
+ | 
+Board of Directors
+ | Approves this policy, reviews GESI performance annually, and maintains at least 40 percent women on the Board.
+ | 
+Country Director
+ | Overall accountability. Ensures GESI standards are met in every proposal, budget and workplan before approval.
+ | 
+Executive Director
+ | Represents ARDHI GESI positions externally and secures resources for inclusion work.
+ | 
+GESI Focal Person
+ | Custodian of this policy. Supports GESI analysis, reviews designs against the minimum standards, delivers training, compiles GESI reporting.
+ | 
+Programme and Project Managers
+ | Apply the minimum standards, budget for inclusion, and report disaggregated results.
+ | 
+MEL Officer
+ | Ensures all people level data is disaggregated and that analysis explains gaps between groups.
+ | 
+Human Resource Officer
+ | Applies the workplace commitments and maintains workforce diversity data.
+ | 
+Finance Officer
+ | Confirms that the GESI budget line exists and tracks actual spending against it.
+ | 
+All staff and partners
+ | Apply this policy in daily work and challenge exclusionary practice when they see it.
+ | 
+
+7. Measuring and Reporting Inclusion
+7.1 The ARDHI GESI marker
+Every project and proposal is scored using the following marker at design, at mid term and at completion. A score of at least 2 is required for approval.
+
+Score
+ | Level
+ | Description
+ | 
+0
+ | Blind
+ | GESI is not mentioned. Design may reinforce existing inequality. Not approved.
+ | 
+1
+ | Aware
+ | GESI is mentioned and data is disaggregated, but no activity or budget responds to the gaps found. Requires revision.
+ | 
+2
+ | Responsive
+ | Barriers are identified and specific activities, targets and budget respond to them. Minimum acceptable score.
+ | 
+3
+ | Transformative
+ | The project also works on the norms, rules and power relations that cause the exclusion, and tracks change in them.
+ | 7.2 Core GESI indicators
+
+Indicator
+ | Baseline source
+ | Target
+ | 
+Percentage of direct participants who are women
+ | Registration data
+ | At least 50 percent
+ | 
+Percentage of direct participants who are persons with disabilities
+ | Washington Group short set
+ | At least 10 percent
+ | 
+Percentage of direct participants aged 18 to 30
+ | Registration data
+ | At least 25 percent
+ | 
+Percentage of land documents supported by ARDHI that name a woman as owner or joint owner
+ | Documentation records
+ | At least 50 percent
+ | 
+Percentage of legal aid clients who are women
+ | Case management system
+ | At least 60 percent
+ | 
+Percentage of project leadership or committee positions held by women
+ | Governance records
+ | At least 40 percent
+ | 
+Percentage of women participants who report that they spoke and were listened to in community land meetings
+ | Post activity survey
+ | At least 70 percent
+ | 
+Percentage of activity venues that passed the accessibility checklist
+ | Venue checklist
+ | 100 percent
+ | 
+Percentage of projects scoring 2 or above on the GESI marker at design
+ | Design review
+ | 100 percent
+ | 
+Percentage of projects scoring 3 on the GESI marker at completion
+ | Final evaluation
+ | At least 40 percent
+ | 
+Percentage of ARDHI staff who are women, and in senior management
+ | HR records
+ | At least 50 percent and 40 percent
+ | 
+Gender pay gap by grade
+ | Annual pay review
+ | Zero unexplained gap
+ | 7.3 Reporting
+Quarterly programme reports include a GESI section showing disaggregated results and explaining any gap against target.
+The annual report includes a GESI performance statement approved by the Board.
+Donor reports follow the disaggregation required by the specific grant, and at minimum by sex, age and disability.
+Learning from GESI is fed into the learning agenda described in Annex 14.
+
+8. Complaints, Grievances and Non Compliance
+Any person who believes they have been discriminated against, excluded or harassed by ARDHI or its partners may complain through the channels set out in Annex 11 and in the community feedback mechanism in Annex 13. Complaints of a safeguarding nature are handled under Annex 11. Complaints about exclusion from a programme are investigated by the GESI Focal Person and answered within fifteen working days.
+Failure by a staff member, partner or supplier to apply this policy is a performance matter and, where it is deliberate or repeated, a disciplinary matter. A partner that repeatedly fails to meet the minimum standards may have its agreement suspended.
+9. Implementation, Resourcing and Review
+
+Item
+ | Provision
+ | 
+Budget
+ | A GESI line of not less than 5 percent of direct project costs in every project budget, plus a core organisational allocation for training and for the GESI Focal Person.
+ | 
+Capacity
+ | GESI induction for all new staff within one month, and an annual refresher for all staff and partners.
+ | 
+Tools
+ | GESI analysis framework, venue accessibility checklist, GESI marker, disaggregated data templates, and a plain language glossary in local languages.
+ | 
+Approval
+ | Approved by the ARDHI Board of Directors.
+ | 
+Review
+ | Every two years, or sooner if the law or donor requirements change.
+ | 
+Custodian
+ | GESI Focal Person under the Country Director.
+ | 
+Related documents
+ | Annex 11 Safeguarding Policy, Annex 13 Environmental and Social Safeguards, Annex 14 Monitoring Evaluation and Learning Tools, Annex 19 Beneficiary Selection Criteria and Tools, Human Resource Manual.
+ | 
+
+Appendix A: GESI Analysis Framework
+Completed before design is finalised, using secondary data, community consultation and separate discussions with women, men, young people and persons with disabilities.
+
+Domain
+ | Questions to answer
+ | Data sources
+ | 
+Access to resources
+ | Who holds, uses and controls land, water, trees, credit, inputs and information in this area? What proportion of land documents name a woman?
+ | Land office records, household survey, focus groups
+ | 
+Decision making and voice
+ | Who sits on area land committees, clan structures and local councils? Who speaks in meetings and whose views carry weight?
+ | Attendance records, observation, key informant interviews
+ | 
+Roles and time use
+ | How is work and unpaid care divided? What times of day and year are people available?
+ | Daily and seasonal calendars
+ | 
+Laws, rules and norms
+ | What do statute, custom and religion say about inheritance and about the land rights of women, youth and persons with disabilities? Where do they conflict?
+ | Legal review, clan leader interviews
+ | 
+Barriers to participation
+ | What stops women, young people or persons with disabilities from attending, speaking or benefiting? Distance, cost, language, permission, accessibility, safety?
+ | Focus groups, accessibility audit
+ | 
+Risks and backlash
+ | What harm could this project cause? Could working with women provoke violence or exclusion at home?
+ | Focus groups, safeguarding risk assessment
+ | 
+Capacities and allies
+ | Which women groups, youth groups, disability organisations, male champions and leaders can we work with?
+ | Stakeholder mapping
+ | 
+
+Appendix B: GESI Action Plan Template
+
+Barrier identified
+ | Group affected
+ | Action to remove the barrier
+ | Indicator and target
+ | Budget line
+ | Responsible
+ | Timeline
+ | 
+Women do not attend afternoon meetings because of market and household duties
+ | Women
+ | Agree meeting times with women groups; hold sessions between 9am and 12pm
+ | 50 percent of participants are women
+ | Activity 1.2
+ | Field Officer
+ | Quarter 1 onwards
+ | 
+Meeting venue has steps and no accessible latrine
+ | Persons with disabilities
+ | Use screened venues; hire accessible latrine where none exists
+ | 100 percent of venues pass the checklist
+ | Activity 1.2
+ | Logistics
+ | Continuous
+ | 
+Information is only in English
+ | Women, older persons, minorities
+ | Translate key materials; use radio and drama; provide audio versions
+ | 3 materials produced in local languages
+ | Activity 2.1
+ | Communications
+ | Quarter 2
+ | 
+Clan rules exclude daughters from inheriting
+ | Young women
+ | Structured dialogue with clan leaders; document agreed reforms in writing
+ | 5 clans adopt written inclusive rules
+ | Activity 3.3
+ | Legal Officer
+ | Quarters 2 to 6
+ | 
+
+Appendix C: Venue and Activity Accessibility Checklist
+
+Item
+ | Yes
+ | No
+ | Action needed
+ | 
+Venue can be reached by a person using a wheelchair without climbing steps, or a ramp is available
+ | 
+ | 
+ | 
+ | 
+Doorways are wide enough for a wheelchair
+ | 
+ | 
+ | 
+ | 
+An accessible latrine is available, or one will be hired
+ | 
+ | 
+ | 
+ | 
+Seating allows people with mobility limitations to sit comfortably and see the facilitator
+ | 
+ | 
+ | 
+ | 
+Lighting allows people to see the facilitator and any interpreter
+ | 
+ | 
+ | 
+ | 
+Sign language interpretation has been arranged where deaf participants are expected
+ | 
+ | 
+ | 
+ | 
+Materials are available in large print, audio or simplified summary
+ | 
+ | 
+ | 
+ | 
+Transport support is available for participants who cannot walk long distances
+ | 
+ | 
+ | 
+ | 
+Timing suits care responsibilities and allows travel home in daylight
+ | 
+ | 
+ | 
+ | 
+Separate, lockable and lit sanitation for women and men
+ | 
+ | 
+ | 
+ | 
+A private space is available for a nursing mother
+ | 
+ | 
+ | 
+ | 
+Facilitation is in a language participants understand, with interpretation where needed
+ | 
+ | 
+ | 
+ | 
+Complaint and feedback channels were explained at the start of the activity
+ | 
+ | 
+ | 
+ | 
+
+Appendix D: Disaggregated Participation Record
+Used at every ARDHI activity. Disability status is recorded using the Washington Group short set, asked privately and never announced.
+
+No.
+ | Name or code
+ | Sex
+ | Age band
+ | Disability status
+ | Tenure status
+ | Role in community
+ | Signature
+ | 
+1
+ | 
+ | F / M
+ | 18-30 / 31-45 / 46-60 / 60+
+ | Yes / No / Prefer not to say
+ | Owner / Spouse / Tenant / Occupant / Refugee
+ | 
+ | 
+ | 
+2
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+3
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+4
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+5
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+Washington Group short set questions, asked as: Do you have difficulty seeing, even if wearing glasses? Do you have difficulty hearing, even if using a hearing aid? Do you have difficulty walking or climbing steps? Do you have difficulty remembering or concentrating? Do you have difficulty with self care such as washing all over or dressing? Do you have difficulty communicating, for example understanding or being understood? Answer options are: no difficulty, some difficulty, a lot of difficulty, cannot do at all. A person is recorded as having a disability where the answer is a lot of difficulty or cannot do at all for any question.

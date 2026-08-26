@@ -1,0 +1,479 @@
+MAY SOCISL MEDIA CALENDAR
+Here are 8 distinct visual directions to share with your graphic designer.
+
+The Core Design Principle: "System vs Reality"
+Before diving into the 8 directions, establish this core rule: Every piece of content ARDHI creates should visually represent the tension between a theoretical system (neat, organized, policy) and the reality on the ground (messy, human, complex).
+
+This distinction can be shown through:
+
+Typography: (e.g., Sans Serif for Policy vs. Hand-drawn for Reality)
+
+Color: (e.g., Brand Blue for Policy vs. Brand Orange/Green for Reality)
+
+Texture: (e.g., Clean lines vs. Grain/Texture)
+
+Direction 1: The "Split Screen" (Dual-Concept Layout)
+Best Used For: Myth vs Reality (LinkedIn), Field vs Policy (Instagram Carousel), or any post requiring direct comparison.
+
+Visual Description: The canvas is divided cleanly down the middle (horizontally or vertically).
+
+Side A (e.g., Left): Represents the theoretical, organized "System" or "Policy." This side uses clean typography, ample white space, and maybe an abstract, stylized icon. Use ARDHI's primary brand color.
+
+Side B (e.g., Right): Represents the complex "Reality" or "Fact." This side must feature a high-quality, authentic photo that grounds the concept in real life (e.g., a farmer, a landfill, a flooded street). Use a secondary, contrasting brand color for accents or text overlays.
+
+Graphic Elements:
+
+A centered, slightly broken or dashed dividing line.
+
+Clean headings (#MYTH/#REALITY)
+
+Designer Note: Ensure the photo side isn't just a "stock" photo. It needs texture and context. The goal is tension.) our brand colours are. (#053664 Navy Blue, #eb3b14 Orange-Red, #286b25 Growth Green and #c1dbc3 Soft - Sage; mix them up to attain visual clarity))
+
+VISUAL DIRECTION
+Direction 1: The "Split Screen" (Dual-Concept Layout)
+Best Used For: Myth vs Reality (LinkedIn), Field vs Policy (Instagram Carousel), or any post requiring direct comparison.
+Visual Description: The canvas is divided cleanly down the middle (horizontally or vertically).
+Side A (e.g., Left): Represents the theoretical, organized "System" or "Policy." This side uses clean typography, ample white space, and maybe an abstract, stylized icon. Use ARDHI's primary brand color.
+Side B (e.g., Right): Represents the complex "Reality" or "Fact." This side must feature a high-quality, authentic photo that grounds the concept in real life (e.g., a farmer, a landfill, a flooded street). Use a secondary, contrasting brand color for accents or text overlays.
+Graphic Elements:
+A centered, slightly broken or dashed dividing line.
+Clean headings (#MYTH/#REALITY)
+Designer Note: Ensure the photo side isn't just a "stock" photo. It needs texture and context. The goal is tension.
+Direction 2: The "Layered Blueprint" (Process Illustration)
+Best Used For: Inside the Work (LinkedIn), explaining complex processes (Reels/Graphics).
+Visual Description: This direction makes the invisible systems visible. Think of an architectural blueprint or a technical schematic. Use a dark background (like a traditional blueprint or ARDHI's darkest brand color) and thin, technical, line-art style graphics.
+Graphic Elements:
+Flowcharts, diagrams, arrows, and connectivity icons (e.g., gear, lightbulb, data points).
+Key text (the main message) is rendered in a light, "blueprint white" or "blueprint blue."
+Small, realistic details might "burst" through the blueprint layer—like a small, photo-realistic image of a truck stuck in a storage node, illustrating a breakdown in the flow.
+Designer Note: Keep it legible. It should feel smart and technical, but not overly busy.
+Direction 3: The "Map Overlay" (Spatial Context)
+Best Used For: Post-harvest lossMapping, Disaster preparedness mapping, Land governance.
+Visual Description: This style uses a graphic representation of a map (topographic, city grid, or land parcel map) as the primary background or base layer. This map should be subtle (e.g., low-opacity gray or one brand color).
+Graphic Elements:
+ARDHI’s data is "plotted" onto this map.
+Use vibrant, contrasting colors (e.g., a "heat map" effect of orange to show high-loss areas).
+Employ icons that relate directly to the content (e.g., a tiny truck icon moving along a route, with loss-points marked).
+Add a stylized compass rose or coordinate grid to reinforce the idea of "mapping the problem."
+Designer Note: This turns abstract concepts into real-world geography. The map should be simplified, not a detailed cartographic map.
+Direction 4: The "Hand-Annotated Report" (Human Insight)
+Best Used For: Co-Creation, Inside the Work (any content emphasizing lived experience).
+Visual Description: This direction makes the graphics feel active and in-progress, as if you’re looking at ARDHI’s field notes or a working document.
+Graphic Elements:
+A base layer that looks like a clean digital report or official document (e.g., with a grid line or subtle notebook texture).
+The official text (e.g., "Field Observations") is in standard, clean typography.
+The critical insights, key data, or the community feedback are added as "hand-written" (script font or hand-drawn font) annotations, circles, arrows, and underlined text. Use a different, brighter color for the handwriting (like red or orange ink) to draw the eye.
+Designer Note: This style screams: "We are listening to the ground." The contrast between the formal text and the informal annotations is the key.
+Direction 5: The "Bold Typographic Statement" (Core Message)
+Best Used For: X (Twitter) Threads (intro graphics), Engagement Graphics, Poll Intros.
+Visual Description: When the message is the most important element, typography should dominate. This style dispenses with images to let the core challenge stand on its own.
+Graphic Elements:
+Massive, heavy, bold typography. Choose one brand typeface for maximum impact.
+The central question or statement (e.g., "SYSTEMS FAIL") fills 60-70% of the graphic.
+Use high-contrast color combinations (e.g., bright orange text on a deep navy background).
+Text can be slightly distorted or broken to convey the concept (e.g., the word "FRAGMENTED" might have gaps in the letters).
+Designer Note: Think "billboard" design. It must be readable from a distance and make an immediate impact.
+Direction 6: The "Macro-Textured Close-up" (Impact)
+Best Used For: Micro-stories (X), Disaster preparedness (evoking emotion), Land (texture).
+Visual Description: This style focuses on the emotional or material impact of a system failure. It uses extreme, high-detail macro photography of objects or textures associated with the theme.
+Graphic Elements:
+The main image is an ultra-close-up with intense texture and shallow depth of field (e.g., the grain in a piece of spilled, unusable grain; the rusted metal of a broken irrigation valve; the dry cracks in an unmanaged plot of land).
+The color palette is natural, earthy, and gritty.
+The text (one simple, powerful statement or story) is small, minimal, and perhaps slightly transparent or positioned to the side, forcing the viewer to confront the image first.
+Designer Note: This style builds empathy and immediate connection to the real-world problem.
+Direction 7: The "Interactive Interface" (Digital Co-Creation)
+Best Used For: Co-Creation/Engagement, Polls (X), "Food system check-in" (Instagram).
+Visual Description: This style makes the user feel like they are interacting with a digital tool or questionnaire from ARDHI.
+Graphic Elements:
+Design the graphic to look like a clean, simple digital interface (e.g., a phone screen or tablet app).
+The content is presented as questions, checkboxes, dropdown lists, or rating scales (e.g., a "Food System Health Score" graphic).
+Use icons and UI elements like toggles, sliders, and submit buttons.
+The color palette should be crisp and clean—bright blues and whites with clear call-to-action colors (e.g., a green "Submit" button).
+Designer Note: This is all about engagement. It gamifies the complex information and invites participation.
+Direction 8: The "ARDHI Data Visualization" (Insights)
+Best Used For: Explaining Reel content (static fallback), X (Twitter) threads (second post in thread).
+Visual Description: Data visualization is ARDHI’s language of authority. This direction uses clean, standard data visualization practices but gives them an ARDHI signature.
+Graphic Elements:
+Clean charts (bar, line, or pie).
+Crucial: Always link the data to the "Human Cost." The Y-axis might measure "Storage Volume (Tons)," but the X-axis should be linked to "Weeks After Harvest" and include a text label like "Farmer Revenue Loss Point."
+Use ARDHI's full brand color palette to differentiate categories (e.g., Waste Collection vs. Waste Disposal).
+Include a clear title and a 1-sentence "key takeaway."
+Designer Note: This style should be authoritative, fact-based, and easy to read quickly. It turns abstract concepts into compelling evidence.
+
+SOCIAL MEDIA CALENDAR
+MAY VISUAL SYSTEM (ALIGNED TO YOUR CALENDAR)
+WEEK 1: FOOD SYSTEMS (Entry Point → Multi-Pillar Awareness)
+Post 1 (Myth vs Reality – LinkedIn + IG + X)
+Visual Direction: Split Reality + ARDHI Signature Stack
+Left: “High food production” 
+Right: “Food insecurity” 
+Bottom strip: icons for all 5 pillars 
+Purpose:
+Start with agriculture, but signal immediately that it connects to everything.
+
+Post 2 (Inside the Work)
+Visual Direction: Inside ARDHI + Dependency Chain
+Background: team reviewing documents / field imagery 
+Overlay flow:
+Land → Agriculture → Markets → Health → Resilience 
+Purpose:
+Show that your internal work already spans multiple pillars.
+
+Post 3 (Co-Creation / Engagement)
+Visual Direction: Question Card + 5-Pillar Grid
+Central question 
+5 selectable options mapped to pillars: 
+Storage (Agri) 
+Waste systems 
+Disaster risk 
+Health access 
+Land security 
+Purpose:
+Train your audience to think in systems, not silos.
+
+WEEK 2: WASTE (Anchor → Ripple Across Systems)
+Post 1 (Myth vs Reality)
+Visual Direction: Minimal Impact Statement + Ripple Effect Map
+Text: “This is not a waste problem.” 
+Follow-up frame:
+Waste → Flooding → Disease → Crop loss → Land degradation 
+Purpose:
+Visually prove cross-pillar impact.
+
+Post 2 (Inside the Work)
+Visual Direction: Inside ARDHI + Policy vs Impact Matrix
+Left: Policy review / meeting 
+Right overlay:
+Waste policy → Health outcomes
+Waste policy → Disaster risk 
+Purpose:
+Position ARDHI as connecting governance to outcomes.
+
+Post 3 (Engagement)
+Visual Direction: Question Card + Daily Life Journey Icons
+Question: “How does waste affect your daily life?” 
+Icons representing: 
+Flood (Disaster) 
+Clinic (Health) 
+Market (Agri) 
+Land/settlement 
+Purpose:
+Bring waste into lived experience across pillars.
+
+WEEK 3: DISASTER (Shift → Preparedness Systems)
+Post 1 (Myth vs Reality)
+Visual Direction: Split Reality + System Breakdown Grid
+Left: “Unexpected disaster” 
+Right: “Predictable system failure” 
+Grid below showing: 
+Waste (blocked drains) 
+Land (settlement in risk zones) 
+Health (weak response) 
+Agriculture (crop loss) 
+Purpose:
+Reframe disaster as multi-pillar failure.
+
+Post 2 (Inside the Work)
+Visual Direction: Inside ARDHI + ARDHI Wheel
+Background: planning / mapping session 
+Overlay: circular ARDHI wheel 
+Purpose:
+Show preparedness requires all five pillars working together.
+
+Post 3 (Co-Creation)
+Visual Direction: Question Card + Dependency Chain
+Question: “What would reduce disaster impact most?” 
+Visual chain:
+Land → Planning → Waste → Flood control → Health 
+Purpose:
+Guide audience thinking toward systems solutions.
+
+WEEK 4: LAND (Foundation Layer)
+Post 1 (Myth vs Reality)
+Visual Direction: Minimal Impact + Dependency Chain
+Text: “Land is not just land.” 
+Visual chain:
+Land → Agriculture → Income → Health → Stability 
+Purpose:
+Position land as the base of all pillars.
+
+Post 2 (Inside the Work)
+Visual Direction: Inside ARDHI + Policy vs Impact Matrix
+Policy: Land governance 
+Impact across: 
+Farming investment 
+Settlement safety 
+Waste management 
+Health access 
+Purpose:
+Make land policy visibly cross-cutting.
+
+Post 3 (Engagement / Reflection)
+Visual Direction: Before vs After Systems + ARDHI Signature Stack
+Before: fragmented systems (5 small visuals) 
+After: integrated, functioning system 
+Caption Prompt:
+“What would change in your community if systems worked together?”
+Purpose:
+End the month with a full systems vision.
+
+MAY CONTENT STRATEGY OVERVIEW
+Each week blends:
+Inside the Work (credibility) 
+Field vs Policy (translation) 
+Co-creation / engagement 
+Myth vs Reality (pattern interrupt) 
+Micro-stories (human lens) 
+Relatability (daily life impact) 
+
+WEEK 1: FOOD SYSTEMS (FROM POLICY → DAILY LIFE)
+LINKEDIN
+Post 1 – Myth vs Reality
+Myth: Food insecurity exists because farmers don’t produce enough.
+Reality: Many farmers produce—and still lose income after harvest.
+Production is not the bottleneck.
+System design is.
+At ARDHI, we are seeing gaps in:
+Storage infrastructure 
+Market coordination 
+Pricing systems 
+If these fail, production alone cannot solve food security.
+What do you think is the biggest gap in the system today?
+
+Post 2 – Inside the Work
+This week at ARDHI, we are examining post-harvest losses across farming communities.
+What does that actually involve?
+Mapping where losses occur (farm, transport, market) 
+Identifying policy gaps in storage and logistics 
+Engaging stakeholders to understand incentives 
+The goal is simple:
+Reduce loss. Increase value.
+But the process is complex—because the system is fragmented.
+Where do you think most value is lost: on the farm or after it?
+
+Post 3 – Co-Creation
+If you could redesign the food system, where would you start?
+Storage infrastructure 
+Market access 
+Pricing regulation 
+Farmer financing 
+At ARDHI, we are exploring interventions in this space.
+Your input matters—because policy must reflect lived experience.
+Choose one, and explain why.
+
+INSTAGRAM
+Post 1 – Field vs Policy (Carousel)
+Slide 1:
+Policy: “Improve agricultural value chains”
+Slide 2:
+Reality: “Farmers sell immediately to avoid losses”
+Slide 3:
+Policy: “Increase food production”
+Slide 4:
+Reality: “Food still becomes unaffordable”
+Caption:
+Policy is structured.
+Reality is messy.
+We work to close that gap.
+📍Where do you see the biggest disconnect?
+
+Post 2 – Relatable Reel
+Hook:
+“Why food prices go up—even when harvests are good”
+Short explanation:
+No storage → forced selling → price drops for farmers
+Later → scarcity → price rises for consumers
+Caption:
+Same system.
+Two different outcomes.
+Have you noticed this pattern?
+
+Post 3 – Engagement
+Graphic:
+“Food system check-in”
+Question:
+What affects you most right now?
+High food prices 
+Poor market access 
+Food waste 
+Inconsistent supply 
+Comment your answer.
+
+X (TWITTER)
+Post 1 – Thread
+Food systems don’t fail in one place. They fail across stages. 🧵
+Production works 
+Storage is weak 
+Markets are unstable 
+Result:
+Farmers lose → Consumers pay more
+Where is the real failure?
+
+Post 2 – Poll
+What is the biggest issue in food systems?
+Storage 
+Transport 
+Market access 
+Policy gaps 
+Vote + explain.
+
+Post 3 – Micro-story
+A farmer harvests successfully.
+By the end of the week:
+Some produce is lost
+Some is sold cheaply
+This isn’t inefficiency.
+It’s exposure to risk.
+What would change this outcome?
+
+WEEK 2: WASTE SYSTEMS (FROM ENVIRONMENT → GOVERNANCE)
+LINKEDIN
+Post 1 – Myth vs Reality
+Myth: Waste is a behavior problem.
+Reality: Waste is a governance problem.
+When systems fail:
+Collection is inconsistent 
+Disposal is unmanaged 
+Accountability is unclear 
+The result is visible—but the cause is structural.
+What needs fixing first: behavior or systems?
+
+Post 2 – Inside the Work
+Our team is currently analyzing urban waste systems.
+Focus areas:
+Policy coordination gaps 
+Land use and dumping patterns 
+Public health implications 
+Waste is not just environmental.
+It is economic and institutional.
+What impact of poor waste systems affects you most?
+
+Post 3 – Co-Creation
+If your area had a fully functional waste system, what would change first?
+Cleaner streets 
+Reduced flooding 
+Better health outcomes 
+More recycling opportunities 
+We are designing systems—but community insight matters.
+
+INSTAGRAM
+Post 1 – Field vs Policy
+Policy: “Improve sanitation systems”
+Reality: Blocked drains after light rain
+Policy: “Promote waste management”
+Reality: Open dumping
+Caption:
+The gap is not awareness.
+It’s execution.
+
+Post 2 – Reel (Relatable)
+Hook:
+“This is why flooding keeps happening”
+Explain:
+Blocked drains → water has nowhere to go
+Caption:
+Flooding is not always natural.
+Sometimes, it’s designed.
+
+Post 3 – Engagement
+Question:
+How does poor waste management affect you?
+Flooding 
+Health issues 
+Bad environment 
+Economic loss 
+
+X
+Post 1
+Stop calling it a littering problem.
+It’s a system failure.
+
+Post 2 (Poll)
+What’s the biggest waste issue?
+Collection 
+Disposal 
+Enforcement 
+Awareness 
+
+Post 3 (Micro-story)
+A plastic bottle in a drain
+→ blocked water
+→ flooded street
+Small failure.
+Large consequence.
+
+WEEK 3: DISASTER (FROM REACTION → PREPAREDNESS)
+LINKEDIN
+Post 1 – Myth vs Reality
+Myth: Disasters are unpredictable.
+Reality: Damage is predictable when systems are weak.
+
+Post 2 – Inside the Work
+We are mapping how disaster preparedness is embedded in policy frameworks.
+
+Post 3 – Co-Creation
+What does preparedness look like in your area?
+
+INSTAGRAM
+Post 1 – Field vs Policy
+Policy: “Disaster preparedness”
+Reality: Communities reacting after impact
+
+Post 2 – Reel
+Hook:
+“Why disasters feel sudden—but aren’t”
+
+Post 3 – Engagement
+What worries you most during disasters?
+
+X
+Post 1
+Disasters are predictable. Damage isn’t.
+
+Post 2 (Poll)
+Biggest gap in disaster response?
+
+Post 3
+One flood can erase years of progress.
+
+WEEK 4: LAND (FOUNDATION OF ALL SYSTEMS)
+LINKEDIN
+Post 1 – Myth vs Reality
+Myth: Land is just a resource.
+Reality: Land is a system of rights and power.
+
+Post 2 – Inside the Work
+We are examining land tenure gaps affecting communities.
+
+Post 3 – Co-Creation
+What does secure land mean to you?
+
+INSTAGRAM
+Post 1 – Field vs Policy
+Policy: “Land governance reform”
+Reality: Uncertainty and disputes
+
+Post 2 – Reel
+Hook:
+“You don’t invest in land you might lose”
+
+Post 3 – Engagement
+What does land security affect most?
+
+X
+Post 1
+Land security = economic security.
+
+Post 2 (Poll)
+Biggest land issue?
+
+Post 3
+No land security → no long-term investment.
+
+Final Note
+This plan does three things differently from your previous months:
+Breaks format repetition (each post behaves differently) 
+Builds audience participation loops 
+Connects policy to lived experience consistently 
+You are no longer just informing.
+You are activating conversation around systems.

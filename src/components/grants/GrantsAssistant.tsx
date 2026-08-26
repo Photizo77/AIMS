@@ -1,0 +1,214 @@
+// src/components/grants/GrantsAssistant.tsx
+// ============================================================
+// ARDHI GRANTS ASSISTANT — floating chat widget (bottom-right)
+// Fine-tuned on ARDHI's documents + grants tracker:
+//  - calls the Netlify /api/chat function with retrieved org context,
+//  - falls back to a local knowledge answer engine when the API is
+//    unavailable (dev / no API keys), so it always answers.
+// ============================================================
+
+import { useEffect, useRef, useState } from 'react';
+import { cn } from '@/lib/utils';
+import {
+  buildGrantsSystemPrompt,
+  generateLocalAnswer,
+  QUICK_PROMPTS,
+  type ChatMessage,
+} from '@/lib/knowledgeRetrieval';
+
+const API_MODEL = 'deepseek-chat';
+
+/** Programmatically open the assistant (used by dashboard quick-access buttons) */
+export function openGrantsAssistant(): void {
+  window.dispatchEvent(new CustomEvent('aims:open-grants-assistant'));
+}
+
+interface AssistantMessage extends ChatMessage {
+  id: string;
+  source: 'ai' | 'local' | 'user';
+}
+
+let msgId = 0;
+function nextMsgId(): string {
+  msgId += 1;
+  return `gm-${Date.now()}-${msgId}`;
+}
+
+const WELCOME: AssistantMessage = {
+  id: 'welcome',
+  role: 'assistant',
+  source: 'local',
+  content:
+    "Hi! I'm the ARDHI Grants Assistant — tuned on ARDHI's own documents (Organisational Profile, 5-Year Strategic Plan 2026-2031, resource mobilisation plan) and the Grants Tracker (Aug 2026).\n\nAsk me about our grants history, missed deadlines, live opportunities, or anything about the organisation.",
+};
+
+async function callAiChat(history: ChatMessage[], userText: string): Promise<string | null> {
+  const systemPrompt = buildGrantsSystemPrompt(userText);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 30000);
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: history, model: API_MODEL, systemPrompt }),
+      signal: controller.signal,
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return typeof data.reply === 'string' && data.reply.trim() ? data.reply : null;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+export function GrantsAssistant() {
+  const [open, setOpen] = useState(false);
+  const [messages, setMessages] = useState<AssistantMessage[]>([WELCOME]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const listRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (listRef.current) {
+      listRef.current.scrollTop = listRef.current.scrollHeight;
+    }
+  }, [messages, loading, open]);
+
+  // Open on demand from dashboard quick-access buttons
+  useEffect(() => {
+    const handler = () => setOpen(true);
+    window.addEventListener('aims:open-grants-assistant', handler);
+    return () => window.removeEventListener('aims:open-grants-assistant', handler);
+  }, []);
+
+  const handleSend = async (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed || loading) return;
+    const userMsg: AssistantMessage = { id: nextMsgId(), role: 'user', content: trimmed, source: 'user' };
+    const next = [...messages, userMsg];
+    setMessages(next);
+    setInput('');
+    setLoading(true);
+
+    const history: ChatMessage[] = next.map((m) => ({ role: m.role, content: m.content }));
+
+    const aiReply = await callAiChat(history, trimmed);
+    const localReply = aiReply === null ? generateLocalAnswer(trimmed) : null;
+
+    const assistantMsg: AssistantMessage = {
+      id: nextMsgId(),
+      role: 'assistant',
+      source: aiReply ? 'ai' : 'local',
+      content: aiReply ?? localReply ?? "Sorry — I couldn't find an answer for that. Try rephrasing.",
+    };
+    setMessages((prev) => [...prev, assistantMsg]);
+    setLoading(false);
+  };
+
+  return (
+    <>
+      {/* Floating action button */}
+      <button
+        onClick={() => setOpen(!open)}
+        title="ARDHI Grants Assistant"
+        aria-label="Open grants assistant chat"
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-[#286b25] text-white shadow-xl hover:scale-105 hover:bg-[#1f5520] transition-all flex items-center justify-center"
+      >
+        <span className="material-symbols-outlined text-[26px]">{open ? 'close' : 'smart_toy'}</span>
+        {!open && (
+          <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-aims-orange border-2 border-white animate-pulse" />
+        )}
+      </button>
+
+      {/* Chat panel */}
+      {open && (
+        <div className="fixed bottom-24 right-6 z-50 w-[calc(100vw-3rem)] max-w-[400px] h-[min(560px,calc(100vh-8rem))] bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden">
+          {/* Header */}
+          <div className="px-4 py-3 bg-[#286b25] text-white flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center">
+                <span className="material-symbols-outlined text-[20px]">smart_toy</span>
+              </div>
+              <div>
+                <p className="text-sm font-extrabold leading-tight">ARDHI Grants Assistant</p>
+                <p className="text-[10px] text-white/80 leading-tight flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-aims-green inline-block" />
+                  Tuned on ARDHI docs & grants tracker
+                </p>
+              </div>
+            </div>
+            <button onClick={() => setOpen(false)} className="p-1 rounded hover:bg-white/20 text-white/80 hover:text-white transition-colors">
+              <span className="material-symbols-outlined text-[20px]">close</span>
+            </button>
+          </div>
+
+          {/* Messages */}
+          <div ref={listRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50">
+            {messages.map((m) => (
+              <div key={m.id} className={cn('flex', m.role === 'user' ? 'justify-end' : 'justify-start')}>
+                <div className={cn('max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap shadow-sm', m.role === 'user' ? 'bg-[#286b25] text-white rounded-br-sm' : 'bg-white border border-slate-200 text-slate-800 rounded-bl-sm')}>
+                  {m.content}
+                  {m.role === 'assistant' && m.source !== 'local' && (
+                    <p className="text-[9px] font-bold uppercase tracking-wide text-slate-400 mt-1.5 flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[11px]">auto_awesome</span>Answered by AI model
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+            {loading && (
+              <div className="flex justify-start">
+                <div className="bg-white border border-slate-200 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-300 animate-bounce" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-300 animate-bounce [animation-delay:150ms]" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-300 animate-bounce [animation-delay:300ms]" />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Quick prompts */}
+          <div className="px-3 pt-2 flex gap-1.5 overflow-x-auto bg-white border-t border-slate-100">
+            {QUICK_PROMPTS.slice(0, 4).map((p) => (
+              <button
+                key={p}
+                onClick={() => handleSend(p)}
+                disabled={loading}
+                className="shrink-0 text-[10px] font-bold text-aims-navy bg-aims-navy/5 border border-aims-navy/15 rounded-full px-2.5 py-1 hover:bg-aims-navy/10 transition-colors disabled:opacity-50"
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+
+          {/* Input */}
+          <div className="p-3 bg-white flex items-end gap-2">
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend(input);
+                }
+              }}
+              placeholder="Ask about grants, deadlines, ARDHI…"
+              rows={1}
+              className="flex-1 text-sm border border-slate-200 rounded-xl px-3 py-2.5 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-aims-navy/30 resize-none max-h-28"
+            />
+            <button
+              onClick={() => handleSend(input)}
+              disabled={!input.trim() || loading}
+              className="w-10 h-10 rounded-xl bg-[#286b25] text-white flex items-center justify-center hover:bg-[#1f5520] transition-colors disabled:opacity-40 shrink-0"
+              aria-label="Send message"
+            >
+              <span className="material-symbols-outlined text-[20px]">send</span>
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}

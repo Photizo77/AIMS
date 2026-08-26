@@ -1,0 +1,555 @@
+ARDHI LAW AND POLICY INITIATIVE
+Advocacy  |  Research  |  Innovation
+www.ardhi.org.ug
+ANNEX 5
+ORGANISATIONAL PROFILE
+Identity, mandate, pillars, programmes, governance, systems and capacity
+
+Document control
+ | Details
+ | 
+Document title
+ | Annex 5: Organisational Profile
+ | 
+Owner
+ | Executive Director
+ | 
+Approved by
+ | ARDHI Board of Directors
+ | 
+Version
+ | 1.0
+ | 
+Date of issue
+ | August 2026
+ | 
+Next review
+ | August 2027
+ | 
+Applies to
+ | All ARDHI staff, board members, volunteers, interns, consultants, contractors, partners, suppliers and any person acting on behalf of ARDHI
+ | 
+Status
+ | Approved for use in donor submissions and programme implementation
+ | 
+
+Table of Contents
+If the entries below do not appear, click inside the contents area and press F9 to update the field.
+	TOC \h \o "1-3"1. Organisation at a Glance	 PAGEREF _Toc238465802 \h 1
+	2. Who We Are	 PAGEREF _Toc238465803 \h 1
+	2.1 Vision	 PAGEREF _Toc238465804 \h 1
+	2.2 Mission	 PAGEREF _Toc238465805 \h 1
+	2.3 Core values	 PAGEREF _Toc238465806 \h 1
+	3. Our Pillars	 PAGEREF _Toc238465807 \h 1
+	4. Thematic Programmes	 PAGEREF _Toc238465808 \h 1
+	5. How We Work	 PAGEREF _Toc238465809 \h 1
+	5.1 Our theory of change	 PAGEREF _Toc238465810 \h 1
+	5.2 Our approach in practice	 PAGEREF _Toc238465811 \h 1
+	6. Who We Serve	 PAGEREF _Toc238465812 \h 1
+	7. Governance and Leadership	 PAGEREF _Toc238465813 \h 1
+	8. Our People	 PAGEREF _Toc238465814 \h 1
+	9. Systems, Policies and Compliance	 PAGEREF _Toc238465815 \h 1
+	9.1 Financial management	 PAGEREF _Toc238465816 \h 1
+	10. Track Record	 PAGEREF _Toc238465817 \h 1
+	10.1 Project experience table	 PAGEREF _Toc238465818 \h 1
+	10.2 Referees	 PAGEREF _Toc238465819 \h 1
+	11. Partnerships	 PAGEREF _Toc238465820 \h 1
+	12. Why Fund ARDHI	 PAGEREF _Toc238465821 \h 1
+	13. Contact	 PAGEREF _Toc238465822 \h 1
+
+1. Organisation at a Glance
+Fields marked in square brackets are completed from ARDHI statutory records before this annex is submitted with any application. Everything else is standing text.
+
+Item
+ | Detail
+ | 
+Registered name
+ | ARDHI Law and Policy Initiative
+ | 
+Short name and acronym
+ | ARDHI.
+ | 
+Legal status
+ | Non governmental organisation registered in the Republic of Uganda
+ | 
+NGO Bureau registration number
+ | [insert registration number]
+ | 
+Incorporation or certificate number
+ | [insert incorporation number]
+ | 
+Date of registration
+ | [insert date]
+ | 
+Tax identification number
+ | [insert TIN]
+ | 
+Address
+ | Plot 1207, Ggaba Road, Next to the American Embassy, Kampala, Uganda
+ | 
+Website
+ | www.ardhi.org.ug
+ | 
+General email
+ | info@ardhi.org.ug
+ | 
+Telephone
+ | 0393104617/ +256 752 504008
+ | 
+Number of staff
+ | 20
+ | 
+
+2. Who We Are
+We are a Ugandan based NGO that drives community resilience through advocacy and systems innovations in the areas of agriculture and food security, waste management, disaster preparedness, and land governance.
+2.1 Vision
+A future where research informs action, and action delivers justice.
+2.2 Mission
+Impacting communities through research, innovations and advocacy particularly in areas of smart agriculture, waste management, disaster preparedness, health and land governance.
+2.3 Core values
+
+Value
+ | What it means in our work
+ | 
+Sustainability
+ | Champion policies and actions that safeguard natural resources.
+ | 
+Equity
+ | Foster inclusive environments and advocate for fair access to resources, ensuring marginalized voices are represented and empowered.
+ | 
+Innovation
+ | Pioneer creative solutions and leverage emerging technologies to address complex systemic challenges.
+ | 
+Collaboration
+ | Forge purposeful partnerships to amplify collective impact and drive lasting change.
+ | 3. Our Pillars
+ARDHI works through three connected pillars. They are not separate departments doing separate things. Each pillar feeds the other two.
+
+Pillar
+ | What it covers
+ | Typical outputs
+ | 
+Advocacy
+ | Legal empowerment of communities, legal aid and mediation, public interest engagement, policy influencing at district and national level, coalition building.
+ | Community legal empowerment programmes, resolved land disputes, policy submissions, district ordinances and byelaws, public campaigns
+ | 
+Research
+ | Original studies on tenure security, land governance, land conflict, gender and land, and the performance of land institutions. Evaluations and assessments for others.
+ | Baseline and tenure studies, policy briefs, peer reviewed and practitioner publications, evaluation reports, open data sets
+ | 
+Innovation
+ | Designing and testing practical tools and models that make land rights easier to secure, including digital tools, community documentation models, and new approaches to dispute resolution.
+ | Mobile documentation and mapping tools, community mediation models, paralegal accreditation system, decision support tools for land offices
+ | 
+The connection between the three is the point. Research identifies where the system fails. Innovation designs and tests a fix in a real community. Advocacy takes the tested fix and gets it adopted as policy or standard practice. A funder investing in one pillar is therefore investing in the whole chain.
+4. Thematic Areas
+
+Programme
+ | Focus
+ | Main activities
+ | 
+ArdhiAgriculture
+ | Food security, resilient livelihoods, and climate-smart practice 
+
+ | Farmer training, production resilience, value-chain awareness, and policy support that improves access to inputs, knowledge, and markets.
+ | 
+ArdhiWaste
+ | Safe, responsible, circular approaches to waste.
+ | Documenting risks, promoting policy accountability, and piloting practical models for segregation, recovery, and local value creation. Treated as a health and urban governance issue, not only an environmental one.
+
+ | 
+ArdhiDisasters
+ | Focuses on anticipation, readiness, and rapid response.
+ | Mapping risks, strengthening community preparedness, supporting local planning, and advocating for responsive institutions to help communities reduce losses before shocks become disasters.
+
+ | 
+ArdhiHealth
+ | Focuses on the intersection of environment, settlement conditions, land, waste, and access to services 
+ | Treating public health as a cross-cutting outcome of better governance, cleaner environments, safer communities, and more informed institutions.
+
+ | 
+ArdhiLandGovernance
+ | Focuses on fairness, access, tenure awareness, dispute reduction, and inclusive decision-making.
+ | Supporting community rights, policy reform, and practical tools that help ordinary people navigate land systems more effectively.
+
+ | 
+ArdhiLaw
+ | Supports legal empowerment, policy reform, rights protection, and institutional accountability.
+ | Connecting legal analysis with community realities and strengthening every other thematic area by providing a formal pathway for reform and redress.
+
+ | 
+
+5. How We Work
+5.1 Our theory of change
+ARDHI is not a Think Tank, but a Think and Act Tank. Established in 2024 and fully registered in 2025, we operate on the belief that if we combine advocacy to shift rules, research to generate empirical evidence, and innovation to pilot practical models across agriculture, waste, disaster preparedness, health, and land governance, communities can gain the tools, voice, and systems they need to solve persistent problems. Lasting impact requires more than just ideas, it requires pressure, proof, and prototypes working together.
+
+If we...
+ | Then...
+ | Leading to...
+ | 
+Generate credible evidence on how land systems fail particular groups
+ | Decision makers and communities can see the problem clearly and cannot dismiss it
+ | Informed demand for change and a defensible advocacy position
+ | 
+Empower communities legally, and equip local paralegals and mediators
+ | People can claim, document and defend their rights without depending on us
+ | Fewer land losses, faster dispute resolution, lasting local capacity
+ | 
+Design and test practical innovations with communities and institutions
+ | There is a working, costed model rather than a demand with no solution attached
+ | Adoptable approaches that institutions can take up
+ | 
+Engage land institutions and policy makers with that evidence and those models
+ | Rules, procedures and budgets change
+ | Systemic and durable improvement in tenure security
+ | 
+Target women, youth, persons with disabilities and other excluded groups throughout
+ | Benefits reach those who start furthest behind
+ | Reduced inequality in land holding and land justice
+ | 5.2 Our approach in practice
+We work through existing institutions wherever they exist, rather than creating parallel structures that end when our funding ends.
+We train local people rather than deploying outsiders, and we certify them so that their skills are recognised after we leave.
+We publish our data and our tools, including the ones that did not work.
+We deliver in the languages our participants actually speak.
+We plan our exit from the day a project is designed, and we say so to the community at the first meeting.
+We partner rather than compete, including with organisations that do only advocacy, because our research strengthens their case.
+6. Who We Serve
+
+Group
+ | Why they are a priority
+ | 
+Women, particularly widows, separated women and women in customary marriage
+ | They use most agricultural land but hold the weakest documented rights and are the most exposed to dispossession
+ | 
+Young people
+ | They inherit late or not at all, and are largely absent from the structures that decide on land
+ | 
+Persons with disabilities
+ | They are excluded by inaccessible venues, formats and procedures long before any legal question arises
+ | 
+Lawful and bona fide occupants and tenants
+ | They hold real legal protection that few of them know about and fewer can enforce
+ | 
+Communal and customary land holders, including pastoralists and forest adjacent communities
+ | Their tenure is legitimate but usually undocumented, which makes it easy to take
+ | 
+Refugee and host communities
+ | They face insecure occupancy arrangements and an unfamiliar legal system
+ | 
+Residents of informal settlements
+ | They face eviction with no recognised document to rely on
+ | 
+Land institutions and local government
+ | Improving how they work is the fastest route to changing outcomes at scale
+ | 
+
+7. Governance and Leadership
+ARDHI is governed by a Board of Directors that sets strategy, approves policy, oversees risk and safeguarding, and holds management to account. Day to day leadership sits with the Country Director, supported by the Executive Director and the senior management team. The full structure is set out in Annex 9.
+
+Level
+ | Body or post
+ | Responsibility
+ | 
+Governance
+ | General Assembly or Members
+ | Supreme authority; appoints the Board; receives the annual report and audited accounts
+ | 
+Governance
+ | Board of Directors
+ | Strategy, policy approval, financial oversight, risk appetite, appointment of senior management
+ | 
+Governance
+ | Finance and Audit Committee
+ | Budgets, audit, internal controls, fraud
+ | 
+Governance
+ | Programmes, Safeguarding and Risk Committee
+ | Programme quality, safeguarding assurance, risk register; hosts the Board Safeguarding Champion
+ | 
+Executive
+ | Country Director
+ | Overall accountability for the country programme, compliance, staff and delivery
+ | 
+Executive
+ | Executive Director
+ | Strategy, partnerships, resource mobilisation and external representation
+ | 
+Management
+ | Senior management team
+ | Programmes, research and policy, finance and administration, and monitoring, evaluation, learning and communications
+ | 
+Assurance
+ | Cross cutting focal persons
+ | Safeguarding, gender and social inclusion, environmental and social safeguards, and data protection
+ | 
+Board members serve fixed renewable terms, declare conflicts of interest annually, and are not employed by the organisation. The Board meets at least quarterly and receives a safeguarding and risk report at every meeting.
+8. Our People
+
+Function
+ | Capability held in house
+ | 
+Legal
+ | Advocates and legal officers experienced in land law, succession, public interest litigation and legal aid delivery
+ | 
+Research
+ | Researchers with quantitative and qualitative training, survey design, land record analysis and participatory methods
+ | 
+Programmes
+ | Project managers, field officers and community mobilisers with district level networks
+ | 
+Community based
+ | Trained and accredited community paralegals and mediators drawn from the communities themselves
+ | 
+Finance and compliance
+ | Qualified accounting staff, procurement and human resource capability, donor compliance experience
+ | 
+MEL
+ | Monitoring, evaluation and learning specialists using digital data collection and disaggregated analysis
+ | 
+Communications and advocacy
+ | Policy engagement, publications, radio, digital and campaign capability
+ | 
+Technical associates
+ | A roster of academic associates, surveyors, GIS specialists and consultants engaged as needed
+ | 
+ARDHI applies equal opportunity recruitment and targets at least 50 percent women across staff and at least 40 percent women in senior management, as set out in Annex 12. All personnel are recruited under safer recruitment procedures and sign the Code of Conduct in Annex 11 before they begin work.
+
+9. Systems, Policies and Compliance
+ARDHI maintains the governance, financial and safeguarding systems that institutional funders assess during due diligence.
+
+System or policy
+ | Status
+ | Reference
+ | 
+Constitution and governance manual
+ | In place
+ | Statutory documents
+ | 
+Human Resource Manual and Code of Conduct
+ | In place
+ | HR Manual; Annex 11
+ | 
+Finance and Accounting Manual
+ | In place
+ | Finance Manual
+ | 
+Procurement Policy with thresholds and a procurement committee
+ | In place
+ | Procurement Policy
+ | 
+Anti fraud, anti bribery and whistleblowing policy
+ | In place
+ | Annex 15 and the Whistleblowing Policy
+ | 
+Safeguarding Policy covering PSEAH and child protection
+ | In place
+ | Annex 11
+ | 
+Gender and Social Inclusion Policy
+ | In place
+ | Annex 12
+ | 
+Environmental and Social Safeguards framework and grievance mechanism
+ | In place
+ | Annex 13
+ | 
+Monitoring, Evaluation and Learning framework and tools
+ | In place
+ | Annex 14
+ | 
+Risk management framework and risk register
+ | In place
+ | Annex 15
+ | 
+Beneficiary selection criteria and tools
+ | In place
+ | Annex 19
+ | 
+Data protection and privacy procedure
+ | In place
+ | Annex 13 and Annex 14
+ | 
+Partnership and sub grant management procedure
+ | In place
+ | Annex 16
+ | 
+Sustainability and resource mobilisation plan
+ | In place
+ | Annex 20
+ | 
+Annual external audit
+ | Conducted annually
+ | [insert auditor and most recent audited year]
+ | 9.1 Financial management
+Accounting on an accrual basis with project and donor cost centres.
+Segregation of duties between requisition, approval, payment and recording, with dual signatories on all accounts.
+Documented procurement thresholds, competitive bidding above threshold and a standing procurement committee.
+Monthly budget versus actual reporting to management and quarterly reporting to the Board.
+Separate bank accounts for restricted project funds where a donor requires it.
+Annual external audit, and readiness for project specific and donor commissioned audits.
+Asset register maintained and verified annually.
+
+10. Track Record
+This section is completed with verified figures from the ARDHI results database before submission. Do not submit an application with these fields blank, and do not report a figure that cannot be traced to a source document.
+
+Result area
+ | Cumulative to date
+ | Verification source
+ | 
+People reached with land rights information
+ | [insert number, disaggregated by sex]
+ | Reach and attendance records
+ | 
+People trained, including paralegals and mediators
+ | [insert number, disaggregated]
+ | Training registers
+ | 
+Land disputes handled through mediation or legal aid
+ | [insert number]
+ | Case management system
+ | 
+Land documents supported to completion
+ | [insert number, and share naming a woman]
+ | Land office and project records
+ | 
+Community structures supported
+ | [insert number]
+ | Structure assessments
+ | 
+Research outputs and policy briefs published
+ | [insert number]
+ | Publication record
+ | 
+Policy submissions and engagements
+ | [insert number]
+ | Advocacy log
+ | 
+Districts of operation
+ | [insert districts]
+ | Project records
+ | 10.1 Project experience table
+
+Project title
+ | Funder
+ | Value and currency
+ | Period
+ | Location
+ | Role (lead or partner)
+ | Key results delivered
+ | 
+[insert]
+ | [insert]
+ | [insert]
+ | [insert]
+ | [insert]
+ | [insert]
+ | [insert]
+ | 
+[insert]
+ | [insert]
+ | [insert]
+ | [insert]
+ | [insert]
+ | [insert]
+ | [insert]
+ | 
+[insert]
+ | [insert]
+ | [insert]
+ | [insert]
+ | [insert]
+ | [insert]
+ | [insert]
+ | 
+[insert]
+ | [insert]
+ | [insert]
+ | [insert]
+ | [insert]
+ | [insert]
+ | [insert]
+ | 10.2 Referees
+
+Organisation
+ | Contact person and position
+ | Relationship to ARDHI
+ | Email and telephone
+ | 
+[insert]
+ | [insert]
+ | [insert]
+ | [insert]
+ | 
+[insert]
+ | [insert]
+ | [insert]
+ | [insert]
+ | 
+[insert]
+ | [insert]
+ | [insert]
+ | [insert]
+ | 
+
+11. Partnerships
+ARDHI works through partnership rather than alone. Our partnership categories, the register of current partners and the agreements that govern them are set out in Annex 16.
+
+Partner type
+ | What the partnership delivers
+ | 
+Community based organisations and land rights groups
+ | Reach, legitimacy and continuation of results after a project ends
+ | 
+Local government and land institutions
+ | Adoption of improved practice, and sustainability through public systems
+ | 
+Universities and research institutions
+ | Methodological rigour, peer review and access to specialist expertise
+ | 
+National and regional civil society networks
+ | Collective advocacy weight and shared learning
+ | 
+International non governmental organisations
+ | Consortium delivery, technical exchange and access to larger programmes
+ | 
+Legal aid providers and the legal profession
+ | Referral capacity for cases beyond paralegal handling
+ | 
+Private sector
+ | Corporate social investment, and responsible land practice in investment
+ | 
+Media
+ | Public information reach, particularly community radio
+ | 12. Why Fund ARDHI
+Evidence first. We fund our advocacy with our own research, so our claims survive scrutiny by government and by peers.
+Innovation with proof. We test approaches in real communities and publish the cost per result, so a funder knows what scale would cost.
+Local delivery. Our work is carried out by Ugandan staff and by community members from the districts where we work.
+Systems that pass due diligence. Safeguarding, safeguards, inclusion, MEL, risk and beneficiary selection frameworks are in place and documented in these annexes.
+Inclusion that is measured. Participation quotas and disaggregated reporting are built into every project, not added at evaluation.
+Designed to end well. Every project has a sustainability plan, a handover memorandum and post project follow up.
+13. Contact
+
+Purpose
+ | Contact
+ | 
+General enquiries
+ | info@ardhi.org.ug | [insert telephone]
+ | 
+Partnerships and funding
+ | [insert Executive Director email]
+ | 
+Programmes and country operations
+ | [insert Country Director email]
+ | 
+Safeguarding concerns
+ | safeguarding@ardhilaw.org
+ | 
+Complaints and grievances
+ | grievance@ardhilaw.org
+ | 
+Website
+ | www.ardhi.org.ug
+ | 
+Physical address
+ | Plot 1207, Ggaba Road, Next to the American Embassy, Kampala, Uganda
+ |

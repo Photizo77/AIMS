@@ -1,0 +1,377 @@
+ARDHI LAW & POLICY INITIATIVE (ALPI)
+Advocacy  ·  Research  ·  Innovation
+
+Procurement Manual
+Policy No. ARDHI/FIN/PROC-MAN/01
+Financial & Internal Control Policy Manual
+
+Document Control
+
+Document Control
+ | Detail
+ | 
+Document title
+ | Procurement Manual (Operational Procedures)
+ | 
+Document reference
+ | ARDHI/FIN/PROC-MAN/01
+ | 
+Version
+ | 1.0
+ | 
+Status
+ | For Board approval
+ | 
+Policy owner
+ | Executive Director (operated by the Finance & Procurement function)
+ | 
+Effective date
+ | [object Object]
+ | 
+Approved by
+ | Board of Directors of ARDHI Law & Policy Initiative
+ | 
+Next review date
+ | [object Object]
+[object Object]
+ | 
+Companion to
+ | The ARDHI Procurement Policy (ARDHI/FIN/PROC/01)
+ | 
+
+Contents
+Part A – Introduction
+Part B – Roles and Planning
+Part C – The Procurement Cycle
+Part D – Procurement Methods in Detail
+Part E – Evaluation, Award and Contracting
+Part F – Contract Management, Receipt and Payment
+Part G – Special Procurements
+Part H – Records, Ethics and Performance
+Annexes – Procurement Forms
+
+Part A – Introduction
+ | 
+1.  Purpose and Relationship to the Procurement Policy
+This Procurement Manual translates ARDHI Law & Policy Initiative’s (“ARDHI”) Procurement Policy into detailed, step-by-step operating procedures. The Policy sets the principles, thresholds and rules; this Manual explains exactly how to carry out each step, who does what, and which document is produced at each stage. Where the Policy and this Manual are read together, the Policy governs on matters of principle and the Manual on matters of procedure. Donor procurement rules, where stricter, prevail over both.
+2.  Scope
+This Manual applies to the procurement of all goods, works, services and consultancies by ARDHI, from any funding source. It binds all staff involved in identifying needs, sourcing, evaluating, approving, receiving or paying for procurements.
+3.  Procurement Objectives
+Obtain the right goods/services, of the right quality, at the right price, at the right time;
+Achieve value for money through fair, open competition;
+Maintain a complete, auditable record for every procurement; and
+Prevent fraud, conflict of interest and waste.
+
+Part B – Roles and Planning
+ | 
+4.  Roles in Procurement
+
+Role
+ | What they do in procurement
+ | 
+Requisitioner / budget holder
+ | Identifies the need; prepares specifications; raises the requisition; confirms receipt; certifies performance.
+ | 
+Finance Officer
+ | Confirms budget and funding; processes payment; applies WHT; keeps procurement and payment records.
+ | 
+Procurement Committee
+ | Reviews and evaluates procurements above the RFQ threshold; recommends award.
+ | 
+Executive Director
+ | Authorises procurement; approves award within limits; ensures compliance.
+ | 
+Board / Finance Committee
+ | Approves high-value and major procurements.
+ | 5.  The Procurement Committee (Operating Rules)
+Membership: at least three, chaired by the ED or delegate, with the Finance Officer and a relevant technical member;
+Quorum: three members; recommendations by consensus, with dissent recorded;
+Any member connected to a bidder declares the interest and withdraws (Conflict of Interest Policy);
+All meetings, evaluations and recommendations are minuted and filed.
+6.  Annual Procurement Planning
+At budget time, each department lists its expected procurements for the year (item, estimated value, timing, funding).
+The Finance/Procurement function consolidates these into an Annual Procurement Plan (Annex G), grouping similar items to gain better prices.
+The ED approves the plan; donor-specific plans are shared with donors where required.
+The plan is monitored and updated during the year; unplanned needs are justified before proceeding.
+
+Part C – The Procurement Cycle
+ | 
+7.  Overview of the Cycle
+Every procurement above petty cash follows the same cycle. Each step has an owner and produces a document that becomes part of the procurement file.
+
+Step
+ | Activity
+ | Owner
+ | Document
+ | 
+1
+ | Identify need & specify
+ | Requisitioner
+ | Requisition (Annex A)
+ | 
+2
+ | Confirm budget & funding
+ | Finance Officer
+ | Budget confirmation
+ | 
+3
+ | Approve to procure
+ | Authorising officer
+ | Approved requisition
+ | 
+4
+ | Source / invite offers
+ | Procurement
+ | RFQ / bid docs (Annex B)
+ | 
+5
+ | Receive & open offers
+ | Procurement
+ | Bid opening record (Annex F)
+ | 
+6
+ | Evaluate
+ | Committee / evaluator
+ | Evaluation (Annex C)
+ | 
+7
+ | Approve award
+ | Authorising officer
+ | Award approval
+ | 
+8
+ | Commit
+ | Procurement
+ | LPO / contract (Annex D)
+ | 
+9
+ | Receive & inspect
+ | Requisitioner/stores
+ | GRN (Annex E)
+ | 
+10
+ | Pay
+ | Finance
+ | Payment voucher
+ | 
+11
+ | File & close
+ | Procurement
+ | Complete file (Annex H)
+ | 8.  Step 1 – Identifying the Need and Writing Specifications
+The requisitioner completes a Purchase Requisition with a clear description, quantity and required date;
+Specifications describe what is needed by function and standard — not by brand — so competition is fair. “Or equivalent” is added where a brand is mentioned for reference only.
+Terms of Reference (TORs) are prepared for services and consultancies, stating objectives, scope, deliverables, timeframe and required expertise.
+9.  Step 2–3 – Budget Confirmation and Approval to Procure
+The Finance Officer confirms the item is budgeted, funds are available and the correct grant/cost centre will be charged;
+The requisition is approved by the officer authorised for its estimated value (Delegation of Authority).
+10.  Step 4 – Sourcing and Inviting Offers
+The procurement method is selected by estimated value (Part D);
+Genuine, independent suppliers are invited using the same written information (RFQ or bid document);
+A clear closing date/time is set; suppliers submit written quotations/bids.
+11.  Step 5 – Receiving and Opening Offers
+Quotations/bids are received and kept secure/unopened until the closing time;
+For competitive bidding and tenders, bids are opened at the stated time by at least two officers, who record each bidder and price on a Bid Opening Record (Annex F); late bids are rejected.
+12.  Step 6 – Evaluation
+Offers are evaluated objectively against criteria set before offers were received, and recorded on the Quotation Analysis / Bid Evaluation form (Annex C).
+Compliance check: does the offer meet the specification and terms?
+Financial comparison: compare total evaluated price (including delivery, taxes and running costs), not just headline price.
+For services/consultancies: a combined technical and financial evaluation is used — assessing capacity, methodology and experience alongside price.
+Award basis: the offer with the best value for money — which may not be the lowest price.
+
+Part D – Procurement Methods in Detail
+ | 
+13.  Choosing the Method (by estimated value)
+
+Estimated value (UGX)
+ | Method
+ | Minimum competition
+ | Approval
+ | 
+Up to 300,000
+ | Direct / petty cash
+ | 1 price check
+ | Budget holder + Finance
+ | 
+300,001 – 2,000,000
+ | Request for Quotation
+ | 3 quotations
+ | Programs Manager
+ | 
+2,000,001 – 10,000,000
+ | RFQ + Committee
+ | 3 quotations
+ | Executive Director
+ | 
+10,000,001 – 50,000,000
+ | Competitive bidding
+ | 3 sealed bids
+ | ED + Finance Cttee
+ | 
+Above 50,000,000
+ | Open tender
+ | Open advert
+ | Board
+ | 14.  Direct / Petty-Cash Procurement
+For low-value items, buy at the prevailing market price from a reliable supplier;
+Obtain a receipt; record under petty cash (Cash Management Procedures).
+15.  Request for Quotation (RFQ)
+Prepare an RFQ (Annex B) with specification, quantity, delivery and closing date.
+Invite at least three independent suppliers in writing.
+Receive written quotations by the deadline.
+Compare on the evaluation form; recommend the best value.
+Approve and issue an LPO.
+16.  Competitive Bidding (Sealed)
+Prepare a bid document with detailed specification/TORs, terms and evaluation criteria.
+Invite bids; set a clear closing time; receive bids sealed.
+Open bids formally at the stated time (Annex F).
+Evaluate (technical then financial, or combined) via the Procurement Committee.
+Recommend award; obtain the required approval; issue a contract/LPO.
+17.  Open Tender
+For major-value procurements, the requirement is advertised openly so any qualified supplier may bid. Tenders follow the competitive-bidding steps with public advertisement, a longer bidding period, formal opening, Committee evaluation, and Board approval of award.
+18.  Single-Source Procurement
+Buying from one supplier without competition is used only where justified (sole supplier, compatibility, or genuine emergency), documented in writing and pre-approved one level above the normal approver for the value. The justification is filed with the procurement record.
+
+Part E – Evaluation, Award and Contracting
+ | 
+19.  Award and Approval
+The evaluation recommends a supplier; the officer/body authorised for the value approves the award;
+Unsuccessful suppliers may be informed courteously; award information is handled per any donor rules.
+20.  Local Purchase Orders (LPOs)
+An LPO (Annex D) is the authorised instrument that commits ARDHI; it states item, quantity, agreed price, delivery and terms;
+No supplier may act without an approved LPO or signed contract; staff who commit ARDHI without authority are personally accountable.
+21.  Contracts
+Services, consultancies, works and high-value or recurring supplies are covered by written contracts signed within the signatory authority in the Delegation of Authority;
+Contracts state deliverables, price, payment terms (preferably milestone-based), duration, penalties for non-performance, confidentiality, and — where personal data is involved — Data Protection Act compliance;
+Advance payments are avoided or minimised and, where large, secured or milestone-linked.
+
+Part F – Contract Management, Receipt and Payment
+ | 
+22.  Managing Supplier Performance
+The requisitioner/contract manager monitors delivery against the LPO/contract — quantity, quality, timeliness;
+Variations to a contract are approved before they are acted on, within the appropriate authority;
+Poor performance is documented and may lead to remedies, penalties or removal from the supplier database.
+23.  Receipt, Inspection and Acceptance
+Goods/services are received and inspected by someone other than the person who ordered them, where staffing allows, and recorded on a Goods Received Note (Annex E);
+Quantities and quality are checked against the LPO and specification; shortfalls or defects are rejected and taken up with the supplier before payment;
+For services/consultancies, the budget holder certifies satisfactory completion against deliverables.
+24.  Payment
+Finance performs the three-way match (requisition/LPO, delivery/GRN, invoice), confirms budget and funding, applies withholding tax where due, and processes payment under the Bank Signatory Policy. The invoice is stamped “PAID” to prevent duplicate payment, and the file is completed.
+
+Part G – Special Procurements
+ | 
+25.  Procuring Consultants and Services
+Prepare clear TORs (objectives, scope, deliverables, timeline, expertise);
+Invite proposals; evaluate on a combined technical (capacity, methodology, experience) and financial basis;
+Contract on deliverables and milestones; pay against accepted deliverables.
+26.  Procuring Works / Small Construction
+Use clear scopes/bills of quantities; competitive bidding for value; qualified contractors;
+Manage through certified progress; retain a portion until satisfactory completion where appropriate.
+27.  Procuring ICT, Equipment and Field Technology
+Specify by function and compatibility; consider warranty, support and running costs, not just price;
+For technology handling personal data (e.g. ARDHI’s platforms), include security and Data Protection Act requirements.
+28.  Donor-Funded Procurement
+Apply any donor-specific methods, thresholds, eligibility, nationality and sanctions-screening rules — stricter rules prevail;
+Charge procurement only to the funding grant/line; retain documentation for donor audit.
+29.  Emergency Procurement
+In a genuine emergency (e.g. disaster response), the ED authorises expedited procurement in writing, seeking competition to the extent time allows;
+The procurement is ratified afterwards by the Board Finance Committee/Board; emergency procurement is never used for foreseeable needs.
+
+Part H – Records, Ethics and Performance
+ | 
+30.  The Procurement File
+A complete procurement file (Annex H checklist) is kept for every procurement above petty cash and retained for at least seven (7) years (longer if a donor requires). It contains:
+Requisition and budget confirmation; approval to procure;
+RFQ/bid documents and the list of suppliers invited;
+Quotations/bids received and the bid opening record;
+Evaluation and recommendation; award approval;
+LPO/contract; GRN/delivery evidence; invoice; proof of payment.
+31.  Ethics, Conflict of Interest and Anti-Fraud
+Procurement is conducted with integrity. Staff declare and step aside from conflicts (Conflict of Interest Policy); do not solicit or accept gifts to influence award; and never split orders, use fictitious suppliers, inflate invoices or collude. Such acts are handled under the Anti-Fraud Policy and reported through the Whistleblowing Policy.
+32.  Supplier Database and Prequalification
+Maintain a register of approved suppliers (name, contact, category, TIN, performance);
+Suppliers complete a registration form and provide a valid TIN and, where relevant, a trading licence;
+Prequalify suppliers for recurring categories to speed sourcing while preserving competition; suspend poor performers with reasons recorded.
+33.  Procurement Performance and Reporting
+Procurement activity is monitored against the plan; savings, timeliness and compliance are reviewed;
+A periodic procurement report is provided to the ED and, as needed, the Board Finance Committee.
+34.  Review
+This Manual is reviewed at least every two (2) years, alongside the Procurement Policy. Amendments are approved by the Board.
+
+Annex F – Bid Opening Record
+
+Bidder
+ | Bid price (UGX)
+ | Complete? (Y/N)
+ | Notes
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | Opened by (1): ____________  Opened by (2): ____________  Date/time: __________
+Annex G – Annual Procurement Plan (columns)
+
+Item / category
+ | Est. value (UGX)
+ | Method
+ | Funding
+ | Timing
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | Annex H – Procurement File Checklist
+Requisition & budget confirmation
+Approval to procure
+RFQ / bid documents & suppliers invited
+Quotations / bids received
+Bid opening record (where applicable)
+Evaluation & recommendation
+Award approval
+LPO / contract
+GRN / delivery evidence
+Invoice
+Proof of payment
+
+Approval
+This Procurement Manual is adopted by the Board of Directors of ARDHI Law & Policy Initiative and takes effect from the effective date recorded in the Document Control section.
+
+Action
+ | Name / Body
+ | Signature
+ | Date
+ | 
+Prepared by
+ | Finance Function / Strategic Advisor
+ | [object Object]
+ | [object Object]
+ | 
+Reviewed by
+ | Executive Director — Nassir Mwanje
+ | [object Object]
+ | [object Object]
+ | 
+Approved by
+ | Board of Directors (per Board Resolution)
+ | [object Object]
+ | [object Object]
+ |

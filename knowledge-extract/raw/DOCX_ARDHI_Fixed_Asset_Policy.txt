@@ -1,0 +1,314 @@
+ARDHI LAW & POLICY INITIATIVE (ALPI)
+Advocacy  ·  Research  ·  Innovation
+
+Fixed Asset Policy
+Policy No. ARDHI/FIN/ASSET/01
+Financial & Internal Control Policy Manual
+
+Document Control
+
+Document Control
+ | Detail
+ | 
+Policy title
+ | Fixed Asset Policy
+ | 
+Document reference
+ | ARDHI/FIN/ASSET/01
+ | 
+Version
+ | 1.0
+ | 
+Status
+ | For Board approval
+ | 
+Policy owner
+ | Executive Director (operated by the Finance Function)
+ | 
+Effective date
+ | [object Object]
+ | 
+Approved by
+ | Board of Directors of ARDHI Law & Policy Initiative
+ | 
+Next review date
+ | [object Object]
+[object Object]
+ | 
+Applies to
+ | All staff, volunteers and custodians who acquire, hold, use or dispose of ARDHI assets
+ | 
+
+1.  Purpose
+This Fixed Asset Policy governs how ARDHI Law & Policy Initiative (“ARDHI”) acquires, records, safeguards, uses, maintains and disposes of its fixed assets. Assets — vehicles, equipment, IT, furniture and the prototypes and tools ARDHI builds — represent significant value, much of it funded by donors. This policy ensures those assets are properly accounted for, protected against loss, and used solely for ARDHI’s charitable purposes.
+2.  Scope
+This policy applies to all tangible and intangible fixed assets owned by, or under the control of, ARDHI, regardless of funding source, including assets purchased from own funds, acquired through donor grants, or received as donations or in kind. Donor grant conditions that impose stricter requirements on asset use, title or disposal override this policy for the assets concerned.
+3.  Definitions
+
+Term
+ | Meaning
+ | 
+Fixed asset
+ | A tangible or intangible item of value with a useful life of more than one year, held for use in ARDHI’s operations rather than for resale, and costing at or above the capitalisation threshold.
+ | 
+Capitalisation threshold
+ | The minimum cost at which an item is recorded as a fixed asset rather than expensed.
+ | 
+Depreciation
+ | The systematic allocation of an asset’s cost over its useful life.
+ | 
+Net book value (NBV)
+ | Cost less accumulated depreciation.
+ | 
+Asset register
+ | The complete record of all ARDHI fixed assets and their details.
+ | 
+Custodian
+ | The staff member responsible for the safe custody and proper use of an asset.
+ | 
+Impairment
+ | A permanent reduction in an asset’s value below its net book value.
+ | 
+Disposal
+ | The removal of an asset from use and from the register by sale, transfer, donation or write-off.
+ | 4.  Principles
+Accountability. Every asset has a recorded owner (ARDHI), a custodian and a unique identity in the register.
+Safeguarding. Assets are protected against loss, theft, misuse and premature deterioration.
+Charitable use only. Assets are used for ARDHI’s objectives, not for private benefit.
+Transparency. Acquisition, movement and disposal of assets are documented and auditable.
+Donor compliance. Assets bought with donor funds are used, tracked and disposed of in line with the grant.
+5.  Capitalisation and Recognition
+An item is recognised as a fixed asset and recorded in the asset register where it meets both tests below. Items below the threshold, or with a life of one year or less, are expensed but, where attractive and portable (e.g. phones, small IT items), are still recorded in an inventory/low-value asset list for control.
+
+Recognition test
+ | Default (Board may amend)
+ | 
+Minimum cost (capitalisation threshold)
+ | UGX 500,000 per item
+ | 
+Minimum useful life
+ | More than one (1) year
+ | 
+Attractive low-value items still tracked
+ | Phones, tablets, cameras, small tools – recorded in the inventory list
+ | 6.  Asset Classes and Depreciation
+Fixed assets are depreciated on a straight-line basis over their estimated useful lives, from the month of first use. Rates below are defaults for Board adoption and may be aligned with any applicable tax rules.
+
+Asset class
+ | Useful life
+ | Annual rate (straight-line)
+ | Examples
+ | 
+Motor vehicles
+ | 4 years
+ | 25%
+ | Field vehicle, motorcycle
+ | 
+Computers & IT equipment
+ | 3 years
+ | 33.3%
+ | Laptops, servers, network
+ | 
+Office equipment
+ | 5 years
+ | 20%
+ | Printers, projectors
+ | 
+Furniture & fittings
+ | 8 years
+ | 12.5%
+ | Desks, chairs, shelves
+ | 
+Field / prototype equipment
+ | 5 years
+ | 20%
+ | Sensors, hardware nodes
+ | 
+Leasehold improvements
+ | Over lease term
+ | As per lease
+ | Office fit-out
+ | 7.  Acquisition of Assets
+Assets are acquired through the Procurement Policy and approved within the Delegation of Authority for their value.
+On receipt, the asset is inspected, recorded on a Goods Received Note, tagged, and entered in the asset register before use.
+Donated or in-kind assets are recorded at fair value with the source and any conditions noted.
+8.  The Asset Register
+The Finance Function maintains a complete fixed asset register that, for each asset, records: unique asset code/tag; description and serial number; class; location and custodian; acquisition date; cost and funding source/donor; supplier; depreciation rate and accumulated depreciation; net book value; condition; and status (in use, under repair, disposed).
+
+Donor-tagged assets. For each asset, the register shows which grant funded it, so ARDHI can report to donors and observe any title or disposal conditions at project end.
+ | 9.  Asset Tagging and Identification
+Every capitalised asset is physically tagged with a unique ARDHI asset code that links it to the register.
+A suggested code format is ARDHI/[class]/[year]/[serial], e.g. ARDHI/IT/2026/014.
+Tags are durable and not removed or swapped between assets.
+10.  Custody and Responsibility
+Each asset is assigned to a custodian who is responsible for its safe keeping and proper use.
+Staff issued with assets (e.g. laptops, phones) sign an asset issue/acknowledgement and return them on leaving ARDHI or on request.
+Custodians report loss, theft, damage or malfunction promptly (Section 18).
+11.  Physical Verification
+A full physical count of all assets is carried out at least once a year by officers independent of the custodians, and reconciled to the register.
+Discrepancies (missing, unrecorded or misclassified assets) are investigated, documented and corrected; unexplained losses are treated under the Fraud Policy.
+The verified register is reviewed by the Executive Director and reported to the Board Finance Committee.
+12.  Depreciation, Impairment and Revaluation
+Depreciation is charged monthly/annually on the straight-line basis in Section 6; fully depreciated assets still in use remain in the register at nil or nominal value until disposed.
+Where an asset is damaged, obsolete or its value permanently reduced, an impairment is recognised and documented.
+Revaluation, if ever undertaken, requires Board approval and an independent valuation.
+13.  Insurance and Maintenance
+High-value and mobile assets (vehicles, IT, field equipment) are insured against loss, theft and damage where cost-effective, and where required by donors.
+Assets are serviced and maintained per manufacturer guidance to protect their value and safety; maintenance records are kept.
+14.  Movement and Use of Assets
+Assets taken off ARDHI premises (e.g. field equipment, vehicles) are recorded on an Asset Movement/Loan form (Annex B) with expected return.
+Private use of ARDHI assets is not permitted except where expressly authorised in writing.
+Vehicles are operated with a log book recording journeys, fuel and mileage; only authorised drivers may drive them (see the Travel Policy).
+15.  Donor-Funded Assets
+Assets bought with grant funds are used for the funded purpose for the life of the project.
+Title, retention and end-of-project treatment (retain, transfer to beneficiaries/government, or dispose) follow the grant agreement; nothing is disposed of contrary to donor terms.
+Donor asset lists are reconciled to ARDHI’s register and reported as required.
+16.  Disposal and Write-Off
+Assets are disposed of only when obsolete, beyond economic repair, surplus, or at the end of a donor project, and only with the required approval. Any donor conditions are observed first.
+
+Disposal / write-off value (NBV or market)
+ | Approval authority
+ | 
+Up to UGX 2,000,000
+ | Executive Director, reported to Board Finance Committee
+ | 
+UGX 2,000,001 – 20,000,000
+ | Board Finance Committee
+ | 
+Above UGX 20,000,000, or any donor-funded asset
+ | Board of Directors (and donor approval where required)
+ | Disposal methods include competitive sale, transfer/donation to beneficiaries or partners, or destruction where unusable; the method is chosen for best value and recorded.
+Proceeds are banked and recorded; gains or losses on disposal are accounted for; the asset is removed from the register with reasons and approvals filed.
+No asset is sold or given to a staff member or Board member except through a transparent, arm’s-length process approved by the Board (see the Conflict of Interest Policy).
+17.  Loss, Theft or Damage
+Loss, theft or significant damage is reported immediately to the custodian’s manager and the Finance Function, and to the Police where theft is suspected (a police report is obtained).
+The circumstances are investigated; where negligence or misconduct is found, recovery and disciplinary action may follow; insurance and donor notification are actioned as needed.
+18.  Intangible Assets
+Software, platforms and systems that ARDHI develops or acquires (for example the LandAlert reporting platform and associated systems) and that meet the recognition tests are recorded as intangible assets, amortised over their useful life, and safeguarded — including source code, licences, credentials and data — in line with the Data Protection and Privacy Act, 2019.
+19.  Records and Retention
+Asset records — the register, acquisition documents, movement and disposal records, and verification reports — are retained for at least seven (7) years after disposal, or longer if a donor requires.
+20.  Roles and Responsibilities
+
+Role
+ | Responsibility
+ | 
+Board / Finance Committee
+ | Approve the policy and high-value disposals; oversee asset stewardship.
+ | 
+Executive Director
+ | Overall accountable; approves acquisitions/disposals within limits; ensures verification.
+ | 
+Finance Function
+ | Maintains the register; runs depreciation; leads annual verification; safeguards records.
+ | 
+Custodians / staff
+ | Safe custody and proper use; report movement, loss or damage.
+ | 21.  Review
+This policy is reviewed at least every two (2) years and whenever ARDHI’s asset base or donor requirements materially change. Amendments are approved by the Board.
+
+Annex A – Fixed Asset Register (columns)
+
+Field
+ | Example
+ | 
+Asset code / tag
+ | ARDHI/IT/2026/014
+ | 
+Description & serial no.
+ | Laptop, HP – SN…
+ | 
+Class
+ | Computers & IT
+ | 
+Location / custodian
+ | Head office / [name]
+ | 
+Acquisition date & cost (UGX)
+ | 
+ | 
+Funding source / donor
+ | 
+ | 
+Depreciation rate / accumulated
+ | 33.3% / …
+ | 
+Net book value
+ | 
+ | 
+Condition & status
+ | In use
+ | Annex B – Asset Movement / Loan Form
+
+Field
+ | Entry
+ | 
+Asset code / description
+ | 
+ | 
+Custodian issuing
+ | 
+ | 
+Taken by / purpose
+ | 
+ | 
+Date out / expected return
+ | 
+ | 
+Condition on issue
+ | 
+ | 
+Returned date / condition
+ | 
+ | 
+Approved by
+ | 
+ | Annex C – Asset Disposal / Write-Off Form
+
+Field
+ | Entry
+ | 
+Asset code / description
+ | 
+ | 
+Reason for disposal
+ | 
+ | 
+NBV / estimated value
+ | 
+ | 
+Donor conditions (if any)
+ | 
+ | 
+Proposed method
+ | 
+ | 
+Approved by (name / title)
+ | 
+ | 
+Proceeds banked (UGX) / date
+ | 
+ | 
+
+Approval
+This Fixed Asset Policy is adopted by the Board of Directors of ARDHI Law & Policy Initiative and takes effect from the effective date recorded in the Document Control section.
+
+Action
+ | Name / Body
+ | Signature
+ | Date
+ | 
+Prepared by
+ | Finance Function / Strategic Advisor
+ | [object Object]
+ | [object Object]
+ | 
+Reviewed by
+ | Executive Director — Nassir Mwanje
+ | [object Object]
+ | [object Object]
+ | 
+Approved by
+ | Board of Directors (per Board Resolution)
+ | [object Object]
+ | [object Object]
+ |

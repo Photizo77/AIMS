@@ -1,0 +1,803 @@
+ARDHI LAW AND POLICY INITIATIVE
+Advocacy  |  Research  |  Innovation
+www.ardhi.org.ug
+ANNEX 13
+ENVIRONMENTAL AND SOCIAL SAFEGUARDS DOCUMENTATION
+Screening, management planning, consultation and grievance redress for ARDHI activities
+
+Document control
+ | Details
+ | 
+Document title
+ | Annex 13: Environmental and Social Safeguards Documentation
+ | 
+Owner
+ | Environmental and Social Safeguards Focal Person, under the Country Director
+ | 
+Approved by
+ | ARDHI Board of Directors
+ | 
+Version
+ | 1.0
+ | 
+Date of issue
+ | August 2026
+ | 
+Next review
+ | August 2028
+ | 
+Applies to
+ | All ARDHI staff, board members, volunteers, interns, consultants, contractors, partners, suppliers and any person acting on behalf of ARDHI
+ | 
+Status
+ | Approved for use in donor submissions and programme implementation
+ | 
+
+Table of Contents
+If the entries below do not appear, click inside the contents area and press F9 to update the field.
+	TOC \h \o "1-3"1. Introduction and Purpose	 PAGEREF _Toc238246046 \h 1
+	1.1 Objectives	 PAGEREF _Toc238246047 \h 1
+	1.2 Scope	 PAGEREF _Toc238246048 \h 1
+	1.3 Legal and institutional framework	 PAGEREF _Toc238246049 \h 1
+	2. Guiding Principles	 PAGEREF _Toc238246050 \h 1
+	Avoid first, then reduce, then restore, then compensate	 PAGEREF _Toc238246051 \h 1
+	Precaution	 PAGEREF _Toc238246052 \h 1
+	Free, prior and informed consent and meaningful consultation	 PAGEREF _Toc238246053 \h 1
+	No involuntary resettlement	 PAGEREF _Toc238246054 \h 1
+	Inclusion and non discrimination	 PAGEREF _Toc238246055 \h 1
+	Transparency and accountability	 PAGEREF _Toc238246056 \h 1
+	Continuous improvement	 PAGEREF _Toc238246057 \h 1
+	3. Environmental and Social Screening	 PAGEREF _Toc238246058 \h 1
+	3.1 Risk categories	 PAGEREF _Toc238246059 \h 1
+	3.2 Exclusion list	 PAGEREF _Toc238246060 \h 1
+	4. Environmental and Social Risks and Management Measures	 PAGEREF _Toc238246061 \h 1
+	4.1 Social risks	 PAGEREF _Toc238246062 \h 1
+	4.2 Environmental risks	 PAGEREF _Toc238246063 \h 1
+	5. Environmental and Social Management Plan	 PAGEREF _Toc238246064 \h 1
+	5.1 Contractor and supplier requirements	 PAGEREF _Toc238246065 \h 1
+	6. Stakeholder Engagement and Consultation	 PAGEREF _Toc238246066 \h 1
+	7. Grievance Redress Mechanism	 PAGEREF _Toc238246067 \h 1
+	7.1 Channels	 PAGEREF _Toc238246068 \h 1
+	7.2 Steps and timelines	 PAGEREF _Toc238246069 \h 1
+	7.3 Grievance performance indicators	 PAGEREF _Toc238246070 \h 1
+	8. Roles, Capacity and Budget	 PAGEREF _Toc238246071 \h 1
+	9. Monitoring, Reporting and Review	 PAGEREF _Toc238246072 \h 1
+	Appendix A: Environmental and Social Screening Form	 PAGEREF _Toc238246073 \h 1
+	Appendix B: Environmental and Social Management Plan Template	 PAGEREF _Toc238246074 \h 1
+	Appendix C: Community and Landholder Consent Form	 PAGEREF _Toc238246075 \h 1
+	Appendix D: Chance Find Procedure	 PAGEREF _Toc238246076 \h 1
+	Appendix E: Safeguard Monitoring Checklist	 PAGEREF _Toc238246077 \h 1
+
+About ARDHI
+We are a Ugandan based NGO that drives community resilience through advocacy and systems innovations in the areas of agriculture and food security, waste management, disaster preparedness, and land governance.
+Vision
+A future where research informs action, and action delivers justice.
+Mission
+Impacting communities through research, innovations and advocacy particularly in areas of smart agriculture, waste management, disaster preparedness, health and land governance.
+Our Values
+Sustainability: Champion policies and actions that safeguard natural resources.
+Equity: Foster inclusive environments and advocate for fair access to resources, ensuring marginalized voices are represented and empowered.
+Innovation: Pioneer creative solutions and leverage emerging technologies to address complex systemic challenges.
+Collaboration: Forge purposeful partnerships to amplify collective impact and drive lasting change.
+Our Theory of Change
+ARDHI is not a Think Tank, but a Think and Act Tank. Established in 2024 and fully registered in 2025, we operate on the belief that if we combine advocacy to shift rules, research to generate empirical evidence, and innovation to pilot practical models across agriculture, waste, disaster preparedness, health, and land governance, communities can gain the tools, voice, and systems they need to solve persistent problems. Lasting impact requires more than just ideas, it requires pressure, proof, and prototypes working together.
+Our offices are located at Plot 1207, Ggaba Road, Next to the American Embassy, Kampala, Uganda. For general enquiries, contact us at info@ardhi.org.ug or visit www.ardhi.org.ug.
+
+1. Introduction and Purpose
+ARDHI Law and Policy Initiative works on land, natural resources and policy. Even work that is mainly legal, advisory and advocacy in nature can create environmental and social effects. Community mapping can trigger disputes over boundaries. Support to land documentation can leave out those with weaker claims. Small works such as a borehole, an office renovation, a demonstration woodlot or a community resource centre disturb land and water. Convening people creates safety and health risks. This document sets out how ARDHI identifies, avoids, reduces and manages those effects.
+This Environmental and Social Safeguards framework is written so that it can be attached directly to a donor application, and so that a project team can use it on the ground without further translation.
+1.1 Objectives
+To ensure that no ARDHI activity causes avoidable harm to people, to property or to the environment.
+To screen every activity before it begins and to classify its level of risk.
+To set out the management measures, responsibilities, budget and monitoring that follow from each risk level.
+To provide an accessible grievance redress mechanism for anyone affected by ARDHI work.
+To meet Ugandan environmental and social law and the safeguard requirements of our funding partners.
+1.2 Scope
+This framework applies to every ARDHI project, research activity, campaign, event, construction or rehabilitation work, procurement and partner activity. It applies from the point at which an activity is designed until it is completed and closed.
+1.3 Legal and institutional framework
+
+Instrument
+ | Requirement relevant to ARDHI
+ | 
+National Environment Act, No. 5 of 2019
+ | Duty of care to the environment, environmental and social impact assessment, project briefs, and the role of the National Environment Management Authority (NEMA).
+ | 
+National Environment (Environmental and Social Assessment) Regulations, 2020
+ | Screening, project briefs, scoping and the categories of project that require full assessment.
+ | 
+Water Act, Cap 152 and the Water Resources Regulations
+ | Permits for water abstraction and for discharge.
+ | 
+Land Act, Cap 236 and Land Acquisition Act, Cap 226
+ | Rights of lawful and bona fide occupants, compensation, and the process for acquiring land.
+ | 
+Occupational Safety and Health Act, 2006
+ | Safe systems of work, protective equipment, and reporting of accidents.
+ | 
+Employment Act, 2006 and Children Act, Cap 59
+ | Prohibition of child labour and forced labour, terms of employment for workers.
+ | 
+Public Health Act, Cap 281
+ | Sanitation, waste and disease control at workplaces and gatherings.
+ | 
+National Forestry and Tree Planting Act, Cap 147 and Wildlife Act, 2019
+ | Protection of forest reserves, wetlands, protected areas and species.
+ | 
+Historical Monuments Act, Cap 46
+ | Protection of cultural and archaeological property, including chance finds.
+ | 
+Data Protection and Privacy Act, 2019
+ | Lawful and secure handling of personal data collected in the field.
+ | 
+World Bank Environmental and Social Framework, and equivalent donor standards
+ | Risk classification, stakeholder engagement, labour standards, resource efficiency, community health and safety, land acquisition and restrictions on land use, biodiversity, cultural heritage, and grievance redress.
+ | 
+Voluntary Guidelines on the Responsible Governance of Tenure
+ | Safeguards for legitimate tenure rights holders in any land related intervention.
+ | 
+
+2. Guiding Principles
+Avoid first, then reduce, then restore, then compensate
+ARDHI applies the mitigation hierarchy in that order. An impact that can be avoided by changing the site, the method or the timing is avoided rather than managed.
+Precaution
+Where an effect is uncertain but could be serious, ARDHI acts as if it will occur.
+Free, prior and informed consent and meaningful consultation
+People whose land, resources or livelihoods may be affected are consulted early, in their own language, with enough information and enough time, and their agreement is recorded. No ARDHI supported activity proceeds on land where the occupants have not agreed.
+No involuntary resettlement
+ARDHI does not carry out or support any activity that requires people to move against their will or that restricts their access to resources without their agreement and fair compensation.
+Inclusion and non discrimination
+Consultation reaches women, young people, persons with disabilities, older persons, tenants and occupants without documents, not only landowners and leaders. This is applied together with Annex 12.
+Transparency and accountability
+Screening results, management plans and grievance records are open to the affected community and to the funder.
+Continuous improvement
+Findings from monitoring and from grievances are used to change practice, and the change is recorded.
+
+3. Environmental and Social Screening
+Every activity is screened before approval, using the form in Appendix A. Screening is completed by the Project Manager together with the Environmental and Social Safeguards Focal Person, and is approved by the Country Director.
+3.1 Risk categories
+
+Category
+ | Description
+ | Typical ARDHI activities
+ | Required instrument
+ | 
+Category C: Low or no risk
+ | No physical works and no effect on land use, resources or vulnerable groups beyond normal engagement.
+ | Legal research, policy briefs, radio programmes, office based training, publications
+ | Screening form only, filed with the project documents
+ | 
+Category B2: Moderate risk
+ | No physical works but a possible social effect through information, documentation or dispute.
+ | Community land mapping, support to certificates of customary ownership, boundary harmonisation, legal aid clinics, large community gatherings
+ | Screening form plus a Social Management Plan and a functioning grievance mechanism
+ | 
+Category B1: Substantial risk
+ | Small physical works, or an activity that touches sensitive land, water or a protected area.
+ | Borehole or rainwater harvesting, community resource centre, office renovation, demonstration woodlot, small access improvement
+ | Screening form, Environmental and Social Management Plan, NEMA project brief where required, contractor safeguard clauses
+ | 
+Category A: High risk
+ | Significant, irreversible or wide effects, or any activity involving physical or economic displacement.
+ | Not undertaken by ARDHI. Any activity screened as Category A is redesigned or dropped.
+ | Not applicable. Escalate to the Board.
+ | 3.2 Exclusion list
+ARDHI will not fund, implement or support any activity that:
+Requires involuntary physical or economic displacement of any person.
+Involves the conversion or degradation of a wetland, a central or local forest reserve, a national park, a wildlife reserve or a critical natural habitat.
+Uses child labour, forced labour or unsafe labour practices, whether directly or through a contractor.
+Involves the purchase or use of pesticides classified as extremely or highly hazardous by the World Health Organization.
+Damages or removes cultural, spiritual or archaeological property.
+Takes place on contested land where the dispute is before a court, unless the activity is expressly a dispute resolution activity agreed by all parties.
+Would legitimise a claim to land at the expense of a legitimate tenure right holder who has not been consulted.
+Proceeds without the recorded consent of the lawful and bona fide occupants of the land concerned.
+
+4. Environmental and Social Risks and Management Measures
+4.1 Social risks
+
+Risk
+ | How it could arise in ARDHI work
+ | Management measure
+ | 
+Land conflict triggered by mapping or documentation
+ | Recording a boundary or issuing a document that one party disputes
+ | Map only with all neighbours present; record disputes rather than deciding them; refer unresolved matters to mediation; never document a contested parcel
+ | 
+Elite capture of project benefits
+ | Leaders directing documentation support to their own families or allies
+ | Public and posted eligibility criteria and beneficiary lists (Annex 19); independent verification; complaints box
+ | 
+Exclusion of women, tenants and occupants without documents
+ | Consulting only titled owners and male household heads
+ | Separate consultations by group; minimum participation quotas; spousal consent verification
+ | 
+Loss of access to a communal resource
+ | Formalising communal land in a way that shuts out seasonal or secondary users
+ | Map secondary and seasonal use rights explicitly; record them in the association rules
+ | 
+Retaliation against community members who speak up
+ | Testimony against a powerful land grabber
+ | Anonymised reporting, safety planning, referral to legal aid and to protection actors
+ | 
+Gender based violence and backlash in the household
+ | Work that strengthens the land rights of women
+ | Engage men and clan leaders as allies; couple dialogues; referral pathway in place before the activity
+ | 
+Sexual exploitation, abuse and harassment
+ | Any contact between personnel and community members
+ | Full application of Annex 11 Safeguarding Policy
+ | 
+Misuse of personal data
+ | Names, coordinates and documents collected during mapping
+ | Consent at collection; encrypted devices; role based access; retention limits under the Data Protection and Privacy Act
+ | 
+Community health and safety at gatherings
+ | Crowding, sanitation, road travel to and from events
+ | Venue risk assessment; first aid kit and trained first aider; safe transport; hygiene facilities
+ | 
+Labour risks
+ | Casual workers on small works, enumerators, community mobilisers
+ | Written terms, lawful wages, no child labour, protective equipment, accident reporting, grievance route
+ | 
+Cultural heritage
+ | Works near a grave, shrine or heritage site
+ | Site walkover with elders before works; chance find procedure in Appendix D
+ | 
+Conflict sensitivity
+ | Work in areas of ethnic or pastoralist and farmer tension
+ | Conflict analysis before entry; balanced participation; neutral facilitation
+ | 4.2 Environmental risks
+
+Risk
+ | How it could arise
+ | Management measure
+ | 
+Soil disturbance and erosion
+ | Excavation for a borehole, latrine or foundation
+ | Limit the working area; work in the dry season; restore and replant on completion; silt traps on slopes
+ | 
+Vegetation and tree loss
+ | Site clearance for small works
+ | Site to avoid mature trees; replace every tree removed with at least five indigenous seedlings
+ | 
+Water resources
+ | Abstraction, or contamination from a latrine or from fuel
+ | Follow siting rules and keep latrines at least 30 metres from a water source and downslope; obtain permits where required; test water quality
+ | 
+Waste
+ | Construction rubble, packaging, electronic waste, printed materials
+ | Waste management plan; separate and reuse; approved disposal only; take back arrangements for electronics
+ | 
+Air quality, dust and noise
+ | Works near homes, schools or health facilities
+ | Damp down dust; restrict works to daytime hours; notify neighbours in advance
+ | 
+Climate and disaster risk
+ | Siting a structure in a flood prone or landslide prone area
+ | Screen the site against flood and landslide risk; raise plinths; drainage; avoid steep slopes
+ | 
+Carbon and resource use
+ | Travel, printing, energy use
+ | Combine field trips; use online meetings where they do not exclude anyone; solar power at the resource centre; print double sided and reduce printing
+ | 
+Biodiversity
+ | Works near a wetland or forest edge
+ | Buffer distances observed; no activity inside a protected area without written authority
+ | 
+
+5. Environmental and Social Management Plan
+Where an activity is screened as Category B1 or B2, the Project Manager prepares a management plan using the template in Appendix B before the activity begins. The plan is short, practical and costed. It is approved by the Safeguards Focal Person and is attached to the activity file. No funds are released for the activity until the plan is approved.
+A management plan must state, for every significant risk, the mitigation measure, who is responsible, when it will be done, how much it costs and the indicator that shows it was done. Costs are included in the project budget and are not treated as an optional extra.
+5.1 Contractor and supplier requirements
+Where ARDHI engages a contractor for any works, the contract includes the following as binding conditions:
+Compliance with this framework and with the approved management plan.
+A signed Code of Conduct for every worker, in line with Annex 11.
+No child labour and no forced labour, with age verification for all workers.
+Provision of personal protective equipment at the cost of the contractor, and a site safety induction.
+Local recruitment for unskilled work, with a target of at least 30 percent women.
+Immediate reporting of any accident, spill, chance find or community complaint.
+Site restoration on completion, and removal of all waste.
+The right of ARDHI to suspend payment or terminate for a safeguard breach.
+
+6. Stakeholder Engagement and Consultation
+Consultation is a process, not a single meeting. For every Category B1 or B2 activity, ARDHI carries out at least the following.
+
+Stage
+ | What happens
+ | Record kept
+ | 
+Stakeholder mapping
+ | Identify all groups with an interest or a legitimate tenure right, including secondary and seasonal users, tenants, women, youth, persons with disabilities and neighbouring communities.
+ | Stakeholder map
+ | 
+Disclosure
+ | Share in plain language and in the local language what is proposed, what the effects could be, what the alternatives are and how to complain.
+ | Disclosure notes, posters, radio scripts
+ | 
+Consultation
+ | Hold separate sessions with women, youth, persons with disabilities and leaders, as well as a general meeting, so that quieter voices are heard.
+ | Minutes and attendance sheets, disaggregated
+ | 
+Consent
+ | Where an activity touches land or resources, record the written agreement of the lawful and bona fide occupants and, for family land, of both spouses.
+ | Signed consent form (Appendix C)
+ | 
+Feedback
+ | Report back to the community on what changed as a result of the consultation.
+ | Feedback meeting minutes
+ | 
+Ongoing engagement
+ | Regular updates through community meetings, notice boards and radio during implementation.
+ | Engagement log
+ | 
+
+7. Grievance Redress Mechanism
+Anyone affected by an ARDHI activity may raise a grievance, free of charge, without any need to give a reason for their standing, and without fear of losing any benefit. The mechanism does not replace the right to go to court or to any other authority.
+7.1 Channels
+A grievance box at every activity venue and at each field office, opened weekly by two officers together.
+A telephone and message line, with the number displayed at every venue and read out at every meeting.
+Email to grievance@ardhilaw.org.
+In person to any ARDHI staff member, who records it and passes it on within twenty four hours.
+Through a community grievance contact, at least half of whom are women, for people who cannot read or write.
+Through a local council or partner focal point where the community prefers that route.
+Grievances that concern sexual exploitation, abuse or harassment are transferred immediately and confidentially to the Safeguarding Focal Person and are handled under Annex 11. They are never handled as ordinary grievances.
+7.2 Steps and timelines
+
+Step
+ | Action
+ | Responsible
+ | Timeline
+ | 
+1. Receive and register
+ | Record in the grievance register with a unique number, date, category, and the details of the complainant or a note that it is anonymous.
+ | Grievance Focal Point
+ | Within 2 working days
+ | 
+2. Acknowledge
+ | Inform the complainant that the grievance has been received and explain what will happen next.
+ | Grievance Focal Point
+ | Within 5 working days
+ | 
+3. Assess and categorise
+ | Decide whether it is a safeguarding matter, a safeguard matter, a service complaint or a matter for referral.
+ | Safeguards Focal Person
+ | Within 7 working days
+ | 
+4. Investigate
+ | Gather facts, visit the site if needed, hear all sides.
+ | Assigned officer
+ | Within 15 working days
+ | 
+5. Resolve
+ | Agree a remedy with the complainant. Where appropriate, use community mediation.
+ | Project Manager
+ | Within 20 working days
+ | 
+6. Communicate
+ | Give the complainant the decision and the reasons, in writing and in a language they understand.
+ | Grievance Focal Point
+ | Within 25 working days
+ | 
+7. Appeal
+ | Where the complainant is not satisfied, the matter goes to the Country Director, and then to an independent mediator or the Board Champion.
+ | Country Director
+ | Within 15 working days of the appeal
+ | 
+8. Close and learn
+ | Record the outcome, satisfaction of the complainant, and any change made to practice.
+ | Safeguards Focal Person
+ | Within 5 working days of resolution
+ | 7.3 Grievance performance indicators
+
+Indicator
+ | Target
+ | 
+Percentage of grievances acknowledged within 5 working days
+ | 100 percent
+ | 
+Percentage of grievances resolved within 25 working days
+ | At least 90 percent
+ | 
+Percentage of complainants who report being satisfied with the handling of their grievance
+ | At least 80 percent
+ | 
+Percentage of community members surveyed who know how to raise a grievance
+ | At least 80 percent
+ | 
+Number of grievances escalated to appeal
+ | Tracked and analysed each quarter
+ | 
+
+8. Roles, Capacity and Budget
+
+Role
+ | Safeguards responsibility
+ | 
+Country Director
+ | Approves screening decisions and management plans; accountable to donors and the Board for safeguard performance.
+ | 
+Environmental and Social Safeguards Focal Person
+ | Custodian of this framework; supports screening; reviews and approves management plans; maintains the grievance register; compiles quarterly safeguard reporting; delivers training.
+ | 
+Project Managers
+ | Complete screening; prepare and implement management plans; lead consultation; budget for safeguard measures.
+ | 
+MEL Officer
+ | Includes safeguard indicators in the monitoring plan and reports on them.
+ | 
+Finance and Procurement
+ | Ensure safeguard clauses are in every contract and that safeguard budget lines are protected.
+ | 
+Field Officers and Community Contacts
+ | Receive grievances, brief communities, observe and report incidents.
+ | 
+Partners and contractors
+ | Apply this framework, report incidents within twenty four hours, and allow ARDHI to monitor.
+ | 
+ARDHI budgets not less than 2 percent of direct project costs for environmental and social safeguard implementation, including consultation, grievance handling, training, monitoring and restoration. All staff receive a safeguards briefing at induction and an annual refresher. Project Managers receive additional training on screening and management planning.
+9. Monitoring, Reporting and Review
+Safeguard compliance is checked during every routine monitoring visit using the checklist in Appendix E.
+The Safeguards Focal Person prepares a quarterly safeguard report covering screening decisions, management plan implementation, incidents, grievances and corrective actions.
+Any serious incident, meaning a fatality, a serious injury, a significant environmental damage, an eviction or a safeguarding allegation, is reported to the Country Director immediately and to the donor within forty eight hours.
+An annual safeguard performance review is presented to the Board and informs the update of the risk register in Annex 15.
+This framework is reviewed every two years or when the law or donor requirements change.
+
+Appendix A: Environmental and Social Screening Form
+
+Project and activity name
+ | 
+ | 
+Location (district, sub county, parish, village) and coordinates if applicable
+ | 
+ | 
+Brief description of the activity
+ | 
+ | 
+Date of screening and names of screeners
+ | 
+ |
+
+No.
+ | Screening question
+ | Yes
+ | No
+ | If yes, note the mitigation or the reason to reject
+ | 
+1
+ | Will the activity involve any excavation, construction, rehabilitation or land clearance?
+ | 
+ | 
+ | 
+ | 
+2
+ | Will any person lose land, a structure, a crop, a tree or access to a resource, even temporarily?
+ | 
+ | 
+ | 
+ | 
+3
+ | Is the site in or within 200 metres of a wetland, river, lake, forest reserve or protected area?
+ | 
+ | 
+ | 
+ | 
+4
+ | Is the site in a flood prone, landslide prone or otherwise hazardous location?
+ | 
+ | 
+ | 
+ | 
+5
+ | Will the activity abstract water or discharge any effluent?
+ | 
+ | 
+ | 
+ | 
+6
+ | Will the activity generate waste that cannot be managed on site?
+ | 
+ | 
+ | 
+ | 
+7
+ | Is there any grave, shrine, cultural or archaeological site at or near the location?
+ | 
+ | 
+ | 
+ | 
+8
+ | Is the land the subject of a dispute, or is ownership or occupancy unclear?
+ | 
+ | 
+ | 
+ | 
+9
+ | Could the activity create or worsen a conflict between individuals, families, clans or communities?
+ | 
+ | 
+ | 
+ | 
+10
+ | Could the activity exclude women, tenants, occupants without documents, youth, persons with disabilities or minorities?
+ | 
+ | 
+ | 
+ | 
+11
+ | Could the activity expose any participant to retaliation, violence or harassment?
+ | 
+ | 
+ | 
+ | 
+12
+ | Will personal data be collected, stored or shared?
+ | 
+ | 
+ | 
+ | 
+13
+ | Will workers, including casual workers, be engaged?
+ | 
+ | 
+ | 
+ | 
+14
+ | Will the activity involve travel, gatherings or use of vehicles that create safety risks?
+ | 
+ | 
+ | 
+ | 
+15
+ | Does the activity appear anywhere on the exclusion list in Section 3.2?
+ | 
+ | 
+ | 
+ | 
+
+Screening outcome: Category C / Category B2 / Category B1 / Category A (reject or redesign)
+ | 
+ | 
+Instrument required
+ | 
+ | 
+Permits or approvals needed (NEMA project brief, water permit, local authority approval)
+ | 
+ | 
+Recommended by (Project Manager), signature and date
+ | 
+ | 
+Reviewed by (Safeguards Focal Person), signature and date
+ | 
+ | 
+Approved by (Country Director), signature and date
+ | 
+ | 
+
+Appendix B: Environmental and Social Management Plan Template
+
+Impact or risk
+ | Phase
+ | Mitigation measure
+ | Responsible
+ | Timeline
+ | Cost (UGX)
+ | Monitoring indicator
+ | 
+Soil erosion from excavation
+ | Works
+ | Work in the dry season; silt traps; backfill and replant on completion
+ | Contractor
+ | During works
+ | 
+ | Site restored and vegetated within 30 days of completion
+ | 
+Dust and noise near homes
+ | Works
+ | Damp down; works only between 8am and 5pm; advance notice to neighbours
+ | Contractor
+ | During works
+ | 
+ | No sustained complaint from neighbours
+ | 
+Exclusion of women from consultation
+ | Design and delivery
+ | Separate women only sessions; timing agreed with women groups
+ | Field Officer
+ | Before and during
+ | 
+ | At least 50 percent of consulted persons are women
+ | 
+Boundary dispute during mapping
+ | Delivery
+ | All neighbours present; disputes recorded not decided; referral to mediation
+ | Legal Officer
+ | During mapping
+ | 
+ | Zero parcels documented while under dispute
+ | 
+Worker injury
+ | Works
+ | Protective equipment; site induction; first aid kit; accident register
+ | Contractor
+ | During works
+ | 
+ | Zero lost time injuries
+ | 
+Waste from renovation
+ | Works
+ | Segregate, reuse hardcore, dispose only at an approved site
+ | Contractor
+ | During works
+ | 
+ | Disposal receipts on file
+ | 
+
+Appendix C: Community and Landholder Consent Form
+
+Activity and location
+ | 
+ | 
+Name of landholder, occupant or community group
+ | 
+ | 
+Nature of the tenure interest (customary, freehold, mailo, leasehold, occupancy, tenancy)
+ | 
+ | 
+Names of all persons with an interest in the land, including spouse and secondary users
+ | 
+ | 
+What exactly is proposed on the land, and for how long
+ | 
+ | 
+Effects explained to the holder, including possible disadvantages
+ | 
+ | 
+Alternatives explained
+ | 
+ | 
+Any conditions attached to the consent
+ | 
+ | 
+How and when the land will be restored or handed back
+ | 
+ | 
+I confirm that this was explained to me in a language I understand, that I asked questions and received answers, and that I give my consent freely and may withdraw it.
+ | 
+ | 
+Signature or thumbprint of landholder or occupant
+ | 
+ | 
+Signature or thumbprint of spouse (family land)
+ | 
+ | 
+Names and signatures of two community witnesses
+ | 
+ | 
+Name, signature and date of the ARDHI officer, and the language used
+ | 
+ | 
+
+Appendix D: Chance Find Procedure
+A chance find is any object, structure or remain of possible archaeological, historical, cultural or spiritual value that is discovered unexpectedly during works. Where a chance find occurs:
+Stop all work in the immediate area at once.
+Do not touch, move, photograph for public use, or allow anyone to remove the find.
+Secure and mark the area, and place a guard where necessary.
+Notify the ARDHI Project Manager within two hours, and the Safeguards Focal Person the same day.
+The Project Manager notifies the local council, the district cultural or community development officer and, where the find appears significant, the Department of Museums and Monuments.
+Consult the elders or custodians of the site on what is appropriate.
+Work resumes only after written clearance from the responsible authority, and the area may be excluded from the works permanently.
+Record the find, the notifications and the outcome in the safeguard register.
+
+Appendix E: Safeguard Monitoring Checklist
+
+Check
+ | Yes
+ | No
+ | Not applicable
+ | Comment and action
+ | 
+Screening form completed, signed and on file before the activity started
+ | 
+ | 
+ | 
+ | 
+ | 
+Management plan prepared, approved and available on site
+ | 
+ | 
+ | 
+ | 
+ | 
+Consultation held with all identified groups, with disaggregated attendance records
+ | 
+ | 
+ | 
+ | 
+ | 
+Written consent obtained from landholders and occupants where required
+ | 
+ | 
+ | 
+ | 
+ | 
+Grievance channels displayed and explained at the site or venue
+ | 
+ | 
+ | 
+ | 
+ | 
+Grievance register up to date and grievances handled within the timelines
+ | 
+ | 
+ | 
+ | 
+ | 
+Codes of Conduct signed by all workers and personnel present
+ | 
+ | 
+ | 
+ | 
+ | 
+No child labour observed; ages verified
+ | 
+ | 
+ | 
+ | 
+ | 
+Protective equipment in use and first aid available
+ | 
+ | 
+ | 
+ | 
+ | 
+Waste managed and site kept clean
+ | 
+ | 
+ | 
+ | 
+ | 
+Water source protection distances observed
+ | 
+ | 
+ | 
+ | 
+ | 
+Trees removed have been replaced at the agreed ratio
+ | 
+ | 
+ | 
+ | 
+ | 
+Site restored on completion
+ | 
+ | 
+ | 
+ | 
+ | 
+Incidents reported within the required timelines
+ | 
+ | 
+ | 
+ | 
+ | 
+Permits and approvals obtained and displayed
+ | 
+ | 
+ | 
+ | 
+ | 
+
+Monitoring visit date and location
+ | 
+ | 
+Name and role of the monitor
+ | 
+ | 
+Overall compliance rating (compliant, partially compliant, not compliant)
+ | 
+ | 
+Corrective actions agreed, responsible person and deadline
+ | 
+ | 
+Signature of the monitor and of the site or activity lead
+ | 
+ |

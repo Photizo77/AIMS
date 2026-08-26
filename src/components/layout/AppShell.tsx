@@ -4,6 +4,7 @@ import { Outlet } from 'react-router-dom';
 import { TopNavBar } from './TopNavBar';
 import { SideNavBar } from './SideNavBar';
 import { Toaster } from '@/components/ui/Toaster';
+import { GrantsAssistant } from '@/components/grants/GrantsAssistant';
 import { cn } from '@/lib/utils';
 
 export function AppShell() {
@@ -44,6 +45,9 @@ export function AppShell() {
       </main>
 
       <Toaster />
+
+      {/* Floating ARDHI Grants Assistant — available on every page */}
+      <GrantsAssistant />
     </div>
   );
 }

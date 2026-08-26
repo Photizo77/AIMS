@@ -8,6 +8,7 @@ import { CheckInCard } from '@/components/dashboard/CheckInCard';
 import { PayslipReviewPanel } from '@/components/admin/PayslipReviewPanel';
 import { GrantsPipelineBoard } from '@/components/grants/GrantsPipelineBoard';
 import { GrantReviewQueue } from '@/components/grants/GrantReviewQueue';
+import { openGrantsAssistant } from '@/components/grants/GrantsAssistant';
 import { SharedLibraryWidget } from '@/components/dashboard/SharedLibraryWidget';
 import { innovationService } from '@/services/innovationService'; // Importing our centralized service
 import { grantService } from '@/services/grantService';
@@ -575,6 +576,22 @@ function GrantDashboard() {
         <StatCard title="AI Assists" value="28" icon="smart_toy" color="mint" />
       </div>
       <SharedLibraryWidget />
+      <Section title="Grants Assistant" subtitle="Fine-tuned on ARDHI's documents & the grants tracker — ask about history, missed deadlines and live opportunities">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="flex items-center gap-3 flex-1">
+            <div className="w-12 h-12 rounded-xl bg-aims-green/10 flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-aims-green text-[26px]">smart_toy</span>
+            </div>
+            <div>
+              <p className="text-sm font-bold text-slate-900">Chat with the grants knowledge base</p>
+              <p className="text-xs text-slate-500 mt-0.5">Trained on the Organisational Profile, 5-Year Strategic Plan, policies and the August 2026 Grants Tracker.</p>
+            </div>
+          </div>
+          <button onClick={openGrantsAssistant} className="px-5 py-2.5 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90 transition-colors flex items-center justify-center gap-1.5 shrink-0">
+            <span className="material-symbols-outlined text-[16px]">forum</span>Open Grants Assistant
+          </button>
+        </div>
+      </Section>
       <Section title="Grants Pipeline" subtitle="Full organizational pipeline — express interest on unassigned grants, open any grant to work on it">
         <GrantsPipelineBoard />
       </Section>

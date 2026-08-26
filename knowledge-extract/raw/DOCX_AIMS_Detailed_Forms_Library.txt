@@ -1,0 +1,1932 @@
+AIMS DETAILED FORMS LIBRARY
+Operational & Employee-Facing Forms — Full Detail Edition
+Governance forms (Board Minutes, Policy Documents, Compliance Notices) remain in standard format,
+as these sit under the CD/ED governance docket and are excluded from this detailed treatment.
+ARDHI Integrated Management System (AIMS)
+
+ARDHI   |   Form HR-01
+Employment Contract
+Confidential — For HR & Legal Use
+Instructions: Complete all sections before issuing to the employee for signature. Attach the signed Employee Information Form (FORM-HR-02) and job description as annexes.
+  SECTION 1: PARTIES
+
+Employer
+ | 
+ | ARDHI (registered NGO)
+ | 
+ | 
+Employee Full Name
+ | 
+ | Employee ID
+ | 
+ | 
+Position / Title
+ | 
+ | Directorate
+ | 
+ | 
+Reports To
+ | 
+ | Contract Type
+ | 
+ |   SECTION 2: TERM & PROBATION
+
+Start Date
+ | 
+ | End Date (if fixed-term)
+ | 
+ | 
+Probation Period (months)
+ | 
+ | Probation Review Date
+ | 
+ | 
+Working Location
+ | 
+ | Working Hours
+ | 
+ |   SECTION 3: COMPENSATION & BENEFITS
+
+Gross Monthly Salary (UGX)
+ | 
+ | Pay Frequency
+ | 
+ | 
+NSSF Contribution
+ | 
+ | Medical Insurance
+ | 
+ | 
+Leave Entitlement (days/yr)
+ | 
+ | Other Allowances
+ | 
+ |   SECTION 4: KEY RESPONSIBILITIES
+
+Summary of Role (full description attached as Annex A)
+ | 
+ |   SECTION 5: CONFIDENTIALITY, CONDUCT & TERMINATION
+The Employee agrees to maintain confidentiality of ARDHI's institutional, donor, beneficiary and financial information both during and after employment; to comply with ARDHI's Code of Conduct and Safeguarding Policy; and acknowledges that this contract may be terminated by either party in accordance with the notice period stated in ARDHI's HR Policy.
+
+Notice Period
+ | 
+ | Grounds for Summary Dismissal
+ | 
+ |   SECTION 6: DECLARATION & SIGNATURES
+Both parties confirm they have read, understood, and agree to be bound by the terms of this contract, ARDHI's HR Policy, Code of Conduct, and Safeguarding Policy referenced herein.
+
+Employee Signature
+ | 
+ | Executive Director Signature
+ | 
+ | 
+Date
+ | 
+ | Date
+ | 
+ | 
+Witness Name & Signature
+ | 
+ | HR Officer Signature
+ | 
+ | 
+Date
+ | 
+ | Date
+ | 
+ |   FOR HR USE ONLY
+
+Contract Reference No.
+ | 
+ | File Location
+ | 
+ | 
+Received By
+ | 
+ | Renewal Reminder Set (Y/N)
+ | 
+ | 
+
+ARDHI   |   Form HR-02
+Employee Information Form
+Confidential — For HR Use Only
+Instructions: Complete every section accurately. Write "N/A" where a field does not apply. Attach certified copies of your national ID, academic certificates, professional certifications and references before submission.
+
+Date of Submission
+ | 
+ | Employee ID (HR)
+ | 
+ | 
+Position / Department
+ | 
+ |   SECTION 1: PERSONAL INFORMATION (BIODATA)
+
+Surname (Family Name)
+ | 
+ | First Name
+ | 
+ | 
+Middle Name(s)
+ | 
+ | Preferred Name
+ | 
+ | 
+Date of Birth (DD/MM/YYYY)
+ | 
+ | Place of Birth
+ | 
+ | 
+Gender
+ | 
+ | Marital Status
+ | 
+ | 
+Nationality
+ | 
+ | Religion (Optional)
+ | 
+ | 
+National ID (NIN)
+ | 
+ | NSSF Number
+ | 
+ | 
+TIN Number
+ | 
+ | Passport Number
+ | 
+ | 
+Languages Spoken
+ | 
+ | Driving Permit (No. & Class)
+ | 
+ |   SECTION 2: CONTACT DETAILS & ADDRESS
+
+Primary Phone
+ | 
+ | Alternative Phone
+ | 
+ | 
+Personal Email
+ | 
+ | ARDHI Email (auto-generated)
+ | 
+ | 
+Plot / House No.
+ | 
+ | Street / Road
+ | 
+ | 
+Village / Parish
+ | 
+ | Sub-county / Division
+ | 
+ | 
+District / City
+ | 
+ | Country
+ | 
+ | 
+Permanent Home Address (if different)
+ | 
+ |   SECTION 3: NEXT OF KIN & EMERGENCY CONTACT
+
+Next of Kin — Full Name
+ | 
+ | Relationship
+ | 
+ | 
+Phone Number
+ | 
+ | Email / National ID
+ | 
+ | 
+Residential Address
+ | 
+ | 
+Emergency Contact — Name
+ | 
+ | Phone & Relationship
+ | 
+ | 
+Spouse's Name
+ | 
+ | Spouse's Phone & Occupation
+ | 
+ | 
+Number of Dependants
+ | 
+ | Number of Children
+ | 
+ |   SECTION 4: EDUCATION BACKGROUND
+Begin with most recent. Attach certified copies of certificates and transcripts.
+Primary & Secondary Education
+
+School Name
+ | Location
+ | Level
+ | Year Started
+ | Year Completed
+ | Grade/Award
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+Tertiary / University Education
+
+Institution
+ | Qualification/Award
+ | Field of Study
+ | Year Started
+ | Year Completed
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+Professional Certifications & Short Courses
+
+Certification/Course
+ | Awarding Body
+ | Year Obtained
+ | Expiry/Renewal
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ |   SECTION 5: EMPLOYMENT HISTORY & EXPERIENCE
+List most recent first. Include internships and part-time roles.
+
+Employer/Organisation
+ | Job Title
+ | Start (MM/YY)
+ | End (MM/YY)
+ | Supervisor & Contact
+ | Reason for Leaving
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+
+Key Responsibilities & Achievements (most recent role)
+ | 
+ |   SECTION 6: SKILLS, COMPETENCIES & LANGUAGES
+
+Technical Skills
+ | 
+ | 
+Soft Skills
+ | 
+ | 
+Computer Literacy (Basic/Intermediate/Advanced)
+ | 
+ | 
+Language
+ | Speak (B/F/N)
+ | Read (B/F/N)
+ | Write (B/F/N)
+ | Overall Proficiency
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ |   SECTION 7: PROFESSIONAL REFERENCES
+Provide three references who are not relatives. At least one must be a previous direct supervisor.
+
+Full Name
+ | Job Title & Organisation
+ | Relationship
+ | Phone
+ | Email
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ |   SECTION 8: BANKING, PAYROLL & MEDICAL INFORMATION
+Medical information is confidential and used only for emergencies or workplace accommodations.
+
+Bank Name & Branch
+ | 
+ | Account Name
+ | 
+ | 
+Account Number
+ | 
+ | SWIFT Code
+ | 
+ | 
+Mobile Money Number
+ | 
+ | Mobile Money Network & Name
+ | 
+ | 
+Blood Group
+ | 
+ | Allergies
+ | 
+ | 
+Chronic Conditions / Medications
+ | 
+ | Disability / Special Needs
+ | 
+ | 
+Health Insurance (Provider & Policy No.)
+ | 
+ | Preferred Hospital / Doctor
+ | 
+ |   SECTION 9: BACKGROUND DECLARATIONS
+Failure to disclose may result in termination. A "yes" answer does not automatically disqualify you.
+
+Ever convicted of a criminal offence? (If yes, give details)
+ | 
+ | 
+Pending criminal or civil cases against you? (If yes, give details)
+ | 
+ | 
+Dismissed or asked to resign from any role? (If yes, give details)
+ | 
+ | 
+Other employment/business interests? (If yes, give details)
+ | 
+ | 
+Related to any current ARDHI staff member? (If yes, name & relationship)
+ | 
+ |   SECTION 10: DECLARATION & SIGNATURE
+I declare that the information provided in this form is true, complete and accurate to the best of my knowledge. I understand that any false statement or omission may result in rejection of my application or termination of employment without notice. I authorise ARDHI to verify any information provided, and consent to the processing of my personal data for employment-related purposes in accordance with the Data Protection and Privacy Act, 2019.
+
+Employee Full Name
+ | 
+ | Date
+ | 
+ | 
+Signature
+ | 
+ | Place
+ | 
+ |   FOR HR USE ONLY
+
+Received By / Date
+ | 
+ | Verified By / Date
+ | 
+ | 
+Employee Number
+ | 
+ | File Reference No.
+ | 
+ | 
+HR Officer Signature
+ | 
+ | Official Stamp
+ | 
+ |   DOCUMENTS SUBMITTED (tick as applicable)
+
+☐  Copy of National ID / Passport
+ | ☐  Copy of NSSF Card
+ | ☐  Copy of TIN Certificate
+ | 
+☐  Academic Certificates & Transcripts
+ | ☐  Professional Certifications
+ | ☐  Curriculum Vitae (CV)
+ | 
+☐  Passport-size Photographs (2)
+ | ☐  Reference / Recommendation Letters
+ | ☐  Birth Certificate
+ | 
+☐  Bank / Mobile Money Details
+ | ☐  Medical / Fitness Certificate
+ | ☐  Police Clearance / Good Conduct
+ | 
+
+ARDHI   |   Form HR-03
+Performance Appraisal Form
+Confidential — For HR & Management Use
+Instructions: Employee completes the self-assessment column first. Manager completes assessment and ratings during the review meeting. Both sign before submission to HR.
+
+Employee Name
+ | 
+ | Employee ID
+ | 
+ | 
+Position / Directorate
+ | 
+ | Appraisal Period (Q/Annual)
+ | 
+ | 
+Reviewer Name
+ | 
+ | Review Meeting Date
+ | 
+ |   SECTION 1: KPI ASSESSMENT
+
+KPI
+ | Target
+ | Weight (%)
+ | Self-Rating (1-5)
+ | Manager Rating (1-5)
+ | Comments
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+ |   SECTION 2: CORE COMPETENCY RATINGS
+
+Competency (Teamwork / Communication / Initiative / Quality / Reliability)
+ | Rating (1-5)
+ | Evidence / Comments
+ | 
+
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ |   SECTION 3: SELF-ASSESSMENT
+
+Key achievements this period
+ | 
+ | 
+Challenges faced
+ | 
+ |   SECTION 4: MANAGER ASSESSMENT
+
+Overall performance summary
+ | 
+ | 
+Areas of strength
+ | 
+ | 
+Areas for improvement
+ | 
+ |   SECTION 5: DEVELOPMENT PLAN
+
+Training / capacity-building needs
+ | 
+ | 
+Career development goals (next 12 months)
+ | 
+ |   SECTION 6: OVERALL RATING & RECOMMENDATION
+
+Overall Rating (auto-calculated)
+ | 
+ | Recommendation
+ | 
+ | Recommendation options: Confirm in role / Salary review / Promotion consideration / Performance Improvement Plan / No change
+  DECLARATION & SIGNATURES
+Both parties confirm this appraisal was discussed in a review meeting and reflects an honest assessment of performance during the stated period.
+
+Employee Signature
+ | 
+ | Reviewer / Line Manager Signature
+ | 
+ | 
+Date
+ | 
+ | Date
+ | 
+ | 
+Executive Director Countersignature
+ | 
+ | 
+Date
+ | 
+ |   FOR HR USE ONLY
+
+Filed By / Date
+ | 
+ | Next Review Due
+ | 
+ | 
+
+ARDHI   |   Form HR-04
+Leave Request Form
+For HR / Approver Use
+Instructions: Submit at least 5 working days in advance for planned leave. Attach a medical certificate for sick leave exceeding 2 days.
+
+Employee Name
+ | 
+ | Employee ID
+ | 
+ | 
+Directorate / Department
+ | 
+ | Date of Request
+ | 
+ |   SECTION 1: LEAVE DETAILS
+
+Leave Type
+ | 
+ | Start Date
+ | 
+ | 
+End Date
+ | 
+ | Total Days Requested (auto)
+ | 
+ | 
+Reason
+ | 
+ | Leave Type options: Annual / Sick / Maternity / Paternity / Unpaid / Compassionate
+  SECTION 2: LEAVE BALANCE SUMMARY
+
+Annual Entitlement (days)
+ | 
+ | Days Used to Date
+ | 
+ | 
+Remaining Balance
+ | 
+ | Balance After This Request
+ | 
+ |   SECTION 3: HANDOVER ARRANGEMENTS
+
+Cover Person During Leave
+ | 
+ | Contactable During Leave? (Y/N)
+ | 
+ | 
+Pending Tasks / Handover Notes
+ | 
+ |   SECTION 4: SUPPORTING DOCUMENTS
+
+☐  Medical Certificate (if sick leave)
+ | ☐  Maternity/Paternity Documentation (if applicable)
+ | ☐  Other supporting document
+ |   DECLARATION
+I confirm the information above is accurate and that I have made appropriate handover arrangements for my absence.
+
+Employee Signature
+ | 
+ | Date
+ | 
+ |   APPROVAL ROUTING & DECISION
+
+Routed To (auto: Company Admin — minor / ED — all other cases)
+ | 
+ | 
+Approver Decision (Approved / Rejected / Returned for Info)
+ | 
+ | Approver Name
+ | 
+ | 
+Approver Comments
+ | 
+ | 
+Approver Signature
+ | 
+ | Date
+ | 
+ | 
+
+ARDHI   |   Form HR-05
+Employee Offboarding / Exit Form
+Confidential — For HR Use Only
+Instructions: Initiate this form as soon as a resignation, contract end, or termination is confirmed. All department clearances must be completed before final settlement is processed.
+
+Employee Name
+ | 
+ | Employee ID
+ | 
+ | 
+Position / Directorate
+ | 
+ | Last Working Day
+ | 
+ | 
+Reason for Exit
+ | 
+ | Notice Given (Y/N, days)
+ | 
+ | Reason for Exit options: Resignation / Contract End / Termination / Redundancy / Other
+  SECTION 1: EXIT INTERVIEW
+
+Primary reason for leaving
+ | 
+ | 
+What did you enjoy most about working at ARDHI?
+ | 
+ | 
+What could ARDHI improve?
+ | 
+ | 
+Would you recommend ARDHI as an employer? (Y/N, why)
+ | 
+ | 
+Additional feedback
+ | 
+ |   SECTION 2: DEPARTMENT CLEARANCE
+
+Department
+ | Cleared By
+ | Date
+ | Notes
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | Departments to clear: IT/System Admin, Finance, HR, Admin/Inventory
+  SECTION 3: ASSET RETURN CHECKLIST
+
+☐  Laptop / Computer
+ | ☐  ID Badge
+ | ☐  Office Keys
+ | 
+☐  Mobile Phone
+ | ☐  Company Vehicle
+ | ☐  Other Equipment
+ |   SECTION 4: FINAL SETTLEMENT
+
+Outstanding Leave Days (payout)
+ | 
+ | Final Payslip Processed (Y/N)
+ | 
+ | 
+Outstanding Advances/Deductions
+ | 
+ | Benefits Cessation Date
+ | 
+ |   DECLARATION & SIGN-OFF
+The above clearances and settlements have been confirmed complete. Access revocation has been triggered with System Admin, and all records are archived per ARDHI's data retention policy — not deleted.
+
+Employee Signature
+ | 
+ | HR Officer Signature
+ | 
+ | 
+Date
+ | 
+ | Date
+ | 
+ | 
+Executive Director Sign-off
+ | 
+ | 
+Date
+ | 
+ | 
+
+ARDHI   |   Form FIN-01
+Requisition Form
+For Finance & Executive Director Use
+Instructions: Attach at least one supporting document (quote, invoice, or vendor proforma) before pushing to the Executive Director for review.
+
+Requisition ID (auto)
+ | 
+ | Date
+ | 
+ | 
+Requested By
+ | 
+ | Department
+ | 
+ | 
+Urgency (Standard / Urgent)
+ | 
+ | Linked Budget Line
+ | 
+ |   SECTION 1: LINE ITEMS
+
+Item / Description
+ | Quantity
+ | Unit Cost (UGX)
+ | Total (UGX)
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ |   SECTION 2: BUDGET & COST CENTER
+
+Program / Grant (if applicable)
+ | 
+ | Available Budget Balance (UGX)
+ | 
+ | 
+Total Requested (auto)
+ | 
+ | Remaining Balance After (auto)
+ | 
+ |   SECTION 3: JUSTIFICATION
+
+Purpose / justification for this requisition
+ | 
+ |   SECTION 4: SUPPORTING DOCUMENTS
+
+☐  Vendor Quote(s)
+ | ☐  Invoice / Proforma
+ | ☐  Prior Approval Reference (if applicable)
+ |   SECTION 5: APPROVAL TRAIL
+
+Prepared By (Finance)
+ | 
+ | Date Pushed to ED
+ | 
+ | 
+ED Review Notes
+ | 
+ | 
+ED Decision (Approved / Returned)
+ | 
+ | Date Decided
+ | 
+ | 
+Disbursed By
+ | 
+ | Disbursement Date
+ | 
+ | 
+Finance Officer Signature
+ | 
+ | Executive Director Signature
+ | 
+ | 
+Date
+ | 
+ | Date
+ | 
+ | 
+
+ARDHI   |   Form FIN-02
+Procurement Request Form
+For Finance & Executive Director Use
+Instructions: A minimum of three vendor quotes is required for purchases above ARDHI's procurement threshold. Attach all quotes as supporting documents.
+
+Requesting Department
+ | 
+ | Date
+ | 
+ | 
+Linked Requisition ID (if any)
+ | 
+ | Requested By
+ | 
+ |   SECTION 1: ITEM SPECIFICATIONS
+
+Item
+ | Specification
+ | Quantity
+ | Est. Unit Cost (UGX)
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ |   SECTION 2: VENDOR COMPARISON
+
+Vendor Name
+ | Quote (UGX)
+ | Delivery Time
+ | Notes
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ |   SECTION 3: RECOMMENDATION
+
+Recommended Vendor
+ | 
+ | Justification
+ | 
+ |   SECTION 4: BUDGET CONFIRMATION
+
+Budget Line
+ | 
+ | Available Balance (UGX)
+ | 
+ | I confirm the vendor comparison above is accurate and the recommended vendor offers the best value in line with ARDHI's procurement policy.
+
+Finance Officer Signature
+ | 
+ | Executive Director Approval
+ | 
+ | 
+Date
+ | 
+ | Date
+ | 
+ | 
+
+ARDHI   |   Form FIN-03
+Expense Reimbursement Form
+For Finance & Executive Director Use
+Instructions: Attach original receipts for every line item. Claims without receipts may be declined per ARDHI's finance policy.
+
+Claimant Name
+ | 
+ | Employee ID
+ | 
+ | 
+Department
+ | 
+ | Date of Claim
+ | 
+ | 
+Linked Program / Grant (if applicable)
+ | 
+ |   SECTION 1: ITEMIZED EXPENSES
+
+Date
+ | Category
+ | Description
+ | Amount (UGX)
+ | Receipt Attached (Y/N)
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | Expense Category options: Travel / Field Work / Supplies / Accommodation / Other
+  SECTION 2: CASH ADVANCE RECONCILIATION (if applicable)
+
+Advance Received (UGX)
+ | 
+ | Total Spent (UGX)
+ | 
+ | 
+Balance Due to ARDHI
+ | 
+ | Balance Owed to Claimant
+ | 
+ | I confirm the above expenses were incurred wholly for ARDHI business purposes and that all receipts attached are genuine.
+
+Claimant Signature
+ | 
+ | Finance Reviewer Signature
+ | 
+ | 
+Date
+ | 
+ | Date
+ | 
+ | 
+Executive Director Approval
+ | 
+ | 
+Date
+ | 
+ | 
+
+ARDHI   |   Form GRT-01
+Grant Proposal Cover Sheet
+For Grants & Executive Director Use
+Instructions: Complete before submission to the funder. Attach the full proposal narrative, budget (FORM-GRT-02), and compliance documents.
+  SECTION 1: GRANT & FUNDER INFORMATION
+
+Grant Title
+ | 
+ | Funder Name
+ | 
+ | 
+Strategic Pillar
+ | 
+ | Submission Deadline
+ | 
+ | 
+Amount Requested (UGX)
+ | 
+ | Grant Duration
+ | 
+ | Strategic Pillar options: ArdhiLaw / ArdhiAgriculture / ArdhiWaste / ArdhiDisasters / ArdhiHealth / ArdhiLandGovernance
+  SECTION 2: ARDHI PROJECT TEAM
+
+Handler (Lead Grant Writer)
+ | 
+ | Contributors
+ | 
+ |   SECTION 3: PROJECT SUMMARY
+
+Problem Statement
+ | 
+ | 
+Objectives
+ | 
+ | 
+Target Beneficiaries
+ | 
+ | Geographic Coverage
+ | 
+ |   SECTION 4: BUDGET SUMMARY
+
+Total Budget (UGX)
+ | 
+ | See FORM-GRT-02 for full breakdown
+ | 
+ |   SECTION 5: COMPLIANCE CHECKLIST
+
+☐  NGO Registration Certificate
+ | ☐  Board Approval Reference
+ | ☐  Audited Accounts (latest)
+ | 
+☐  Organizational Profile
+ | ☐  Tax Compliance Certificate
+ | ☐  Theory of Change / Strategic Plan
+ |   SECTION 6: INTERNAL REVIEW SIGN-OFF
+
+Reviewed By
+ | 
+ | Review Date
+ | 
+ | 
+Grant Writer Signature
+ | 
+ | Executive Director Approval
+ | 
+ | 
+Date
+ | 
+ | Date
+ | 
+ | 
+
+ARDHI   |   Form GRT-02
+Grant Budget Template
+For Grants & Finance Use
+Instructions: List all budget lines by category. Indicate co-financing separately from the amount requested from this funder.
+
+Grant Title
+ | 
+ | Currency & Exchange Rate Assumption
+ | 
+ |   SECTION 1: BUDGET LINE ITEMS
+
+Line Item
+ | Category
+ | Year 1 (UGX)
+ | Year 2 (UGX)
+ | Total (UGX)
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | Category options: Personnel / Program / Operations / M&E / Overhead
+  SECTION 2: INDIRECT COST / OVERHEAD
+
+Overhead Rate (%)
+ | 
+ | Overhead Amount (UGX)
+ | 
+ |   SECTION 3: CO-FINANCING / MATCHING FUNDS
+
+Source
+ | 
+ | Amount (UGX)
+ | 
+ | I confirm this budget is accurate, reflects real anticipated costs, and is consistent with ARDHI's financial policies.
+
+Grant Writer Signature
+ | 
+ | Finance Officer Signature
+ | 
+ | 
+Date
+ | 
+ | Date
+ | 
+ | 
+Executive Director Approval
+ | 
+ | 
+Date
+ | 
+ | 
+
+ARDHI   |   Form GRT-03
+Grant Milestone Checklist
+For Grants Team Use
+Instructions: Update as each milestone is completed. Attach evidence (document, screenshot, or link) for each completed item.
+
+Grant Title
+ | 
+ | Handler
+ | 
+ |   MILESTONE TRACKER
+
+Milestone
+ | Owner
+ | Target Date
+ | Completion Date
+ | Evidence Attached (Y/N)
+ | Status
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+ | Standard milestones: Concept note drafted → Reviewed → Full proposal drafted → Budget attached → Internal review → Submitted → Funder feedback received → Awarded/Declined → Agreement signed → Onboarded to Finance
+  PROGRESS SUMMARY
+
+Overall Progress (%)
+ | 
+ | Current Stage
+ | 
+ |   BLOCKERS / RISKS
+
+Current blockers or risks to timeline
+ | 
+ | 
+
+ARDHI   |   Form GRT-04
+Grant Closeout Report
+For Grants & Executive Director Use
+Instructions: Complete within 30 days of grant end date. Attach final financial reconciliation and any funder-required closeout documentation.
+
+Grant Title
+ | 
+ | Funder Name
+ | 
+ | 
+Grant Period
+ | 
+ | Final Amount Disbursed (UGX)
+ | 
+ |   SECTION 1: OUTCOME INDICATORS
+
+Indicator
+ | Target
+ | Achieved
+ | Variance
+ | Explanation
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ |   SECTION 2: BENEFICIARY REACH SUMMARY
+
+Total Beneficiaries Reached
+ | 
+ | Geographic Coverage Achieved
+ | 
+ |   SECTION 3: FINANCIAL RECONCILIATION
+
+Budget Line
+ | Approved (UGX)
+ | Spent (UGX)
+ | Variance (UGX)
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ |   SECTION 4: LESSONS LEARNED & RECOMMENDATIONS
+
+Key lessons learned (feeds Institutional Knowledge Repository)
+ | 
+ | 
+Recommendations for future grants of this type
+ | 
+ | 
+Grant Writer / Handler Signature
+ | 
+ | Executive Director Sign-off
+ | 
+ | 
+Date
+ | 
+ | Date
+ | 
+ | 
+
+ARDHI   |   Form INV-01
+Innovation Project Proposal Form
+For Innovation Team & Executive Director Use
+Instructions: Complete before a project moves from idea to the Concept Phase of the Innovation Pipeline.
+  SECTION 1: PROJECT TEAM
+
+Project Title
+ | 
+ | Lead
+ | 
+ | 
+Contributors
+ | 
+ | Related Thematic Pillar
+ | 
+ |   SECTION 2: PROBLEM & PROPOSED SOLUTION
+
+Problem Statement
+ | 
+ | 
+Proposed Solution
+ | 
+ |   SECTION 3: RESOURCE REQUIREMENTS
+
+Estimated Budget (UGX)
+ | 
+ | Equipment Needed
+ | 
+ | 
+Personnel Time (person-days)
+ | 
+ | External Support Needed
+ | 
+ |   SECTION 4: TIMELINE / MILESTONES
+
+Milestone
+ | Target Date
+ | Owner
+ | Status
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ |   SECTION 5: RISK REGISTER
+
+Risk
+ | Likelihood
+ | Impact
+ | Mitigation
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+Project Lead Signature
+ | 
+ | Executive Director Approval
+ | 
+ | 
+Date
+ | 
+ | Date
+ | 
+ | 
+
+ARDHI   |   Form INV-02
+Feasibility Study Template
+For Innovation Team & Executive Director Use
+Instructions: Complete before a project moves from Concept to Prototype phase.
+
+Project Title
+ | 
+ | Prepared By
+ | 
+ |   SECTION 1: TECHNICAL FEASIBILITY
+
+Technical approach and feasibility summary
+ | 
+ |   SECTION 2: FINANCIAL FEASIBILITY
+
+Cost Item
+ | Estimated Cost (UGX)
+ | Notes
+ | 
+
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ |   SECTION 3: OPERATIONAL FEASIBILITY
+
+Staffing, logistics, and operational considerations
+ | 
+ |   SECTION 4: SWOT ANALYSIS
+
+Strengths
+ | 
+ | Weaknesses
+ | 
+ | 
+Opportunities
+ | 
+ | Threats
+ | 
+ |   SECTION 5: RECOMMENDATION
+
+Recommendation (Proceed / Revise / Do Not Proceed)
+ | 
+ | Justification
+ | 
+ | 
+Prepared By Signature
+ | 
+ | Executive Director Sign-off
+ | 
+ | 
+Date
+ | 
+ | Date
+ | 
+ | 
+
+ARDHI   |   Form INVT-01
+Inventory Reorder Request Form
+For Admin & Finance Use
+Instructions: Auto-generated when stock falls below threshold, or submit manually for new items.
+  SECTION 1: ITEM DETAILS
+
+Item Name
+ | 
+ | Item Code
+ | 
+ | 
+Current Stock
+ | 
+ | Reorder Threshold
+ | 
+ | 
+Quantity Requested
+ | 
+ | Urgency
+ | 
+ |   SECTION 2: VENDOR QUOTES
+
+Vendor
+ | Unit Price (UGX)
+ | Delivery Time
+ | Notes
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ |   SECTION 3: APPROVAL TRAIL
+
+Requested By
+ | 
+ | Date
+ | 
+ | 
+Approved By
+ | 
+ | Date
+ | 
+ | 
+Company Admin Signature
+ | 
+ | Executive Director Approval
+ | 
+ | 
+Date
+ | 
+ | Date
+ | 
+ | 
+
+ARDHI   |   Form INVT-02
+Asset Register Entry Form
+For Admin Use
+Instructions: Complete for every new asset purchase or donation. Update the Custodian History table whenever an asset changes hands.
+  SECTION 1: ASSET DETAILS
+
+Asset Name
+ | 
+ | Asset Tag / ID (auto)
+ | 
+ | 
+Category
+ | 
+ | Condition
+ | 
+ |   SECTION 2: ACQUISITION INFORMATION
+
+Purchase Date
+ | 
+ | Vendor
+ | 
+ | 
+Value (UGX)
+ | 
+ | Warranty Expiry
+ | 
+ |   SECTION 3: CUSTODIAN & LOCATION HISTORY
+
+Custodian
+ | Location
+ | Assigned Date
+ | Returned Date
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ |   SECTION 4: CONDITION REVIEW LOG
+
+Review Date
+ | Condition
+ | Reviewed By
+ | Notes
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ |   SECTION 5: DISPOSAL / RETIREMENT
+
+Disposal Date
+ | 
+ | Method (Sold/Donated/Scrapped)
+ | 
+ | 
+Approved By
+ | 
+ | 
+
+ARDHI   |   Form SYS-01
+Incident Report Form
+Confidential — For System Admin & ED Use
+Instructions: Submit as soon as possible after any security, safeguarding, data protection, or field safety incident. Mark Confidential if the incident involves a safeguarding concern.
+
+Reported By
+ | 
+ | Date/Time of Report
+ | 
+ | 
+Incident Type
+ | 
+ | Date/Time of Incident
+ | 
+ | 
+Severity
+ | 
+ | Confidential? (Y/N)
+ | 
+ | Incident Type options: Security / Data Protection / Safeguarding / Field Safety / Other. Severity: Low / Medium / High / Critical.
+  SECTION 1: INCIDENT DESCRIPTION
+
+Full description of what happened
+ | 
+ |   SECTION 2: WITNESSES
+
+Name
+ | Role
+ | Contact
+ | Statement Attached (Y/N)
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ |   SECTION 3: IMMEDIATE ACTION TAKEN
+
+Actions taken at the time of the incident
+ | 
+ |   SECTION 4: ROOT CAUSE ANALYSIS
+
+Root cause (completed after investigation)
+ | 
+ |   SECTION 5: CORRECTIVE / PREVENTIVE ACTION PLAN
+
+Action
+ | Owner
+ | Due Date
+ | Status
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ |   SECTION 6: FOLLOW-UP REVIEW
+
+Follow-up review date
+ | 
+ | Outcome / closed by
+ | 
+ | 
+Reported By Signature
+ | 
+ | System Admin Sign-off
+ | 
+ | 
+Date
+ | 
+ | Date
+ | 
+ | 
+Executive Director Sign-off
+ | 
+ | 
+Date
+ | 
+ | 
+
+ARDHI   |   Form SYS-02
+System Access Request Form
+For System Admin & Company Admin Use
+Instructions: Submit for new accounts, role changes, password resets, or module access extensions.
+
+Requested By
+ | 
+ | Date
+ | 
+ | 
+Access Type Needed
+ | 
+ | Employee ID (if existing staff)
+ | 
+ | Access Type options: New Account / Role Change / Password Reset / Module Access Extension
+  SECTION 1: MODULES REQUESTED
+
+Module
+ | Access Level Needed
+ | Justification
+ | 
+
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ |   SECTION 2: APPROVAL TRAIL
+
+Approved By (Company Admin — routine)
+ | 
+ | Date
+ | 
+ | 
+Approved By (ED — role/permission changes)
+ | 
+ | Date
+ | 
+ |   SECTION 3: PROVISIONING CONFIRMATION
+
+Provisioned By (System Admin)
+ | 
+ | Date Provisioned
+ | 
+ | 
+Access Review Date (re-certification)
+ | 
+ | 
+Requestor Signature
+ | 
+ | System Admin Signature
+ | 
+ | 
+Date
+ | 
+ | Date
+ | 
+ | 
+
+Governance Forms — Standard Format (Not Expanded)
+The following forms fall under the CD/ED governance docket and are intentionally kept in ARDHI's standard, non-expanded format rather than the detailed multi-section treatment applied above. See the AIMS Forms Library (overview document) for their full field definitions:
+•  FORM-GOV-01 — Board Meeting Minutes
+•  FORM-GOV-02 — Institutional Policy Document
+•  FORM-GOV-03 — Compliance Update Notice

@@ -1,0 +1,422 @@
+ARDHI LAW & POLICY INITIATIVE (ALPI)
+Advocacy  ·  Research  ·  Innovation
+
+Finance Manual
+Policy No. ARDHI/FIN/MAN/01
+Financial & Internal Control Policy Manual
+
+Document Control
+
+Document Control
+ | Detail
+ | 
+Document title
+ | Finance Manual (Financial Management & Accounting Manual)
+ | 
+Document reference
+ | ARDHI/FIN/MAN/01
+ | 
+Version
+ | 1.0
+ | 
+Status
+ | For Board approval
+ | 
+Policy owner
+ | Board of Directors (implemented by the Executive Director & Finance function)
+ | 
+Effective date
+ | [object Object]
+ | 
+Approved by
+ | Board of Directors of ARDHI Law & Policy Initiative
+ | 
+Next review date
+ | [object Object]
+[object Object]
+ | 
+Applies to
+ | The Board, all staff and volunteers involved in financial transactions or budget management
+ | 
+
+Contents
+Part A – Introduction and Framework
+Part B – Financial Governance and Responsibilities
+Part C – Accounting System and Records
+Part D – Budgeting
+Part E – Income and Grant Management
+Part F – Expenditure and Payments
+Part G – Payroll and Statutory Obligations
+Part H – Cash, Bank and Assets
+Part I – Financial Reporting
+Part J – Audit, Controls and Compliance
+Part K – Period-End and Year-End Procedures
+Annexes
+
+Part A – Introduction and Framework
+ | 
+1.  Purpose and Objectives
+This Finance Manual is the master reference for how ARDHI Law & Policy Initiative (“ARDHI”) manages, records, controls and reports its finances. It brings together, in one place, the financial rules ARDHI operates by and the day-to-day procedures that put them into effect. It ensures that ARDHI’s funds — particularly those entrusted by donors — are used properly, recorded accurately, safeguarded against loss, and accounted for transparently to the Board, donors, regulators and the communities ARDHI serves.
+The objectives of this Manual are to:
+Establish sound, consistent financial management and accounting practices;
+Ensure strong internal controls and clear segregation of duties;
+Secure value for money and eligible, budgeted use of funds;
+Enable accurate, timely financial reporting to management, the Board and donors; and
+Ensure full compliance with the laws of Uganda and with donor agreements.
+2.  Scope
+This Manual applies to all financial activities of ARDHI — all funds, all projects and all bank and mobile-money accounts — regardless of the source of funds. It binds the Board, all staff and any volunteer or agent involved in financial transactions or budget management.
+3.  Legal and Regulatory Framework
+ARDHI’s financial management complies with, among others:
+The Companies Act, 2012 (ARDHI is a company limited by guarantee) and the NGO Act, Cap 109;
+The Income Tax Act, Cap 340 (PAYE, withholding tax; accounting date 30 June);
+The National Social Security Fund (NSSF) Act (as amended);
+Applicable financial reporting standards (IFRS / IFRS for SMEs, as adopted by ARDHI);
+Uganda Revenue Authority (URA) requirements; and
+The specific financial, reporting and audit conditions of ARDHI’s donor agreements.
+4.  Definitions
+
+Term
+ | Meaning
+ | 
+Restricted funds
+ | Funds a donor provides for a specified purpose, usable only for that purpose.
+ | 
+Unrestricted funds
+ | Funds ARDHI may apply to any of its objectives.
+ | 
+Fund accounting
+ | Accounting that tracks restricted and unrestricted funds separately.
+ | 
+Chart of accounts
+ | The structured list of account codes used to classify transactions.
+ | 
+Three-way match
+ | Matching the purchase order, the goods-received/delivery record and the invoice before payment.
+ | 
+Accrual
+ | Recognising income and expenditure when earned/incurred, not only when cash moves.
+ | 
+Eligible cost
+ | A cost that a donor agreement permits to be charged to its grant.
+ | 5.  Financial Principles
+Accountability. Named officers are responsible for financial decisions within defined limits.
+Transparency. Every transaction is documented and creates an auditable trail.
+Value for money. Funds are used economically, efficiently and effectively.
+Prudence and consistency. Judgements are cautious; methods are applied consistently period to period.
+Segregation of duties. No one person controls a transaction from initiation to payment and recording.
+Compliance. All activity complies with the law and donor terms; the stricter requirement prevails.
+6.  Relationship to Other Policies
+This Manual is the umbrella financial document. It is read together with, and does not replace, ARDHI’s Procurement Policy and Manual, Cash Management Procedures, Bank Signatory Policy, Delegation of Authority, Fixed Asset Policy, Investment & Reserves Policy, and Anti-Fraud Policy. Where a specific policy governs a matter in detail, that policy applies; this Manual sets the overall framework.
+
+Part B – Financial Governance and Responsibilities
+ | 
+7.  Financial Governance Structure
+
+Body / Role
+ | Financial responsibility
+ | 
+Board of Directors
+ | Ultimate financial oversight; approves budgets, financial statements, the salary scale and major expenditure; appoints external auditors.
+ | 
+Board Finance / Audit Committee
+ | Detailed review of budgets, reports, controls, audit findings and risk; recommends to the Board.
+ | 
+Executive Director
+ | Principal accounting officer; ensures sound financial management and controls; approves within delegated limits; accountable to the Board.
+ | 
+Finance Officer / Accountant
+ | Maintains the books and controls; processes and verifies transactions; prepares reports and reconciliations; manages statutory remittances.
+ | 
+Budget holders / managers
+ | Manage their budgets; initiate and certify expenditure; monitor spend against budget.
+ | 8.  Segregation of Duties
+To reduce the risk of error and fraud, key financial duties are separated. Where ARDHI’s size limits full separation, compensating controls — independent review by the Executive Director or Board Treasurer, and surprise checks — are applied and documented.
+
+Function
+ | Performed by (different people)
+ | 
+Initiating / requesting a transaction
+ | Budget holder / requisitioner
+ | 
+Approving expenditure
+ | Authorising officer (per Delegation of Authority)
+ | 
+Verifying documentation & budget
+ | Finance Officer
+ | 
+Making / releasing payment
+ | Bank signatories (two) / maker-checker
+ | 
+Recording in the books
+ | Finance Officer / Accountant
+ | 
+Reviewing reconciliations
+ | Executive Director / Board Treasurer
+ | 9.  Authority and Approval Limits
+All financial commitments and payments are approved within the limits set out in the Delegation of Authority, and paid under the Bank Signatory Policy. Those thresholds are incorporated into this Manual by reference and align with the procurement thresholds in the Procurement Policy.
+
+Part C – Accounting System and Records
+ | 
+10.  Basis of Accounting
+ARDHI maintains its accounts on an accrual basis (recognising income and expenditure when earned or incurred), with fund accounting to distinguish restricted from unrestricted funds. Where a simpler modified-cash basis is used for internal management, year-end statements are prepared on the basis adopted by the Board and disclosed in the accounts.
+11.  Chart of Accounts
+ARDHI maintains a structured chart of accounts classifying all transactions by type (assets, liabilities, funds, income, expenditure), by project/grant, and by cost centre;
+The chart enables reporting by donor and by activity, and supports both management and statutory reporting;
+New codes are added only by the Finance Officer with ED approval, to keep the structure consistent.
+12.  Accounting Software and Systems
+ARDHI uses a recognised accounting system [INSERT: name the software once selected] to record transactions, maintain the ledgers and produce reports.
+Access is controlled by unique logins and permissions; data is backed up regularly and stored securely;
+Manual/spreadsheet records, where used, are controlled, reconciled and migrated into the system.
+13.  Books of Account and Supporting Records
+ARDHI maintains complete books of account, including the cash book, general ledger, and registers for assets, advances, cheques and contracts. Every transaction is supported by original documents — requisition, approval, procurement records, invoice, delivery/GRN, and proof of payment — filed so that the trail can be followed from the financial statements back to the source document and vice versa.
+14.  Fund Accounting (Restricted and Unrestricted)
+
+Never co-mingle purposes. Restricted (donor) funds are tracked separately and spent only on the funded purpose. They are not used to subsidise other activities, and unrestricted funds are not silently used to cover donor overspends without proper decision and record.
+ | Each grant has its own fund/project code; income and expenditure are recorded against it;
+Balances of restricted funds are reported separately; unspent restricted funds are treated per the grant (carried forward or refunded);
+The overall financial statements consolidate all funds while disclosing the restricted/unrestricted split.
+15.  Cost Allocation
+Shared costs (for example rent, utilities, and core staff time) that benefit more than one project are allocated across projects on a fair, consistent and documented basis — for example by staff time, headcount or activity level — in line with donor rules. The allocation method is documented and applied consistently, and never used to shift ineligible costs onto a grant.
+16.  Document Management and Retention
+Financial documents are filed systematically by project and period and are readily retrievable for audit;
+Records are retained for at least seven (7) years, or longer where a donor requires;
+Records may be kept electronically if secure, backed up and retrievable; originals of key documents are safeguarded.
+
+Part D – Budgeting
+ | 
+17.  Budgeting Principles
+The budget is the financial expression of ARDHI’s work plan and the primary tool for financial control;
+Budgets are realistic, based on activities, and linked to expected funding;
+No expenditure is incurred unless it is budgeted and funded (or specifically approved).
+18.  Annual Budget Process
+The Executive Director initiates the annual budget aligned to the strategic and annual work plans.
+Budget holders prepare activity-based estimates for their areas.
+The Finance Officer consolidates the estimates into a draft organisational budget.
+The Board Finance Committee reviews the draft; the Board approves the final annual budget before the financial year begins.
+The approved budget is loaded into the accounting system for monitoring.
+19.  Project and Grant Budgets
+Each grant has an approved budget agreed with the donor; ARDHI spends within it and within budget-line tolerances;
+Project budgets are reconciled to the organisational budget to avoid double-counting or gaps in core-cost funding.
+20.  Budget Monitoring and Variance Analysis
+Actual income and expenditure are compared to budget at least monthly through budget-versus-actual reports;
+Significant variances are investigated and explained; corrective action is taken where needed;
+Managers receive their budget reports and are accountable for managing within budget.
+21.  Budget Revisions and Virements
+Virements (moving budget between lines) within a project up to 10% of a line may be approved by the Executive Director;
+Larger virements, or any change to a donor budget, require Board Finance Committee approval and, where required, the donor’s prior consent;
+All revisions are documented and reflected in the system.
+
+Part E – Income and Grant Management
+ | 
+22.  Sources of Income
+ARDHI’s income may include grants from donors and development partners, donations from individuals and institutions, income-generating activities, and interest on funds. All income is recorded promptly and banked intact.
+23.  Grant Management
+Before signing, grant agreements are reviewed for financial, procurement, reporting and audit obligations, which are then built into project set-up;
+Each grant is set up with its own code, budget and reporting calendar;
+Drawdowns/tranches are requested and reconciled per the agreement; conditions precedent are met before spending;
+Compliance with each grant’s terms is monitored throughout its life (see Part J).
+24.  Receiving and Recording Income
+All money received is acknowledged (official receipt for cash), recorded against the correct donor/project, and banked within the timelines in the Cash Management Procedures;
+Electronic and mobile-money receipts are matched to the payer and recorded;
+Income is never used directly to make payments — it is banked first.
+25.  Donations and In-Kind Contributions
+Cash donations are receipted and recorded; the donor and any restriction are noted;
+In-kind contributions (goods, services, volunteer time where valued) are recorded at fair value where material and where donors require, with documentation of the basis.
+
+Part F – Expenditure and Payments
+ | 
+26.  Expenditure Principles
+Before any expenditure is committed or paid, it must be: (a) for ARDHI’s purposes; (b) within an approved budget and correctly funded; (c) approved by the officer authorised for its value; (d) supported by complete documentation; and (e) eligible under the relevant donor grant.
+27.  Procurement of Goods and Services
+All purchases of goods, works and services follow the Procurement Policy and Procurement Manual, including the thresholds, methods, competition and approvals set out there. Finance confirms budget and funding before a commitment is made and processes payment only against a complete procurement file.
+28.  The Payment Process
+Receive the claim/invoice with supporting documents.
+Verify – the Finance Officer performs the three-way match (order, delivery/GRN, invoice), checks the budget, funding source, arithmetic, and any withholding tax, and confirms the payee details.
+Approve – the authorised officer approves the payment within the Delegation of Authority.
+Pay – the payment is released by two signatories (or maker-checker for electronic/mobile money) under the Bank Signatory Policy.
+Record and file – the payment is posted to the correct codes and the voucher and documents are filed; the invoice is stamped “PAID” to prevent duplicate payment.
+29.  Payment Methods
+Bank transfer / EFT is the preferred method for most payments.
+Mobile money (MTN MoMo / Airtel Money) is used for field and community disbursements under the Cash Management Procedures.
+Cash is used only for small payments within the petty-cash limit.
+30.  Advances and Accountability
+Advances (staff, travel, activity) are issued only for approved purposes and accounted for within seven (7) working days of the activity, with receipts and any unspent balance returned;
+No further advance is issued until a previous one is fully accounted for;
+An advances register is maintained and reviewed monthly.
+
+Part G – Payroll and Statutory Obligations
+ | 
+31.  Payroll
+Payroll is prepared from approved appointment and salary records (per the Salary Structure) and processed monthly;
+Payroll is prepared, verified and approved by different people (segregation of duties);
+Salaries are paid by bank transfer or mobile money; each employee receives a payslip.
+32.  Statutory Deductions and Remittances
+
+Obligation
+ | Requirement
+ | 
+PAYE
+ | Deducted from taxable pay and remitted to URA monthly by the due date.
+ | 
+NSSF
+ | Employee 5% and employer 10% (total 15%) remitted to NSSF by the due date.
+ | 
+Withholding Tax (WHT)
+ | Deducted from qualifying supplier payments where ARDHI is a designated agent, and remitted to URA.
+ | 
+Local Service Tax / others
+ | Deducted and remitted where applicable.
+ | ARDHI remits all statutory obligations on time, keeps evidence of remittance, and maintains good standing with URA and NSSF.
+
+Part H – Cash, Bank and Assets
+ | 
+33.  Cash and Mobile Money
+Physical cash and mobile money are managed under the Cash Management Procedures — minimise cash, bank income intact and promptly, operate petty cash on the imprest system, and reconcile monthly. Those procedures are incorporated here by reference.
+34.  Bank Accounts and Reconciliation
+Bank accounts are opened, operated and closed under the Bank Signatory Policy (two signatories; Board authorisation to open/close);
+Every bank and mobile-money account is reconciled monthly by the Finance Officer and reviewed and signed off by the Executive Director or an independent officer;
+Reconciling items are cleared promptly; unexplained differences are escalated.
+35.  Fixed Assets and Stores
+Fixed assets are acquired, recorded, tagged, verified and disposed of under the Fixed Asset Policy, and reconciled to the accounts;
+Consumable stores/inventory, where held, are recorded, issued against requisitions and counted periodically.
+36.  Liabilities, Payables, Accruals and Prepayments
+Amounts owed by ARDHI (payables) are recorded and settled on time;
+At period end, expenses incurred but not yet paid (accruals) and payments made in advance (prepayments) are recognised to give a true and fair view.
+
+Part I – Financial Reporting
+ | 
+37.  Management Reporting
+The Finance Officer prepares monthly management accounts — including budget-versus-actual, cash position, and project balances — for the Executive Director;
+The Board Finance Committee receives periodic financial reports; the Board receives financial reports at its meetings.
+38.  Donor Reporting
+Financial reports to donors are prepared in the donor’s format and calendar, reconciled to the accounts, and submitted on time;
+Reported expenditure is supported by documentation and is eligible under the grant;
+Reports are reviewed and approved before submission.
+39.  Statutory and Annual Financial Statements
+At year-end (accounting date 30 June), ARDHI prepares annual financial statements in accordance with the adopted reporting framework;
+The statements present all funds, disclosing restricted and unrestricted balances, and are approved by the Board;
+Statements are prepared for external audit (Part J) and for submission to regulators and donors as required.
+
+Part J – Audit, Controls and Compliance
+ | 
+40.  Internal Control Framework
+ARDHI’s internal controls include: segregation of duties; approval limits (Delegation of Authority); dual bank signatories; three-way matching of payments; monthly reconciliations; budget monitoring; asset control; and independent review. These controls operate together to safeguard funds and ensure reliable records.
+41.  Internal Review / Internal Audit
+The Executive Director and Board Finance Committee provide ongoing oversight of controls;
+As ARDHI grows, an internal audit or periodic independent internal review is established to test controls and compliance and report to the Board.
+42.  External Audit
+ARDHI’s annual financial statements are audited by an independent external auditor appointed by the Board;
+Project-specific audits are arranged where donors require;
+Management responds to audit findings with a time-bound action plan, monitored by the Board Finance Committee.
+43.  Anti-Fraud and Risk
+Financial management operates under ARDHI’s Anti-Fraud & Anti-Corruption Policy (zero tolerance; prevention, detection and response) and Risk Management Policy (identifying and treating financial risks). Suspected financial wrongdoing is reported under the Whistleblowing Policy.
+44.  Grant and Donor Compliance
+Eligible costs. Only costs permitted by a grant are charged to it; ineligible costs are met from unrestricted funds.
+Documentation. Grant expenditure is fully documented to satisfy donor audit.
+Co-financing / matching. Where a grant requires ARDHI or third-party co-funding, contributions are tracked and evidenced.
+Foreign currency. Where grants are in foreign currency, exchange gains/losses are recorded and reported per the grant.
+
+Part K – Period-End and Year-End Procedures
+ | 
+45.  Month-End Procedures
+Post all transactions; reconcile all bank, mobile-money and cash balances; clear/rebill advances;
+Review budget-versus-actual and project balances; prepare monthly management accounts.
+46.  Year-End Closure
+Complete cut-off (record income/expenditure in the correct year); recognise accruals and prepayments; verify assets;
+Reconcile all balances; confirm restricted-fund balances by donor; prepare the year-end file for audit.
+47.  Financial Calendar
+
+Activity
+ | Timing
+ | 
+Monthly management accounts & reconciliations
+ | Within 10 working days of month-end
+ | 
+Statutory remittances (PAYE, NSSF, WHT)
+ | By statutory due dates
+ | 
+Donor financial reports
+ | Per each grant agreement
+ | 
+Annual budget approval
+ | Before start of the financial year (1 July)
+ | 
+Year-end accounts & audit
+ | After 30 June year-end
+ | 48.  Review of this Manual
+This Manual is reviewed at least every two (2) years, or sooner where the law, standards or donor requirements change. Amendments are approved by the Board.
+
+Annex 1 – Payment Voucher (fields)
+
+Field
+ | Entry
+ | 
+Voucher no. / date
+ | 
+ | 
+Payee
+ | 
+ | 
+Being payment for
+ | 
+ | 
+Project / budget line / code
+ | 
+ | 
+Amount (UGX) / WHT
+ | 
+ | 
+Three-way match confirmed (Y/N)
+ | 
+ | 
+Prepared / verified by
+ | 
+ | 
+Approved by
+ | 
+ | 
+Paid by (signatories) / method / date
+ | 
+ | Annex 2 – Chart of Accounts (structure)
+
+Segment
+ | Example
+ | 
+Account class
+ | 1 Assets · 2 Liabilities · 3 Funds · 4 Income · 5 Expenditure
+ | 
+Project / grant code
+ | e.g. LANDALERT, ATEIL26, CORE
+ | 
+Cost centre
+ | e.g. Programs, Finance & Admin
+ | Annex 3 – Monthly Management Report (contents)
+Budget vs. actual (organisation and per project)
+Cash and bank position; mobile-money balances
+Outstanding advances and payables
+Restricted-fund balances by donor
+Variance explanations and actions
+
+Approval
+This Finance Manual is adopted by the Board of Directors of ARDHI Law & Policy Initiative and takes effect from the effective date recorded in the Document Control section.
+
+Action
+ | Name / Body
+ | Signature
+ | Date
+ | 
+Prepared by
+ | Finance Function / Strategic Advisor
+ | [object Object]
+ | [object Object]
+ | 
+Reviewed by
+ | Executive Director — Nassir Mwanje
+ | [object Object]
+ | [object Object]
+ | 
+Approved by
+ | Board of Directors (per Board Resolution)
+ | [object Object]
+ | [object Object]
+ |

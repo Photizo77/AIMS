@@ -1,0 +1,920 @@
+ARDHI LAW AND POLICY INITIATIVE
+Advocacy  |  Research  |  Innovation
+www.ardhi.org.ug
+ANNEX 19
+BENEFICIARY SELECTION CRITERIA AND TOOLS
+Targeting principles, eligibility and scoring criteria, selection process, verification and appeals
+
+Document control
+ | Details
+ | 
+Document title
+ | Annex 19: Beneficiary Selection Criteria and Tools
+ | 
+Owner
+ | Programme Manager, supported by the MEL Officer
+ | 
+Approved by
+ | ARDHI Board of Directors
+ | 
+Version
+ | 1.0
+ | 
+Date of issue
+ | August 2026
+ | 
+Next review
+ | August 2028
+ | 
+Applies to
+ | All ARDHI staff, board members, volunteers, interns, consultants, contractors, partners, suppliers and any person acting on behalf of ARDHI
+ | 
+Status
+ | Approved for use in donor submissions and programme implementation
+ | 
+
+Table of Contents
+If the entries below do not appear, click inside the contents area and press F9 to update the field.
+	TOC \h \o "1-3"1. Purpose	 PAGEREF _Toc238247061 \h 1
+	1.1 Objectives	 PAGEREF _Toc238247062 \h 1
+	1.2 Principles of targeting	 PAGEREF _Toc238247063 \h 1
+	2. Categories of Beneficiary	 PAGEREF _Toc238247064 \h 1
+	3. Selection Criteria	 PAGEREF _Toc238247065 \h 1
+	3.1 Geographic targeting	 PAGEREF _Toc238247066 \h 1
+	3.2 Eligibility criteria for individuals and households	 PAGEREF _Toc238247067 \h 1
+	Mandatory criteria (all must be met)	 PAGEREF _Toc238247068 \h 1
+	Priority criteria (scored, used to rank eligible applicants)	 PAGEREF _Toc238247069 \h 1
+	3.3 Inclusion quotas	 PAGEREF _Toc238247070 \h 1
+	3.4 Exclusion criteria	 PAGEREF _Toc238247071 \h 1
+	4. Selection Process	 PAGEREF _Toc238247072 \h 1
+	4.1 Selection Committee	 PAGEREF _Toc238247073 \h 1
+	4.2 Appeals	 PAGEREF _Toc238247074 \h 1
+	5. Verification, Data and Safeguards	 PAGEREF _Toc238247075 \h 1
+	5.1 Verification standards	 PAGEREF _Toc238247076 \h 1
+	5.2 Data protection and confidentiality	 PAGEREF _Toc238247077 \h 1
+	5.3 Anti capture safeguards	 PAGEREF _Toc238247078 \h 1
+	6. Exit, Replacement and Waiting List	 PAGEREF _Toc238247079 \h 1
+	Tool 1: Beneficiary Application and Intake Form	 PAGEREF _Toc238247080 \h 1
+	Tool 2: Eligibility Screening and Scoring Sheet	 PAGEREF _Toc238247081 \h 1
+	Tool 3: Community Validation Meeting Record	 PAGEREF _Toc238247082 \h 1
+	Tool 4: Beneficiary Verification Checklist (Home Visit)	 PAGEREF _Toc238247083 \h 1
+	Tool 5: Master Beneficiary Register	 PAGEREF _Toc238247084 \h 1
+	Composition summary, to be completed before the list is approved	 PAGEREF _Toc238247085 \h 1
+
+About ARDHI
+We are a Ugandan based NGO that drives community resilience through advocacy and systems innovations in the areas of agriculture and food security, waste management, disaster preparedness, and land governance.
+Vision
+A future where research informs action, and action delivers justice.
+Mission
+Impacting communities through research, innovations and advocacy particularly in areas of smart agriculture, waste management, disaster preparedness, health and land governance.
+Our Values
+Sustainability: Champion policies and actions that safeguard natural resources.
+Equity: Foster inclusive environments and advocate for fair access to resources, ensuring marginalized voices are represented and empowered.
+Innovation: Pioneer creative solutions and leverage emerging technologies to address complex systemic challenges.
+Collaboration: Forge purposeful partnerships to amplify collective impact and drive lasting change.
+Our Theory of Change
+ARDHI is not a Think Tank, but a Think and Act Tank. Established in 2024 and fully registered in 2025, we operate on the belief that if we combine advocacy to shift rules, research to generate empirical evidence, and innovation to pilot practical models across agriculture, waste, disaster preparedness, health, and land governance, communities can gain the tools, voice, and systems they need to solve persistent problems. Lasting impact requires more than just ideas, it requires pressure, proof, and prototypes working together.
+Our offices are located at Plot 1207, Ggaba Road, Next to the American Embassy, Kampala, Uganda. For general enquiries, contact us at info@ardhi.org.ug or visit www.ardhi.org.ug.
+
+1. Purpose
+This annex sets out how ARDHI Law and Policy Initiative decides who benefits from its projects, and the tools used to apply that decision fairly and openly. Beneficiary selection is one of the most sensitive parts of any project. Where selection is unclear, benefits flow to those who are already connected, and the people the project was designed for are left out. Where selection is clear, published and verified, the project builds trust rather than resentment.
+If a person cannot find out why their neighbour was selected and they were not, the selection process has failed, however good the outcome looks on paper.
+1.1 Objectives
+To reach the people who are most affected by insecure land rights and least able to secure them on their own.
+To make the criteria public, understandable and applied in the same way everywhere.
+To reduce the risk of elite capture, favouritism and exclusion.
+To give any person who is not selected a way to ask why and to appeal.
+To produce a verified beneficiary record that can withstand a donor audit.
+1.2 Principles of targeting
+
+Principle
+ | What it means in practice
+ | 
+Need first
+ | Selection is driven by vulnerability and by the severity of the land rights problem, not by connections, ability to pay or ease of access.
+ | 
+Transparency
+ | Criteria, scores, timelines and lists are displayed publicly and explained in the local language before selection starts.
+ | 
+Participation
+ | The community, including women, youth and persons with disabilities, takes part in identifying and validating beneficiaries.
+ | 
+Inclusion
+ | Quotas protect groups that would otherwise be missed. Reasonable accommodation removes barriers to applying.
+ | 
+Consistency
+ | The same criteria and the same scoring are used across all locations, so that a person in one village is treated as a person in another.
+ | 
+Verification
+ | No list is final until it has been checked independently against the criteria and against reality on the ground.
+ | 
+Do no harm
+ | Selection does not expose anyone to conflict, stigma or retaliation. Sensitive categories are never announced publicly.
+ | 
+Appealable
+ | Every decision can be questioned and reviewed within a stated time.
+ | 
+Documented
+ | Every step is recorded so that the process can be reconstructed years later.
+ | 
+
+2. Categories of Beneficiary
+
+Category
+ | Definition
+ | Typical support received
+ | 
+Direct individual beneficiaries
+ | Named individuals or households who receive a service such as legal aid, mediation, documentation support or training.
+ | Case handling, documentation, training, accompaniment
+ | 
+Direct group beneficiaries
+ | Community structures such as communal land associations, women land rights groups, area land committees, youth groups.
+ | Capacity building, facilitation, small grants, equipment
+ | 
+Institutional beneficiaries
+ | Local government departments, land offices, local council courts, clan structures.
+ | Training, tools, systems support, joint activities
+ | 
+Indirect beneficiaries
+ | Household members and community members who benefit because a direct beneficiary was supported, or who are reached through radio and public information.
+ | Information, improved services, reduced conflict
+ | 
+Indirect beneficiaries are estimated using a documented and conservative method, usually household size from the most recent national census applied to direct beneficiary households, plus verified radio reach. ARDHI never inflates reach figures and always states the method used.
+
+3. Selection Criteria
+3.1 Geographic targeting
+Districts, sub counties and parishes are selected before individuals, using the following criteria. Each is scored from 1 to 5 and weighted.
+
+Criterion
+ | Weight
+ | Evidence source
+ | 
+Prevalence and severity of land disputes and evictions
+ | 25 percent
+ | District land office records, local council court records, police records, media monitoring
+ | 
+Level of tenure insecurity, measured by the proportion of land without any document
+ | 20 percent
+ | District land office data, national survey data, rapid assessment
+ | 
+Poverty level and human development indicators
+ | 15 percent
+ | Uganda Bureau of Statistics data, district development plan
+ | 
+Presence of groups at high risk of exclusion, including women headed households, refugees, pastoralists and informal settlement residents
+ | 15 percent
+ | Census data, district community development office
+ | 
+Absence or weakness of other land rights service providers, so that ARDHI adds value rather than duplicating
+ | 10 percent
+ | Mapping of civil society and legal aid providers
+ | 
+Willingness of the district and sub county to cooperate, evidenced in writing
+ | 10 percent
+ | Letters of support, memoranda of understanding
+ | 
+Practical feasibility: access, security and cost of reaching the area
+ | 5 percent
+ | Field assessment
+ | 3.2 Eligibility criteria for individuals and households
+Mandatory criteria (all must be met)
+
+No.
+ | Criterion
+ | How it is verified
+ | 
+1
+ | Resident in a target parish for at least twelve months, or a refugee or displaced person lawfully settled there
+ | Local council letter, national identity card, refugee attestation, community confirmation
+ | 
+2
+ | Has a land rights problem or need that falls within the project scope
+ | Intake interview and screening form
+ | 
+3
+ | Not receiving the same service from another provider for the same matter
+ | Declaration by the applicant and cross check with partner providers
+ | 
+4
+ | Willing to take part, to provide information and to attend the required sessions
+ | Signed or thumbprinted consent
+ | 
+5
+ | The matter is not currently before a court, unless the project service is expressly court accompaniment
+ | Intake screening
+ | 
+6
+ | Where the support concerns a specific parcel, the parcel is not the subject of an unresolved dispute that the project cannot handle
+ | Screening and neighbour confirmation
+ | Priority criteria (scored, used to rank eligible applicants)
+
+Criterion
+ | Score guidance
+ | Maximum points
+ | 
+Female headed household, widow, or woman without documented rights to the land she uses
+ | 5 if yes, 0 if no
+ | 5
+ | 
+Household includes a person with a disability
+ | 5 if yes, 0 if no
+ | 5
+ | 
+Older person aged 60 or above, or child headed household
+ | 4 if yes, 0 if no
+ | 4
+ | 
+Severity and urgency of the land threat: eviction notice or active dispossession scores highest
+ | 0 no current threat, 2 latent risk, 4 active dispute, 6 imminent eviction or dispossession
+ | 6
+ | 
+No document of any kind evidencing the land right
+ | 4 if none, 2 if informal agreement only, 0 if formal document held
+ | 4
+ | 
+Poverty indicators: main source of income, housing, dependency ratio, food security
+ | 0 to 4 using the poverty screen in Tool 2
+ | 4
+ | 
+Household is displaced, refugee, or resident in an informal settlement
+ | 3 if yes, 0 if no
+ | 3
+ | 
+Household head is a young person aged 18 to 30
+ | 2 if yes, 0 if no
+ | 2
+ | 
+Person is unable to access services because of distance, disability or language
+ | 2 if yes, 0 if no
+ | 2
+ | 
+Total possible
+ | 
+ | 35
+ | 3.3 Inclusion quotas
+Regardless of ranking, the final selected list for any project must meet the following minimum composition. Where a quota is not met, the selection committee returns to the community to identify further eligible applicants rather than filling the place from the general list.
+
+Group
+ | Minimum share of direct beneficiaries
+ | 
+Women
+ | 50 percent
+ | 
+Persons with disabilities
+ | 10 percent, or the local prevalence rate if higher
+ | 
+Young people aged 18 to 30
+ | 25 percent
+ | 
+Older persons aged 60 and above
+ | 10 percent
+ | 
+Households with no land document of any kind
+ | 60 percent
+ | 
+Refugee or displaced households, in hosting districts
+ | Proportionate to their share of the sub county population
+ | 3.4 Exclusion criteria
+The following are not eligible, and the reason is explained openly at community meetings so that the rule is understood rather than resented:
+Serving staff, board members, volunteers and consultants of ARDHI and of implementing partners, and members of their immediate households.
+Persons who provided false information in order to be selected.
+Applicants whose claim to the land is contested by a person with a stronger legitimate right, until that matter is resolved.
+Persons seeking support to advance a claim against a lawful or bona fide occupant, or to complete a transaction that lacks required spousal consent.
+Persons already receiving the same service for the same matter from another provider.
+Applicants who refuse to consent to the collection and verification of the information required.
+Where a staff member has a family connection to an applicant, the connection is declared in writing and that staff member takes no part in the assessment of that applicant. All declared conflicts are recorded in the conflict of interest register.
+
+4. Selection Process
+
+Step
+ | Action
+ | Responsible
+ | Timeline
+ | Record produced
+ | 
+1. Geographic targeting
+ | Score and select districts, sub counties and parishes using Section 3.1.
+ | Programme Manager with MEL Officer
+ | At design
+ | Geographic targeting matrix
+ | 
+2. Community entry and sensitisation
+ | Meet district and sub county officials and local councils; explain the project, the criteria, the quotas, the timeline and the appeal route.
+ | Project Manager
+ | Week 1 to 2
+ | Meeting minutes, signed attendance
+ | 
+3. Public disclosure of criteria
+ | Display the criteria in the local language at the sub county, parish and village; announce on radio; explain at community meetings.
+ | Field Officer
+ | Week 2
+ | Photographs of postings, radio log
+ | 
+4. Identification and application
+ | Community members apply, or are identified by community structures. Mobile registration reaches those who cannot travel.
+ | Field Officer with community structures
+ | Week 3 to 5
+ | Application and intake forms
+ | 
+5. Screening for eligibility
+ | Check the mandatory criteria for every applicant and record the outcome for each one, including those found ineligible.
+ | Field Officer
+ | Week 5 to 6
+ | Screening register
+ | 
+6. Scoring and ranking
+ | Apply the priority criteria and produce a ranked list; apply the quotas.
+ | Selection Committee
+ | Week 6
+ | Scored ranking sheet
+ | 
+7. Community validation
+ | Read the provisional list aloud at a public meeting in each village and invite objections and additions.
+ | Selection Committee
+ | Week 7
+ | Validation meeting minutes with attendance
+ | 
+8. Independent verification
+ | Verify a sample of at least 10 percent of selected and 5 percent of rejected applicants by home visit against the criteria.
+ | MEL Officer
+ | Week 7 to 8
+ | Verification report
+ | 
+9. Approval
+ | Country Director approves the final list.
+ | Country Director
+ | Week 8
+ | Signed final list
+ | 
+10. Publication and notification
+ | Display the final list publicly, and notify every applicant of the outcome, including those not selected.
+ | Field Officer
+ | Week 8
+ | Posting record, notification log
+ | 
+11. Appeals
+ | Receive and decide appeals within fifteen working days.
+ | Appeals Panel
+ | Week 9 to 11
+ | Appeals register and decisions
+ | 
+12. Registration and enrolment
+ | Register approved beneficiaries with a unique code, obtain consent, and begin service delivery.
+ | Field Officer and MEL Officer
+ | Week 11
+ | Beneficiary database
+ | 4.1 Selection Committee
+The Selection Committee is constituted for each sub county and has at least seven members, of whom at least half are women:
+The ARDHI Project Manager or Field Officer, as chair.
+One representative of the sub county administration or community development office.
+Two representatives of the community, elected at a public meeting, one woman and one man.
+One representative of a women land rights group.
+One representative of an organisation of persons with disabilities, or a person with a disability elected by the community.
+One youth representative.
+One representative of the implementing partner where there is one.
+Committee members sign a declaration of impartiality and the ARDHI Code of Conduct, and declare any interest in any applicant. Decisions are taken by consensus, and where consensus is not possible by a recorded vote. All decisions and reasons are minuted.
+4.2 Appeals
+
+Stage
+ | Who decides
+ | Timeline
+ | 
+Appeal lodged, in writing or orally to any ARDHI officer or through the grievance box
+ | Received by the Field Officer
+ | Within 14 days of publication of the list
+ | 
+First review against the criteria and the scoring sheet
+ | Appeals Panel: Project Manager, MEL Officer and one community representative who was not on the Selection Committee
+ | Within 15 working days of receipt
+ | 
+Final review
+ | Country Director
+ | Within 10 working days of the first decision
+ | 
+Communication of the decision, with reasons, in a language the appellant understands
+ | Field Officer
+ | Within 5 working days of the decision
+ | An appeal is free. No person loses any existing entitlement because they appealed. Where an appeal succeeds, the person is added to the list and, where the list is full, is placed at the top of the waiting list for the next cycle.
+
+5. Verification, Data and Safeguards
+5.1 Verification standards
+At least 10 percent of selected beneficiaries are verified by an independent home visit before services begin.
+At least 5 percent of rejected applicants are verified, to confirm that rejection was correctly applied. This check matters as much as the first.
+Verification is carried out by a person who took no part in the original scoring.
+Where verification finds an error rate above 5 percent, the whole list for that location is rescreened.
+Verification findings are reported to the Country Director and are recorded in the MEL system.
+5.2 Data protection and confidentiality
+Only the data needed to apply the criteria is collected.
+Published lists show names and villages only. Scores, disability status, health information and details of the land problem are never displayed publicly.
+Each beneficiary receives a unique code, which is used in all analysis files.
+Consent is obtained at registration and covers the collection, storage, use and retention of the data.
+Personal data is handled in accordance with the Data Protection and Privacy Act, 2019, and is destroyed at the end of the retention period.
+5.3 Anti capture safeguards
+
+Risk
+ | Safeguard
+ | 
+Leaders direct selection to relatives and allies
+ | Criteria published in advance; community validation meeting; independent verification; mixed selection committee; appeal route
+ | 
+Payment or favours demanded in exchange for selection
+ | Written and repeated statement that all services are free; complaints box at every meeting; two officer rule; immediate handling under Annex 11
+ | 
+Ghost or duplicate beneficiaries
+ | Unique codes; identity verification; deduplication across projects; sample home visits; attendance signatures matched to the register
+ | 
+Quiet exclusion of the least visible people
+ | Mobile registration for those who cannot travel; door to door identification in the poorest zones; quotas that must be met before a list is approved
+ | 
+Women applying but being replaced by male household heads
+ | Registration in the name of the actual rights holder; separate consultation with women; verification of who received the service
+ | 
+Selection creating conflict in the community
+ | Explain the reason for every criterion at a public meeting; publish the number of places available from the outset; maintain a transparent waiting list
+ | 6. Exit, Replacement and Waiting List
+A beneficiary exits when the agreed service is complete, when they withdraw, when they move away, or when the information they gave is found to be false.
+Every exit is recorded with the reason, and the beneficiary is informed in writing or in person.
+A place that becomes free is filled from the ranked waiting list for the same village, applying the same quotas.
+The waiting list is displayed publicly alongside the selected list, so that people can see where they stand.
+Where a person is removed for giving false information, they may appeal, and the removal is recorded.
+
+Tool 1: Beneficiary Application and Intake Form
+
+Application number and date received
+ | 
+ | 
+Full name of applicant
+ | 
+ | 
+Sex, age, and national identity or refugee attestation number
+ | 
+ | 
+District, sub county, parish, village and nearest landmark
+ | 
+ | 
+Telephone number, or contact person and number
+ | 
+ | 
+Marital status and number of dependants
+ | 
+ | 
+Position in the household (head, spouse, other)
+ | 
+ | 
+Disability status using the Washington Group short set (recorded privately)
+ | 
+ | 
+Main source of livelihood
+ | 
+ | 
+How long resident in this parish
+ | 
+ | 
+Nature of the land problem, in the words of the applicant
+ | 
+ | 
+Location and approximate size of the land concerned
+ | 
+ | 
+How the applicant came to hold or use the land
+ | 
+ | 
+Documents held, if any
+ | 
+ | 
+Other parties involved in the matter
+ | 
+ | 
+Is the matter before any court, committee or authority at present?
+ | 
+ | 
+Has the applicant received help on this matter from any other organisation?
+ | 
+ | 
+What the applicant is asking ARDHI to do
+ | 
+ | 
+Any accessibility or language support needed
+ | 
+ | 
+Declaration: the information I have given is true, and I understand that false information will lead to removal from the project
+ | 
+ | 
+Signature or thumbprint of applicant, and date
+ | 
+ | 
+Name and signature of the officer who received the application, and the language used
+ | 
+ | 
+
+Tool 2: Eligibility Screening and Scoring Sheet
+
+Part A: Mandatory criteria
+ | Met (Yes / No)
+ | Evidence seen
+ | 
+Resident in a target parish for at least 12 months, or lawfully settled refugee
+ | 
+ | 
+ | 
+Has a land rights problem within the project scope
+ | 
+ | 
+ | 
+Not receiving the same service elsewhere for the same matter
+ | 
+ | 
+ | 
+Willing to participate and consents to the process
+ | 
+ | 
+ | 
+Matter not currently before a court (unless court accompaniment applies)
+ | 
+ | 
+ | 
+Parcel not subject to an unresolved dispute outside the project scope
+ | 
+ | 
+ | 
+If any mandatory criterion is not met, the applicant is not eligible. Record the reason and inform the applicant. Do not score Part B.
+
+Part B: Priority scoring
+ | Score awarded
+ | Maximum
+ | Basis for the score
+ | 
+Female headed household, widow, or woman without documented rights
+ | 
+ | 5
+ | 
+ | 
+Household includes a person with a disability
+ | 
+ | 5
+ | 
+ | 
+Older person 60 and above, or child headed household
+ | 
+ | 4
+ | 
+ | 
+Severity and urgency of the land threat
+ | 
+ | 6
+ | 
+ | 
+No document evidencing the land right
+ | 
+ | 4
+ | 
+ | 
+Poverty screen result
+ | 
+ | 4
+ | 
+ | 
+Displaced, refugee, or informal settlement resident
+ | 
+ | 3
+ | 
+ | 
+Household head aged 18 to 30
+ | 
+ | 2
+ | 
+ | 
+Barrier to accessing services (distance, disability, language)
+ | 
+ | 2
+ | 
+ | 
+TOTAL
+ | 
+ | 35
+ | 
+ | 
+
+Poverty screen: main source of income; type of housing; number of meals in the last 24 hours; number of dependants per earner; ownership of productive assets
+ | 
+ | 
+Scored by (name and position), signature and date
+ | 
+ | 
+Conflict of interest declared? Yes or No. If yes, details
+ | 
+ | 
+Checked by (name and position), signature and date
+ | 
+ | 
+Outcome: Selected / Waiting list / Not eligible
+ | 
+ | 
+Reason communicated to the applicant on (date), by (name), in (language)
+ | 
+ | 
+
+Tool 3: Community Validation Meeting Record
+
+Village, parish, sub county, district
+ | 
+ | 
+Date, time and venue
+ | 
+ | 
+Number attending: total, female, male, youth, persons with disabilities
+ | 
+ | 
+Criteria read out and explained in which language
+ | 
+ | 
+Number of names on the provisional list read aloud
+ | 
+ | 
+Objections raised, and against which names
+ | 
+ | 
+Additional names proposed, and by whom
+ | 
+ | 
+Decisions taken on each objection and each proposal
+ | 
+ | 
+Names added, names removed, and the reason for each
+ | 
+ | 
+Appeal route explained? Yes or No
+ | 
+ | 
+Complaints channels explained? Yes or No
+ | 
+ | 
+Names and signatures of the Selection Committee members present
+ | 
+ | 
+Names and signatures of two community witnesses
+ | 
+ | 
+Chairperson signature and date
+ | 
+ | 
+
+Tool 4: Beneficiary Verification Checklist (Home Visit)
+
+Check
+ | Confirmed
+ | Not confirmed
+ | Comment
+ | 
+The person exists and is resident at the stated location
+ | 
+ | 
+ | 
+ | 
+Identity matches the registration record
+ | 
+ | 
+ | 
+ | 
+Household composition matches what was recorded
+ | 
+ | 
+ | 
+ | 
+The stated land problem is as described
+ | 
+ | 
+ | 
+ | 
+Documents held match what was recorded
+ | 
+ | 
+ | 
+ | 
+Disability status recorded matches the Washington Group responses
+ | 
+ | 
+ | 
+ | 
+The beneficiary knows why they were selected
+ | 
+ | 
+ | 
+ | 
+The beneficiary knows the service is free
+ | 
+ | 
+ | 
+ | 
+The beneficiary was not asked for money, a favour or anything else
+ | 
+ | 
+ | 
+ | 
+The beneficiary knows how to make a complaint
+ | 
+ | 
+ | 
+ | 
+The beneficiary consented to being registered
+ | 
+ | 
+ | 
+ | 
+
+Verifier name and position (must not have scored this applicant)
+ | 
+ | 
+Date of visit and beneficiary code
+ | 
+ | 
+Verification result: confirmed / discrepancy / not confirmed
+ | 
+ | 
+Action taken on any discrepancy
+ | 
+ | 
+Signature of verifier and date
+ | 
+ | 
+Tool 5: Master Beneficiary Register
+
+Code
+ | Name
+ | Sex
+ | Age
+ | Disability
+ | Village
+ | Parish
+ | Sub county
+ | Category of beneficiary
+ | Score
+ | Rank
+ | Status
+ | Service to be provided
+ | Date enrolled
+ | Date exited
+ | Reason for exit
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | Selected / Waiting / Exited
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+Composition summary, to be completed before the list is approved
+
+Group
+ | Number selected
+ | Percentage
+ | Quota
+ | Quota met?
+ | Action if not met
+ | 
+Women
+ | 
+ | 
+ | 50 percent
+ | 
+ | 
+ | 
+Persons with disabilities
+ | 
+ | 
+ | 10 percent
+ | 
+ | 
+ | 
+Young people 18 to 30
+ | 
+ | 
+ | 25 percent
+ | 
+ | 
+ | 
+Older persons 60 and above
+ | 
+ | 
+ | 10 percent
+ | 
+ | 
+ | 
+Households with no land document
+ | 
+ | 
+ | 60 percent
+ | 
+ | 
+ | 
+Refugee or displaced households
+ | 
+ | 
+ | Proportionate
+ | 
+ | 
+ | 
+TOTAL SELECTED
+ | 
+ | 100 percent
+ | 
+ | 
+ | 
+ | 
+Prepared by: ..............................................   Verified by: ..............................................   Approved by (Country Director): ..............................................   Date: ......................

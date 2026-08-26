@@ -1,0 +1,1212 @@
+ARDHI LAW AND POLICY INITIATIVE
+Advocacy  |  Research  |  Innovation
+www.ardhi.org.ug
+ANNEX 14
+MONITORING, EVALUATION AND LEARNING TOOLS
+MEL framework, standard indicators, data quality standards and field ready tools
+
+Document control
+ | Details
+ | 
+Document title
+ | Annex 14: Monitoring, Evaluation and Learning Tools
+ | 
+Owner
+ | Monitoring, Evaluation and Learning Officer
+ | 
+Approved by
+ | ARDHI Board of Directors
+ | 
+Version
+ | 1.0
+ | 
+Date of issue
+ | August 2026
+ | 
+Next review
+ | August 2028
+ | 
+Applies to
+ | All ARDHI staff, board members, volunteers, interns, consultants, contractors, partners, suppliers and any person acting on behalf of ARDHI
+ | 
+Status
+ | Approved for use in donor submissions and programme implementation
+ | 
+
+Table of Contents
+If the entries below do not appear, click inside the contents area and press F9 to update the field.
+	TOC \h \o "1-3"1. Purpose of this Annex	 PAGEREF _Toc238246131 \h 1
+	1.1 Objectives of the MEL system	 PAGEREF _Toc238246132 \h 1
+	1.2 Principles	 PAGEREF _Toc238246133 \h 1
+	2. Results Framework Structure	 PAGEREF _Toc238246134 \h 1
+	2.1 Standard ARDHI indicator set	 PAGEREF _Toc238246135 \h 1
+	3. MEL Cycle and Responsibilities	 PAGEREF _Toc238246136 \h 1
+	3.1 Who does what	 PAGEREF _Toc238246137 \h 1
+	4. Data Management and Quality	 PAGEREF _Toc238246138 \h 1
+	4.1 Data flow	 PAGEREF _Toc238246139 \h 1
+	4.2 Data quality standards	 PAGEREF _Toc238246140 \h 1
+	4.3 Data protection	 PAGEREF _Toc238246141 \h 1
+	5. Learning	 PAGEREF _Toc238246142 \h 1
+	5.1 Learning agenda	 PAGEREF _Toc238246143 \h 1
+	5.2 Learning events and products	 PAGEREF _Toc238246144 \h 1
+	5.3 From learning to action	 PAGEREF _Toc238246145 \h 1
+	6. Evaluation	 PAGEREF _Toc238246146 \h 1
+	7. Research and Data Ethics	 PAGEREF _Toc238246147 \h 1
+	8. Reporting Calendar	 PAGEREF _Toc238246148 \h 1
+	Tool 1: Indicator Reference Sheet	 PAGEREF _Toc238246149 \h 1
+	Tool 2: Activity Report Form	 PAGEREF _Toc238246150 \h 1
+	Tool 3: Beneficiary Knowledge Test (Before and After)	 PAGEREF _Toc238246151 \h 1
+	Tool 4: Household Outcome Survey (Core Module)	 PAGEREF _Toc238246152 \h 1
+	Tool 5: Most Significant Change Story Form	 PAGEREF _Toc238246153 \h 1
+	Tool 6: Beneficiary Feedback and Satisfaction Form	 PAGEREF _Toc238246154 \h 1
+	Tool 7: Data Quality Assessment Checklist	 PAGEREF _Toc238246155 \h 1
+	Tool 8: Adaptation and Learning Log	 PAGEREF _Toc238246156 \h 1
+	Tool 9: Project Logical Framework Template	 PAGEREF _Toc238246157 \h 1
+	Tool 10: Indicator Performance Tracking Table	 PAGEREF _Toc238246158 \h 1
+
+About ARDHI
+We are a Ugandan based NGO that drives community resilience through advocacy and systems innovations in the areas of agriculture and food security, waste management, disaster preparedness, and land governance.
+Vision
+A future where research informs action, and action delivers justice.
+Mission
+Impacting communities through research, innovations and advocacy particularly in areas of smart agriculture, waste management, disaster preparedness, health and land governance.
+Our Values
+Sustainability: Champion policies and actions that safeguard natural resources.
+Equity: Foster inclusive environments and advocate for fair access to resources, ensuring marginalized voices are represented and empowered.
+Innovation: Pioneer creative solutions and leverage emerging technologies to address complex systemic challenges.
+Collaboration: Forge purposeful partnerships to amplify collective impact and drive lasting change.
+Our Theory of Change
+ARDHI is not a Think Tank, but a Think and Act Tank. Established in 2024 and fully registered in 2025, we operate on the belief that if we combine advocacy to shift rules, research to generate empirical evidence, and innovation to pilot practical models across agriculture, waste, disaster preparedness, health, and land governance, communities can gain the tools, voice, and systems they need to solve persistent problems. Lasting impact requires more than just ideas, it requires pressure, proof, and prototypes working together.
+Our offices are located at Plot 1207, Ggaba Road, Next to the American Embassy, Kampala, Uganda. For general enquiries, contact us at info@ardhi.org.ug or visit www.ardhi.org.ug.
+
+1. Purpose of this Annex
+This annex sets out how ARDHI Law and Policy Initiative plans, collects, checks, analyses, uses and shares information about its work. It contains both the framework that governs monitoring, evaluation and learning across the organisation, and the ready to use tools that project teams apply in the field.
+ARDHI works on land and policy questions where change is slow, contested and hard to attribute to a single actor. A tick box approach to reporting would tell us nothing useful. Our system is therefore built to answer three questions honestly: are we doing what we said we would do, is it making a difference for the people whose land rights are insecure, and what should we do differently.
+We measure in order to learn and to improve, not only in order to report.
+1.1 Objectives of the MEL system
+To track delivery against plans and budgets so that problems are seen early.
+To measure results at output, outcome and impact level with credible evidence.
+To provide disaggregated data that shows who benefited and who was left out.
+To generate learning that changes practice within the life of a project, not only after it.
+To meet donor reporting obligations accurately and on time.
+To be accountable to the communities we serve by sharing results back with them.
+1.2 Principles
+
+Principle
+ | What it means in practice
+ | 
+Utility
+ | We collect only data that someone will use for a decision. Every indicator has a named user.
+ | 
+Credibility
+ | Data is verifiable, traceable to a source document, and checked before it is reported.
+ | 
+Disaggregation
+ | All people level data is disaggregated by sex, age band, disability status and, where relevant, tenure status and location.
+ | 
+Participation
+ | Communities take part in setting indicators of change that matter to them, and in reviewing results.
+ | 
+Do no harm and confidentiality
+ | Data collection never exposes a person to risk. Personal data is handled under the Data Protection and Privacy Act, 2019.
+ | 
+Honesty
+ | Negative results, failed activities and missed targets are reported as fully as successes.
+ | 
+Timeliness
+ | Data reaches the person who needs it while a decision can still be changed.
+ | 
+Proportionality
+ | The size of the MEL effort matches the size and risk of the project.
+ | 
+
+2. Results Framework Structure
+ARDHI uses a standard results chain in all projects. Every project logframe is built on this structure so that results can be added up across the organisation.
+
+Level
+ | Definition
+ | ARDHI example
+ | 
+Impact
+ | The long term change in the lives of people, to which ARDHI contributes together with others.
+ | Poor and marginalised households in target districts enjoy secure and equitable rights to land and natural resources.
+ | 
+Outcome
+ | The change in behaviour, capacity, practice, policy or relationship that ARDHI is accountable for influencing.
+ | Women and other marginalised groups in target sub counties exercise and defend their land rights; district and national institutions apply more inclusive land governance practice.
+ | 
+Output
+ | The products and services ARDHI delivers.
+ | Community members trained; land documents supported; disputes mediated; research published; policy submissions made.
+ | 
+Activity
+ | The work done to produce the outputs.
+ | Training sessions, legal aid clinics, mapping exercises, radio programmes, policy dialogues.
+ | 
+Input
+ | The resources used.
+ | Staff time, funds, transport, equipment, partner contributions.
+ | 2.1 Standard ARDHI indicator set
+Projects select from this set so that results can be aggregated, and add project specific indicators where needed.
+
+Code
+ | Indicator
+ | Level
+ | Unit and disaggregation
+ | Data source
+ | Frequency
+ | 
+OUT.1
+ | Number of people reached with land rights information
+ | Output
+ | People, by sex, age band, disability
+ | Attendance and reach records
+ | Monthly
+ | 
+OUT.2
+ | Number of people trained, disaggregated by training type
+ | Output
+ | People, by sex, age band, disability
+ | Training register
+ | Per activity
+ | 
+OUT.3
+ | Number of land disputes handled through mediation or legal aid
+ | Output
+ | Cases, by type, sex of client
+ | Case management record
+ | Monthly
+ | 
+OUT.4
+ | Number of land documents supported to completion
+ | Output
+ | Documents, by type and by sex of holder
+ | Land office and project records
+ | Quarterly
+ | 
+OUT.5
+ | Number of research outputs and policy briefs published
+ | Output
+ | Products
+ | Publication record
+ | Quarterly
+ | 
+OUT.6
+ | Number of policy engagements or submissions made
+ | Output
+ | Engagements, by institution
+ | Advocacy log
+ | Quarterly
+ | 
+OUT.7
+ | Number of community structures supported and functioning
+ | Output
+ | Structures, with women in leadership
+ | Structure assessment
+ | Biannual
+ | 
+OTC.1
+ | Percentage of trained community members who correctly state at least three of their land rights
+ | Outcome
+ | Percent, disaggregated
+ | Knowledge test, before and after
+ | Baseline, midline, endline
+ | 
+OTC.2
+ | Percentage of supported disputes resolved to the satisfaction of the claimant
+ | Outcome
+ | Percent, by sex
+ | Case closure survey
+ | Quarterly
+ | 
+OTC.3
+ | Percentage of supported land documents that name a woman as owner or joint owner
+ | Outcome
+ | Percent
+ | Documentation records
+ | Quarterly
+ | 
+OTC.4
+ | Percentage of women participants who report they can speak and be heard in land decisions
+ | Outcome
+ | Percent
+ | Household and participant survey
+ | Baseline, midline, endline
+ | 
+OTC.5
+ | Number of institutions that adopt a practice, guideline or policy change promoted by ARDHI
+ | Outcome
+ | Institutions
+ | Documented adoption, outcome harvesting
+ | Biannual
+ | 
+OTC.6
+ | Percentage of target households reporting increased perceived tenure security
+ | Outcome
+ | Percent, by sex of respondent
+ | Household survey
+ | Baseline, midline, endline
+ | 
+IMP.1
+ | Percentage of target households investing in their land as a result of improved security
+ | Impact
+ | Percent
+ | Household survey
+ | Baseline and endline
+ | 
+IMP.2
+ | Reduction in reported forced evictions and land grabbing incidents in target areas
+ | Impact
+ | Incidents
+ | Community monitoring, police and local council records
+ | Annual
+ | 
+
+3. MEL Cycle and Responsibilities
+
+Stage
+ | What happens
+ | Who leads
+ | When
+ | 
+MEL planning
+ | Theory of change, logframe, indicator reference sheets, MEL plan and budget prepared with the project team.
+ | MEL Officer with Project Manager
+ | Within 30 days of grant signature
+ | 
+Baseline
+ | Baseline study or rapid assessment to set starting values for outcome indicators.
+ | MEL Officer, external consultant where required
+ | Within 90 days of start
+ | 
+Routine monitoring
+ | Activity records, attendance, case records, field visit reports and beneficiary feedback collected continuously.
+ | Field Officers
+ | Continuous
+ | 
+Data quality assurance
+ | Spot checks, back checks on 5 percent of records, verification against source documents.
+ | MEL Officer
+ | Monthly
+ | 
+Monthly review
+ | Progress against workplan and budget reviewed; bottlenecks identified.
+ | Project Manager
+ | Monthly
+ | 
+Quarterly review and reflection
+ | Indicator performance tracked, learning questions discussed, actions agreed.
+ | MEL Officer with the team
+ | Quarterly
+ | 
+Midterm review
+ | Assessment of progress towards outcomes, with recommendations for adaptation.
+ | External or internal reviewer
+ | At the midpoint
+ | 
+Annual reporting
+ | Consolidated results report to donors and to the Board.
+ | Project Manager and MEL Officer
+ | Annually
+ | 
+Final evaluation
+ | Independent evaluation against relevance, coherence, effectiveness, efficiency, impact and sustainability.
+ | External evaluator
+ | Final quarter
+ | 
+Learning and dissemination
+ | Learning products prepared, results shared with communities, partners and policy actors.
+ | MEL Officer with Communications
+ | Continuous and at closure
+ | 3.1 Who does what
+
+Role
+ | MEL responsibility
+ | 
+Country Director
+ | Approves the MEL plan and budget, uses evidence in decision making, presents results to the Board.
+ | 
+MEL Officer
+ | Designs and runs the system, ensures data quality, analyses and reports, facilitates learning events, maintains the MEL database.
+ | 
+Project Manager
+ | Owns delivery data, reviews results monthly, acts on findings, ensures the team submits accurate data on time.
+ | 
+Field Officers and paralegals
+ | Collect and submit accurate records, gather beneficiary feedback, verify data with communities.
+ | 
+Finance Officer
+ | Provides expenditure data for value for money analysis and budget versus actual review.
+ | 
+Partners
+ | Report against the agreed indicators using the same tools and allow verification.
+ | 
+Community members
+ | Take part in setting indicators, verifying beneficiary lists and reviewing results.
+ | 
+ARDHI allocates not less than 5 percent of direct project costs to MEL, and not less than 7 percent where a baseline and an external evaluation are required.
+
+4. Data Management and Quality
+4.1 Data flow
+
+Step
+ | Description
+ | 
+1. Collection
+ | Field Officers collect data using the standard tools in this annex, on paper or on mobile devices using KoboToolbox or ODK.
+ | 
+2. Submission
+ | Data submitted to the MEL Officer within five working days of the activity.
+ | 
+3. Entry and cleaning
+ | Data entered into the ARDHI MEL database, checked for duplicates, missing values and outliers.
+ | 
+4. Verification
+ | Five percent of records verified against source documents, and a sample of participants contacted directly.
+ | 
+5. Analysis
+ | Indicator values calculated, disaggregated, compared to target and to baseline.
+ | 
+6. Use
+ | Results discussed at monthly and quarterly reviews and used to adjust plans.
+ | 
+7. Reporting
+ | Results reported to donors, the Board and the communities.
+ | 
+8. Storage
+ | Data archived securely, with personal identifiers separated from analysis files.
+ | 4.2 Data quality standards
+
+Dimension
+ | Standard
+ | How it is checked
+ | 
+Validity
+ | The data measures what the indicator says it measures.
+ | Indicator reference sheet reviewed at design and at each reporting period
+ | 
+Reliability
+ | The same method produces the same result over time and across teams.
+ | Standard tools, enumerator training, inter rater checks
+ | 
+Completeness
+ | All expected records are present and all required fields are filled.
+ | Submission tracker; no report accepted with missing fields
+ | 
+Timeliness
+ | Data arrives in time to be used.
+ | Five working day submission rule; monthly dashboard
+ | 
+Precision
+ | Numbers are accurate and free of double counting.
+ | Unique beneficiary identifiers; deduplication before reporting
+ | 
+Integrity
+ | Data has not been manipulated.
+ | Back checks on 5 percent of records; source documents retained; audit trail in the database
+ | 4.3 Data protection
+Informed consent is obtained before any personal data is collected, and the purpose is explained.
+Unique beneficiary codes are used in analysis files, and names are held separately with restricted access.
+Devices are password protected and encrypted, and data is uploaded and removed from devices within forty eight hours.
+Access to personal data is limited by role and is logged.
+Data on land disputes, on survivors of violence and on persons at risk is treated as sensitive and is never shared without written consent.
+Personal data is retained only as long as the grant and the law require, and is then securely destroyed.
+
+5. Learning
+5.1 Learning agenda
+Each project sets three to five learning questions at design. These are questions the team does not yet know the answer to and that would change how the work is done. Examples for ARDHI include:
+Which combination of legal aid, community mediation and clan dialogue resolves land disputes most durably, and at what cost per case?
+Does joint documentation of family land change how decisions are actually made in the household, or only what the paper says?
+What makes a district land institution adopt a practice we promote, and what makes the change stick after our project ends?
+Which channels reach young people and persons with disabilities with land rights information most effectively?
+Under what conditions does strengthening the land rights of women create backlash, and what reduces it?
+5.2 Learning events and products
+
+Event or product
+ | Purpose
+ | Frequency
+ | Audience
+ | 
+Quarterly reflection meeting
+ | Review indicator performance, discuss learning questions, agree adaptations
+ | Quarterly
+ | Project team and partners
+ | 
+After action review
+ | Capture lessons immediately after a major activity or campaign
+ | After each major activity
+ | Project team
+ | 
+Community results feedback meeting
+ | Share results back with communities and hear their view of what changed
+ | Biannual
+ | Communities
+ | 
+Annual organisational learning day
+ | Cross project learning and updating of practice
+ | Annual
+ | All staff and partners
+ | 
+Learning brief
+ | Short written product on one question, with evidence and practical implications
+ | At least two per project per year
+ | Donors, peers, policy actors
+ | 
+Most significant change stories
+ | Capture change that indicators miss, in the words of participants
+ | Quarterly collection, annual selection
+ | All audiences
+ | 
+Outcome harvesting workshop
+ | Identify and verify outcomes that were not predicted, especially in policy work
+ | Annual
+ | Team, partners, external verifier
+ | 
+Adaptation log
+ | Record of what was changed, why, and with what effect
+ | Continuous
+ | Internal and donors
+ | 5.3 From learning to action
+Every learning event ends with an action list that names the change to be made, the person responsible and the date. The MEL Officer maintains the adaptation log and reports at the next quarterly review on whether each action was completed. Learning that is recorded but not acted on is treated as a system failure and is raised with the Country Director.
+
+6. Evaluation
+
+Evaluation type
+ | When
+ | Approach
+ | 
+Baseline study
+ | Within 90 days of start
+ | Household survey with a comparison group where feasible, key informant interviews, focus groups, review of land records
+ | 
+Midterm review
+ | At the midpoint
+ | Internal or light external review focused on progress, assumptions and adaptation
+ | 
+Final evaluation
+ | Final quarter
+ | Independent evaluation against the OECD DAC criteria of relevance, coherence, effectiveness, efficiency, impact and sustainability, with a gender and inclusion lens
+ | 
+Thematic or process evaluation
+ | As needed
+ | Deep study of one approach, for example community mediation, to inform scale up
+ | 
+Ex post follow up
+ | 12 to 24 months after closure
+ | Light study of whether results held, feeding the sustainability plan in Annex 20
+ | 
+Evaluation terms of reference always require: disaggregated analysis; direct consultation with women, youth and persons with disabilities; an assessment of unintended effects including harm; a clear statement of limitations; and a validation session with ARDHI and the communities before the report is finalised. Evaluators sign the ARDHI Code of Conduct and follow the ethics standards in Section 7.
+7. Research and Data Ethics
+Voluntary, informed consent from every respondent, with a clear right to decline or to stop at any time and no effect on their access to services.
+Parental or guardian consent plus the assent of the child for any respondent under eighteen, and no interviews with children on sensitive matters without specialist arrangements.
+No collection of data that ARDHI cannot protect or will not use.
+Referral pathway available before any data collection that could surface distress, violence or a safeguarding disclosure.
+No payment for participation, but reimbursement of reasonable transport costs.
+Ethical clearance from a recognised research ethics committee for any study involving sensitive personal data or vulnerable groups.
+Results returned to the communities that provided the data, in a form they can use.
+
+8. Reporting Calendar
+
+Report
+ | Prepared by
+ | Submitted to
+ | Deadline
+ | 
+Activity report
+ | Field Officer
+ | Project Manager
+ | Within 5 working days of the activity
+ | 
+Monthly progress and data submission
+ | Project Manager
+ | MEL Officer and Country Director
+ | 5th of the following month
+ | 
+Quarterly programme report
+ | Project Manager with MEL Officer
+ | Country Director, then donor
+ | 15th after quarter end, or as the grant requires
+ | 
+Quarterly indicator performance tracking table
+ | MEL Officer
+ | Management team
+ | 10th after quarter end
+ | 
+Safeguarding and safeguard compliance report
+ | Focal Persons
+ | Country Director and Board
+ | Quarterly
+ | 
+Annual results report
+ | MEL Officer
+ | Board and donors
+ | Within 60 days of year end
+ | 
+Learning brief
+ | MEL Officer
+ | Public and donors
+ | At least twice a year
+ | 
+Evaluation reports
+ | External evaluator
+ | Board, donors, communities
+ | As set in the terms of reference
+ | 
+
+Tool 1: Indicator Reference Sheet
+One sheet is completed for every indicator in the logframe, before data collection begins.
+
+Indicator code and full title
+ | 
+ | 
+Result level (impact, outcome, output)
+ | 
+ | 
+Definition, including the exact meaning of every term used
+ | 
+ | 
+Unit of measurement
+ | 
+ | 
+Disaggregation required
+ | 
+ | 
+Calculation or formula, including numerator and denominator
+ | 
+ | 
+Data source and specific document or system
+ | 
+ | 
+Data collection method and tool
+ | 
+ | 
+Frequency of collection and of reporting
+ | 
+ | 
+Person responsible for collection
+ | 
+ | 
+Person responsible for analysis and reporting
+ | 
+ | 
+Baseline value, date and source
+ | 
+ | 
+Targets by year and life of project target
+ | 
+ | 
+Known limitations and how they are managed
+ | 
+ | 
+Rules to avoid double counting
+ | 
+ | 
+Quality assurance steps
+ | 
+ | 
+
+Tool 2: Activity Report Form
+
+Project and activity code
+ | 
+ | 
+Activity title and type
+ | 
+ | 
+Date, start and end time
+ | 
+ | 
+District, sub county, parish, village and venue
+ | 
+ | 
+Facilitators and their organisations
+ | 
+ | 
+Objectives of the activity
+ | 
+ | 
+Number of participants: total, female, male, aged 18 to 30, persons with disabilities
+ | 
+ | 
+Summary of what took place
+ | 
+ | 
+Key issues raised by participants
+ | 
+ | 
+Decisions and commitments made, with who and by when
+ | 
+ | 
+Feedback received, including complaints, and how it was handled
+ | 
+ | 
+Challenges encountered and how they were addressed
+ | 
+ | 
+Safeguarding or safeguard issues observed and action taken
+ | 
+ | 
+Follow up actions, responsible person and deadline
+ | 
+ | 
+Attachments (attendance sheet, photographs with consent, materials)
+ | 
+ | 
+Prepared by, signature and date
+ | 
+ | 
+
+Tool 3: Beneficiary Knowledge Test (Before and After)
+Administered orally where participants cannot read and write. Scores are recorded against the participant code, never publicly.
+
+No.
+ | Question
+ | Correct answer key
+ | Before
+ | After
+ | 
+1
+ | Name three ways a person can hold land in Uganda.
+ | Customary, freehold, mailo, leasehold
+ | 
+ | 
+ | 
+2
+ | Can a husband sell family land without the agreement of his wife?
+ | No, spousal consent is required for family land
+ | 
+ | 
+ | 
+3
+ | What document shows ownership of customary land?
+ | Certificate of Customary Ownership
+ | 
+ | 
+ | 
+4
+ | Name two institutions where you can report a land dispute.
+ | Local Council courts, Area Land Committee, District Land Board, Magistrates Court, police, legal aid provider
+ | 
+ | 
+ | 
+5
+ | Does a daughter have the right to inherit land from her father?
+ | Yes, in law daughters and sons have equal inheritance rights
+ | 
+ | 
+ | 
+6
+ | What is a lawful or bona fide occupant and what protection do they have?
+ | A person occupying land under recognised conditions, protected with security of occupancy
+ | 
+ | 
+ | 
+7
+ | Name one thing you should do before buying land.
+ | Search at the land office, verify boundaries with neighbours, check spousal consent, check for occupants
+ | 
+ | 
+ | 
+8
+ | Where can a person with a disability get help to attend a land meeting?
+ | From the project accessibility support and from the area land committee
+ | 
+ | 
+ | 
+
+Tool 4: Household Outcome Survey (Core Module)
+Used at baseline, midline and endline with a sample of households in target and comparison areas.
+
+Section
+ | Core questions
+ | 
+A. Identification
+ | District, sub county, parish, village, household code, GPS point, interviewer, date, consent recorded
+ | 
+B. Respondent profile
+ | Sex, age, education, marital status, disability status using the Washington Group short set, position in household, tenure status
+ | 
+C. Land holding
+ | Number and size of parcels, how each was acquired, who is recorded as owner, what documents exist, who holds the documents
+ | 
+D. Perceived tenure security
+ | How likely do you think it is that you could lose this land in the next five years? What would happen if you did? Confidence in defending your claim
+ | 
+E. Rights knowledge
+ | Knowledge of spousal consent, inheritance rights, occupancy protection, how to obtain a certificate of customary ownership
+ | 
+F. Decision making
+ | Who decides on sale, lease, mortgage, planting, and inheritance of land in this household, and whose views are heard
+ | 
+G. Disputes
+ | Any dispute in the last 12 months, with whom, subject, where reported, current status, cost incurred, satisfaction with the outcome
+ | 
+H. Investment and use
+ | Investments made in the land in the last 12 months, and reasons for investing or not investing
+ | 
+I. Services and reach
+ | Contact with ARDHI or partner activities, what was received, what was useful, what was missing
+ | 
+J. Voice and participation
+ | Attendance and speaking in community land meetings, membership of land related structures
+ | 
+K. Safety and feedback
+ | Awareness of how to raise a complaint, experience of raising one, any negative consequence of participating
+ | 
+
+Tool 5: Most Significant Change Story Form
+
+Story code and date of collection
+ | 
+ | 
+Name or code of the person telling the story, with consent status
+ | 
+ | 
+Sex, age band, disability status, district and village
+ | 
+ | 
+Domain of change (rights knowledge, tenure security, dispute resolution, participation, policy, other)
+ | 
+ | 
+In your own words, what was your situation before?
+ | 
+ | 
+What happened, and what did you or others do?
+ | 
+ | 
+What is different now, and how do you know?
+ | 
+ | 
+Why is this change the most significant one for you?
+ | 
+ | 
+What was the role of ARDHI or its partners in this change?
+ | 
+ | 
+What else contributed to this change?
+ | 
+ | 
+Any negative or unexpected effect?
+ | 
+ | 
+Verification: who else confirmed this story, and what documents support it
+ | 
+ | 
+Collected by, signature and date, and consent for use
+ | 
+ | 
+
+Tool 6: Beneficiary Feedback and Satisfaction Form
+
+Question
+ | Strongly agree
+ | Agree
+ | Not sure
+ | Disagree
+ | Strongly disagree
+ | 
+The information given was clear and useful to me
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+The facilitators treated me with respect
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+I was able to ask questions and to be heard
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+The venue and timing suited me
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+The activity was accessible to me given my situation
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+I know how to make a complaint about ARDHI or its staff
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+I was never asked for money, a favour or anything else in return
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+I would recommend this activity to others in my community
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+
+What was most useful to you?
+ | 
+ | 
+What should be improved?
+ | 
+ | 
+What did you expect that you did not receive?
+ | 
+ | 
+Sex, age band, disability status (optional)
+ | 
+ | 
+Date and activity code
+ | 
+ | 
+
+Tool 7: Data Quality Assessment Checklist
+
+Check
+ | Yes
+ | No
+ | Comment and corrective action
+ | 
+An indicator reference sheet exists for every reported indicator
+ | 
+ | 
+ | 
+ | 
+Source documents exist for every reported number and can be produced
+ | 
+ | 
+ | 
+ | 
+Reported totals match the sum of the source records
+ | 
+ | 
+ | 
+ | 
+Disaggregation is complete for every people level indicator
+ | 
+ | 
+ | 
+ | 
+Unique identifiers are used and duplicates have been removed
+ | 
+ | 
+ | 
+ | 
+Back checks were carried out on at least 5 percent of records
+ | 
+ | 
+ | 
+ | 
+Data was submitted within the required timeline
+ | 
+ | 
+ | 
+ | 
+Consent records exist for all personal data collected
+ | 
+ | 
+ | 
+ | 
+Personal identifiers are stored separately from analysis files
+ | 
+ | 
+ | 
+ | 
+Any change to a data value is explained and traceable
+ | 
+ | 
+ | 
+ | 
+Partner reported data has been verified at least once this period
+ | 
+ | 
+ | 
+ | 
+
+Tool 8: Adaptation and Learning Log
+
+Date
+ | What we learned
+ | Source of the learning
+ | Decision taken
+ | Responsible
+ | Status
+ | 
+
+ | 
+ | Quarterly review / field visit / feedback / evaluation / grievance
+ | 
+ | 
+ | Open / Done / Dropped
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+Tool 9: Project Logical Framework Template
+
+Results level
+ | Narrative summary
+ | Indicator
+ | Baseline (value and date)
+ | Target (year 1, year 2, life of project)
+ | Means of verification
+ | Frequency and responsible
+ | Assumptions and risks
+ | 
+Impact
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+Outcome 1
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+Output 1.1
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+Output 1.2
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+Outcome 2
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+Output 2.1
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+Output 2.2
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+Outcome 3
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+Output 3.1
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+
+Tool 10: Indicator Performance Tracking Table
+
+Code
+ | Indicator
+ | Unit
+ | Baseline
+ | LOP target
+ | Q1 target
+ | Q1 actual
+ | Q2 target
+ | Q2 actual
+ | Q3 target
+ | Q3 actual
+ | Q4 target
+ | Q4 actual
+ | Cumulative
+ | Percent of LOP target
+ | Explanation of variance and action
+ | 
+OUT.1
+ | People reached with land rights information
+ | People
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+OUT.2
+ | People trained
+ | People
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+OUT.3
+ | Disputes handled
+ | Cases
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+OUT.4
+ | Land documents supported
+ | Documents
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+OTC.2
+ | Disputes resolved to claimant satisfaction
+ | Percent
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+OTC.3
+ | Documents naming a woman
+ | Percent
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+OTC.5
+ | Institutions adopting a change
+ | Institutions
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+Every quarter, the MEL Officer completes this table, colour codes performance as on track, at risk or off track, and presents it at the quarterly reflection meeting. Any indicator below 80 percent of its quarterly target requires a written explanation and a corrective action with a named owner and a date.

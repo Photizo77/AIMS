@@ -1,0 +1,508 @@
+ARDHI LAW AND POLICY INITIATIVE
+Advocacy  |  Research  |  Innovation
+www.ardhi.org.ug
+ANNEX 9
+ORGANISATIONAL STRUCTURE
+Governance, management, departments, delegation of authority and the ARDHI organigram
+
+Document control
+ | Details
+ | 
+Document title
+ | Annex 9: Organisational Structure
+ | 
+Owner
+ | Executive Director, supported by the Adiministrative Officer
+ | 
+Approved by
+ | ARDHI Board of Directors
+ | 
+Version
+ | 1.0
+ | 
+Date of issue
+ | August 2026
+ | 
+Next review
+ | August 2027
+ | 
+Applies to
+ | All ARDHI staff, board members, volunteers, interns, consultants, contractors, partners, suppliers and any person acting on behalf of ARDHI
+ | 
+Status
+ | Approved for use in donor submissions and programme implementation
+ | 
+
+Table of Contents
+If the entries below do not appear, click inside the contents area and press F9 to update the field.
+	TOC \h \o "1-3"1. Purpose	 PAGEREF _Toc238246292 \h 1
+	1.1 Design principles	 PAGEREF _Toc238246293 \h 1
+	2. Governance Layer	 PAGEREF _Toc238246294 \h 1
+	3. Executive and Management Layer	 PAGEREF _Toc238246295 \h 1
+	3.1 Why the Country Director sits above the Executive Director	 PAGEREF _Toc238246296 \h 1
+	4. Departments and Posts	 PAGEREF _Toc238246297 \h 1
+	4.1 Programmes and Field Operations	 PAGEREF _Toc238246298 \h 1
+	4.2 Research, Policy and Advocacy	 PAGEREF _Toc238246299 \h 1
+	4.3 Finance and Administration	 PAGEREF _Toc238246300 \h 1
+	4.4 Monitoring, Evaluation, Learning and Communications	 PAGEREF _Toc238246301 \h 1
+	5. Cross Cutting Focal Persons	 PAGEREF _Toc238246302 \h 1
+	6. Delegation of Authority	 PAGEREF _Toc238246303 \h 1
+	7. Project Staffing Model	 PAGEREF _Toc238246304 \h 1
+	7.1 Staffing establishment table	 PAGEREF _Toc238246305 \h 1
+	8. Structure Governance	 PAGEREF _Toc238246306 \h 1
+	9. ARDHI Organogram	 PAGEREF _Toc238246307 \h 1
+
+About ARDHI
+We are a Ugandan based NGO that drives community resilience through advocacy and systems innovations in the areas of agriculture and food security, waste management, disaster preparedness, and land governance.
+Vision
+A future where research informs action, and action delivers justice.
+
+Mission
+Impacting communities through research, innovations and advocacy particularly in areas of smart agriculture, waste management, disaster preparedness, health and land governance.
+
+Our Values
+Sustainability: Champion policies and actions that safeguard natural resources.
+Equity: Foster inclusive environments and advocate for fair access to resources, ensuring marginalized voices are represented and empowered.
+Innovation: Pioneer creative solutions and leverage emerging technologies to address complex systemic challenges.
+Collaboration: Forge purposeful partnerships to amplify collective impact and drive lasting change.
+
+Our Theory of Change
+ARDHI is not a Think Tank, but a Think and Act Tank. Established in 2024 and fully registered in 2025, we operate on the belief that if we combine advocacy to shift rules, research to generate empirical evidence, and innovation to pilot practical models across agriculture, waste, disaster preparedness, health, and land governance, communities can gain the tools, voice, and systems they need to solve persistent problems. Lasting impact requires more than just ideas, it requires pressure, proof, and prototypes working together.
+1. Purpose
+This annex sets out how ARDHI Law and Policy Initiative is organised: who governs it, who manages it, who reports to whom, what each function is accountable for, and how a project team is staffed. It is written so that a funder can see that authority, delivery and assurance are properly separated, and so that ARDHI staff have a single reference for reporting lines and decision rights.
+The organigram itself is presented in landscape at the end of this annex.
+1.1 Design principles
+
+Principle
+ | How the structure reflects it
+ | 
+Separation of governance and management
+ | The Board sets direction and holds management to account. No Board member holds an executive post or is employed by ARDHI.
+ | 
+Clear single line management
+ | Every post has one line manager. Where a post also has a functional reporting line, that line is shown separately and is limited to technical matters.
+ | 
+Independent assurance
+ | Safeguarding, internal audit and grievance handling have a reporting route that does not pass through the person who could be the subject of a concern.
+ | 
+Lean centre, strong field
+ | Most posts sit in field delivery. Head office exists to support and to assure, not to duplicate.
+ | 
+Cross cutting responsibility is named
+ | Safeguarding, inclusion, safeguards and data protection are held by named focal persons rather than left to everyone in general.
+ | 
+Community structures are part of the structure
+ | Community paralegals, mediators and grievance contacts are shown on the chart because they deliver, and because they are what remains after a project ends.
+ | 
+Scalable
+ | A new project adds a project team under the Programmes Manager without changing the organisational shape.
+ | 
+
+2. Governance Layer
+
+Body
+ | Composition
+ | Meets
+ | Decision rights
+ | 
+General Assembly or Members
+ | Founding and admitted members
+ | Annually
+ | Appoints and removes Board members; receives the annual report and audited accounts; approves changes to the constitution
+ | 
+Board of Directors
+ | Non executive members with a mix of legal, land, finance, research and community expertise; at least 40 percent women
+ | At least quarterly
+ | Approves strategy, annual plan and budget; approves policy; sets risk appetite; appoints the Country Director and Executive Director; approves any expenditure above the delegated ceiling
+ | 
+Finance and Audit Committee
+ | At least three Board members, chaired by a member with financial expertise
+ | Quarterly
+ | Reviews budgets, management accounts, audit findings and fraud cases; recommends the auditor
+ | 
+Programmes, Safeguarding and Risk Committee
+ | At least three Board members, including the Board Safeguarding Champion
+ | Quarterly
+ | Reviews programme quality, the risk register, safeguarding cases and evaluation findings
+ | 
+Board Safeguarding Champion
+ | One named non executive Board member
+ | As required
+ | Independent reporting route for safeguarding concerns; chairs any case panel involving senior management
+ | 
+Board members serve a fixed renewable term, sign a code of conduct and a conflict of interest declaration annually, and are not remunerated beyond reimbursement of reasonable costs. The Board carries out a self assessment once a year and records the actions arising from it.
+
+3. Executive and Management Layer
+
+Post
+ | Reports to
+ | Accountable for
+ | Key decision rights
+ | 
+Country Director
+ | Board of Directors
+ | Overall accountability for the country programme: delivery, compliance, staff, safeguarding, risk and relationships with government and regulators
+ | Approves screening decisions, safeguard management plans, beneficiary lists, disciplinary outcomes and expenditure within the delegated ceiling
+ | 
+Executive Director
+ | Board of Directors, working directly under the Country Director
+ | Strategy, positioning, partnerships, resource mobilisation, external representation and the grant writer scheme
+ | Approves go or no go decisions on funding calls, signs partnership agreements within the delegated ceiling, represents ARDHI publicly
+ | 
+Programmes Manager
+ | Executive Director
+ | Design and delivery of all projects and field operations, project teams and partner delivery
+ | Approves activity plans, field movement, partner workplans
+ | 
+Research and Policy Manager
+ | Executive Director
+ | Research agenda, quality of evidence, publications, policy engagement and academic partnerships
+ | Approves research designs and publications before release
+ | 
+Finance and Administration Manager
+ | Executive Director
+ | Financial management, compliance, procurement, human resources, logistics and assets
+ | Approves payments within threshold, chairs the procurement committee, certifies donor financial reports
+ | 
+Monitoring, Evaluation, Learning and Communications Manager
+ | Executive Director
+ | MEL system, data quality, evaluations, learning and all external communications
+ | Approves indicator definitions, data releases and published materials
+ | 3.1 Why the Country Director sits above the Executive Director
+ARDHI places the Country Director at the top of the executive line because accountability for what happens in Uganda, to Ugandan communities and before Ugandan regulators, sits in one place. The Executive Director leads strategy, partnerships and resource mobilisation and represents the organisation externally, working directly under  the Country Director and reporting to the same Board. Both posts are appointed by, and answerable to, the Board of Directors.
+
+4. Departments and Posts
+4.1 Programmes and Field Operations
+
+Element
+ | Detail
+ | 
+Headed by
+ | Programmes Manager
+ | 
+Purpose
+ | Turns designs into delivery in the districts, manages project teams and partners, and holds the relationship with communities and local government.
+ |
+
+Post
+ | Main responsibilities
+ | 
+Project Manager
+ | Owns one project end to end: workplan, budget, team, partner performance, reporting, safeguard screening and community relationships
+ | 
+Legal Officer
+ | Legal advice, casework, supervision of paralegals, mediation of complex disputes, court accompaniment, review of legal content in training and publications
+ | 
+Field Officer
+ | Day to day delivery in the sub counties: activities, registration, records, community feedback, first receipt of grievances
+ | 
+Community Paralegal
+ | Community based casework from intake to closure under supervision, rights information, referral
+ | 
+Community Mobiliser
+ | Community entry, mobilisation of participants, translation and follow up
+ | 
+4.2 Research, Policy and Advocacy
+
+Element
+ | Detail
+ | 
+Headed by
+ | Research and Policy Manager
+ | 
+Purpose
+ | Produces the evidence that underpins ARDHI positions, and converts it into policy influence.
+ |
+
+Post
+ | Main responsibilities
+ | 
+Research Officer
+ | Study design, data collection and analysis, drafting of reports and briefs, ethics compliance
+ | 
+Policy and Advocacy Officer
+ | Policy tracking, submissions, coalition work, engagement with government and parliament, campaign planning
+ | 
+Research Assistant
+ | Field data collection, transcription, coding, literature and land record review
+ | 
+Academic Associate
+ | Non staff associates from universities who co design studies, peer review outputs and co author publications
+ | 
+4.3 Finance and Administration
+
+Element
+ | Detail
+ | 
+Headed by
+ | Finance and Administration Manager
+ | 
+Purpose
+ | Keeps the organisation compliant, solvent and properly resourced, and holds the human resource and procurement functions.
+ |
+
+Post
+ | Main responsibilities
+ | 
+Accountant
+ | Books of account, payments, reconciliations, donor financial reports, audit preparation
+ | 
+Finance Assistant
+ | Field advances and retirements, mobile money reconciliation, filing of supporting documents
+ | 
+Human Resource Officer
+ | Safer recruitment, contracts, records, payroll input, performance management, disciplinary process
+ | 
+Procurement and Logistics Officer
+ | Procurement process, supplier contracts including safeguard clauses, vehicles, travel and assets
+ | 
+Administration and IT Officer
+ | Office administration, systems, devices, data security and backups
+ | 
+4.4 Monitoring, Evaluation, Learning and Communications
+
+Element
+ | Detail
+ | 
+Headed by
+ | MEL and Communications Manager
+ | 
+Purpose
+ | Makes sure ARDHI knows what it is achieving, learns from it, and communicates it accurately.
+ |
+
+Post
+ | Main responsibilities
+ | 
+MEL Officer
+ | Indicator management, data quality assurance, monitoring visits, quarterly performance reporting, learning events
+ | 
+Data Officer
+ | Database administration, digital data collection tools, deduplication, disaggregated analysis, data protection compliance
+ | 
+Communications Officer
+ | Publications, website, social platforms, radio, media relations, consent management for images and stories
+ | 
+Grant Writers and Grant Review Team
+ | Proposal development against weekly targets, internal review of every submission before it goes out, maintenance of the funding pipeline
+ |
+
+5. Cross Cutting Focal Persons
+These roles are held by existing staff in addition to their substantive post, except where the size of the portfolio justifies a dedicated position. Each has a functional reporting line that bypasses ordinary line management, so that a concern can never be blocked by the person it concerns.
+
+Focal person
+ | Held by
+ | Functional reporting line
+ | Core duties
+ | 
+Safeguarding Focal Person, and a deputy of the opposite sex
+ | Two named staff, one female and one male
+ | Executive Director, and directly to the Board Safeguarding Champion where the concern involves senior management
+ | Receives and assesses concerns, maintains the case register, manages referral pathways, delivers training, prepares quarterly safeguarding reporting
+ | 
+Gender and Social Inclusion Focal Person
+ | A named staff member
+ | Country Director
+ | GESI analysis, review of designs against the minimum standards, inclusion training, disaggregated performance reporting
+ | 
+Environmental and Social Safeguards Focal Person
+ | A named staff member
+ | Country Director
+ | Screening, management plans, grievance register, safeguard monitoring and reporting
+ | 
+Data Protection Focal Person
+ | Usually the Data Officer
+ | Country Director
+ | Consent, storage, access control, retention and destruction, breach response
+ | 
+Internal Audit and Compliance
+ | Internal or outsourced
+ | Board Finance and Audit Committee, directly
+ | Independent testing of controls, spot checks, fraud investigation support
+ | 6. Delegation of Authority
+Financial thresholds are expressed as bands and are set in shillings in the Finance Manual, then reviewed annually by the Board. No person may approve a payment from which they benefit, and no person may both authorise and execute the same payment.
+
+Decision
+ | Approved by
+ | Second authority required
+ | 
+Expenditure within an approved budget line, up to the operational threshold
+ | Finance and Administration Manager
+ | Country Director for payment release
+ | 
+Expenditure above the operational threshold and up to the executive ceiling
+ | Country Director
+ | Second signatory on the account
+ | 
+Expenditure above the executive ceiling
+ | Board of Directors
+ | Two signatories
+ | 
+Budget reallocation within a grant, within donor rules
+ | Country Director
+ | Notify the donor where required
+ | 
+New project or new thematic area
+ | Board of Directors
+ | On the recommendation of the Country Director
+ | 
+Partnership and consortium agreements
+ | Executive Director
+ | Country Director countersigns; Board approves where the value exceeds the executive ceiling
+ | 
+Recruitment of senior management
+ | Board of Directors
+ | Panel with an independent member
+ | 
+Recruitment of other staff
+ | Executive Director
+ | Human Resource Officer confirms safer recruitment checks are complete
+ | 
+Disciplinary dismissal
+ | Country Director
+ | Board where the person is a member of senior management
+ | 
+Safeguard screening outcome and management plan
+ | Country Director
+ | On the recommendation of the Safeguards Focal Person
+ | 
+Final beneficiary list
+ | Country Director
+ | After independent verification by the MEL Officer
+ | 
+Publication of research or a public policy position
+ | Research and Policy Manager
+ | Executive Director for anything politically sensitive
+ | 
+Media statement in a crisis
+ | Executive Director as sole spokesperson
+ | Board Chair informed immediately
+ | 
+
+7. Project Staffing Model
+A new project does not change the organisational shape. It adds a project team under the Programmes Manager, drawing on the shared services of finance, MEL, research and communications through an agreed cost recovery share.
+
+Post
+ | Typical level of effort on a single district project
+ | Charged to
+ | 
+Project Manager
+ | 100 percent
+ | Project
+ | 
+Legal Officer
+ | 50 to 100 percent
+ | Project
+ | 
+Field Officers (2 to 4)
+ | 100 percent each
+ | Project
+ | 
+Community Paralegals (6 to 20)
+ | Stipend or volunteer, part time
+ | Project
+ | 
+MEL Officer
+ | 30 to 50 percent
+ | Project, part shared
+ | 
+Finance Assistant
+ | 30 to 50 percent
+ | Project, part shared
+ | 
+Communications Officer
+ | 10 to 20 percent
+ | Shared, recovered through overhead
+ | 
+Safeguarding, GESI and Safeguards Focal Persons
+ | 5 to 10 percent each
+ | Shared, recovered through overhead
+ | 
+Programmes Manager
+ | 15 to 25 percent
+ | Shared, recovered through overhead
+ | 
+Country Director and Finance Manager
+ | 5 to 10 percent each
+ | Shared, recovered through overhead
+ | 7.1 Staffing establishment table
+Completed with actual numbers before submission.
+
+Department
+ | Approved posts
+ | Filled
+ | Vacant
+ | Of which female
+ | Of which persons with disabilities
+ | 
+Executive
+ | 1
+ | 1
+ | 0
+ | 0
+ | 0
+ | 
+Programmes and Field Operations
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+Research, Policy and Advocacy
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+Finance and Administration
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+MEL and Communications
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+Community based (paralegals and mediators)
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 
+TOTAL
+ | 
+ | 
+ | 
+ | 
+ | 
+ | 8. Structure Governance
+
+Item
+ | Provision
+ | 
+Approval
+ | The organisational structure is approved by the Board of Directors.
+ | 
+Review
+ | Reviewed annually with the strategic plan, and whenever a major new programme starts or ends.
+ | 
+Change process
+ | Any change to the structure is proposed by the Country Director, reviewed by the Programmes, Safeguarding and Risk Committee, and approved by the Board.
+ | 
+Job descriptions
+ | Every post has a written job description with a reporting line, purpose, duties, competencies and safeguarding responsibilities. Job descriptions are reviewed at every appraisal.
+ | 
+Related documents
+ | Annex 5 Organisational Profile, Annex 11 Safeguarding Policy, Annex 12 Gender and Social Inclusion Policy, Annex 14 MEL Tools, Annex 15 Risk Register, Human Resource Manual, Finance Manual.
+ | 
+9. ARDHI Organogram
+
+Figure 1: ARDHI Law and Policy Initiative organisational structure. Solid lines show line management and reporting. Dotted lines show functional and independent reporting.
