@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
 import { CHIP, ACCENT, FILL, type ColorKey } from '@/lib/uiTheme';
+import { ExecutiveBrief } from '@/components/ai/ExecutiveBrief';
 import { useNotifications } from '@/context/NotificationContext';
 import { CheckInCard } from '@/components/dashboard/CheckInCard';
 import { PayslipReviewPanel } from '@/components/admin/PayslipReviewPanel';
@@ -203,6 +204,8 @@ function CDDashboard() {
           </p>
         </div>
       </div>
+      <ExecutiveBrief />
+
       <Section title="Approvals in Progress" subtitle="Visibility into ED's review pipeline — read only">
         <AdvancedFilterBar dateLabel="Submitted" statusOptions={['ED Review', 'Awaiting Finance', 'Awaiting HR', 'Disbursed']} onFilterChange={setApprovalFilters} ownerOptions={['Finance Dept', 'HR Admin', 'Grants Team', 'Procurement']} showAmountRange presets={[{ id: 'p1', name: 'Over 3 days' }, { id: 'p2', name: 'High value (>10M)' }]} onExport={(fmt) => handleAction(`Exporting approvals ${fmt.toUpperCase()}`)} onSavePreset={(name) => handleAction(`Saved preset: ${name}`)} />
         <div className="space-y-2">
@@ -309,6 +312,8 @@ function EDDashboard() {
           <p className="text-[10px] text-slate-400 mt-0.5">priority interrupts · <span className="text-red-500 font-bold group-hover:underline">resolve in queue</span></p>
         </button>
       </div>
+
+      <ExecutiveBrief />
 
       {/* CD Flags — priority interrupts */}
       {flagService.getOpenFlags().length > 0 && (

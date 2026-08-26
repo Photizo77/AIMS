@@ -6,6 +6,8 @@ import { cn } from '@/lib/utils';
 import { CHIP, ACCENT, type ColorKey } from '@/lib/uiTheme';
 import { INNOVATION_STAGES, INNOVATION_STAGE_LABELS } from '@/types';
 import { innovationService } from '@/services/innovationService';
+import { AIPanel } from '@/components/ai/AIPanel';
+import { stageTransitionConfidence, type AiInsight } from '@/lib/aiEngine';
 import { FormsShortcut } from '@/components/forms/FormsShortcut';
 
 
@@ -44,6 +46,21 @@ export function Tasks() {
       </div>
 
       <FormsShortcut module="innovations" title="Innovation Forms — Project Proposal · Feasibility Study" />
+
+      {/* AI Insights — predictive pipeline analysis */}
+      {(() => {
+        const insights: AiInsight[] = [];
+        const stalled = visibleProjects.filter((p) => p.daysInStage > 14);
+        if (stalled.length > 0) insights.push({ id: 't-stall', module: 'innovations', severity: 'warning', title: `${stalled.length} project(s) stalled in stage`, detail: stalled.map((p) => `${p.title} (${p.daysInStage}d in ${p.stage})`).join('; ') + ' - consider unblocking.' });
+        const low = visibleProjects.filter((p) => stageTransitionConfidence(p.id).confidence === 'low');
+        low.forEach((p) => {
+          const conf = stageTransitionConfidence(p.id);
+          insights.push({ id: `t-${p.id}`, module: 'innovations', severity: 'warning', title: `Low confidence: ${p.title}`, detail: conf.missing[0] ?? conf.reason });
+        });
+        const ready = visibleProjects.filter((p) => stageTransitionConfidence(p.id).confidence === 'high' && p.stage !== 'deployed');
+        if (ready.length > 0) insights.push({ id: 't-ready', module: 'innovations', severity: 'success', title: `${ready.length} project(s) ready to advance`, detail: ready.map((p) => `${p.title} -> next stage`).join('; ') });
+        return <AIPanel title="AI Insights - Pipeline Prediction" insights={insights.slice(0, 5)} />;
+      })()}
 
       {/* Stats Row - Dynamically updates based on filtered projects */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">

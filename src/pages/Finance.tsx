@@ -5,6 +5,8 @@ import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
 import { financeService, type FinanceRecordType } from '@/services/financeService';
 import { FormsShortcut } from '@/components/forms/FormsShortcut';
+import { AIPanel } from '@/components/ai/AIPanel';
+import { requisitionPriceFlags, cashFlowForecast, type AiInsight } from '@/lib/aiEngine';
 
 interface Transaction {
   id: string;
@@ -162,6 +164,39 @@ export function Finance() {
       </div>
 
       <FormsShortcut module={['finance', 'procurement']} title="Finance & Procurement Forms — Requisition · Procurement Request · Expense Reimbursement" />
+
+      {/* AI Insights — anomaly detection & forecasting */}
+      {(() => {
+        const insights: AiInsight[] = [];
+        // Price anomaly check on recent requisition line items
+        const sample = [
+          { item: 'Samsung Galaxy Tab A9 (10 units)', unit: 'UGX 680,000' },
+          { item: 'Tablet — field data collection', unit: 'UGX 2,000,000' },
+          { item: 'MacBook Pro 14"', unit: 'UGX 3,400,000' },
+          { item: 'Canon Toner Cartridges', unit: 'UGX 85,000' },
+        ];
+        const flags = requisitionPriceFlags(sample);
+        if (flags.length > 0) {
+          insights.push({
+            id: 'fin-price',
+            module: 'finance',
+            severity: 'critical',
+            title: `${flags.length} requisition line item(s) priced above market average`,
+            detail: flags.map((f) => `${f.item}: UGX ${f.amount.toLocaleString()} vs market avg UGX ${f.marketAvg.toLocaleString()} (+${f.deltaPct}%)`).join('; ') + '. Flag for ED review before approval.',
+          });
+        } else {
+          insights.push({ id: 'fin-price-ok', module: 'finance', severity: 'success', title: 'No price anomalies detected', detail: 'Recent line items are within market ranges.' });
+        }
+        const forecast = cashFlowForecast();
+        insights.push({
+          id: 'fin-cash',
+          module: 'finance',
+          severity: forecast.gapWarning ? 'warning' : 'success',
+          title: `Cash flow forecast — ${forecast.monthsOfRunway} months of runway`,
+          detail: forecast.detail,
+        });
+        return <AIPanel title="AI Insights — Anomaly Detection & Forecast" insights={insights} />;
+      })()}
 
       {/* ── EDITABLE FINANCIAL RECORDS (ED-approval gated) ── */}
       <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">

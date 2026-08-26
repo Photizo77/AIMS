@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { GRANT_STAGES, formatCurrency, daysUntil, grantProgress, type GrantRecord } from '@/data/grants';
 import { grantService } from '@/services/grantService';
 import { openFlagForED } from '@/components/grants/FlagForEDModal';
+import { grantRiskScore, draftProblemStatement } from '@/lib/aiEngine';
 
 type TabKey = 'overview' | 'checklist' | 'documents' | 'comments' | 'activity';
 
@@ -43,6 +44,15 @@ export function GrantDetail() {
   const [newMilestoneTitle, setNewMilestoneTitle] = useState('');
   const [showAddDoc, setShowAddDoc] = useState(false);
   const [newDocTitle, setNewDocTitle] = useState('');
+  const [aiDraft, setAiDraft] = useState<string | null>(null);
+  const [drafting, setDrafting] = useState(false);
+
+  const handleAiDraft = async () => {
+    setDrafting(true);
+    const draft = await draftProblemStatement(grant?.id ?? '');
+    setAiDraft(draft);
+    setDrafting(false);
+  };
 
   if (!user) return <div className="p-8 text-center text-slate-500">Loading…</div>;
 
@@ -250,6 +260,44 @@ export function GrantDetail() {
           <p className="text-xs text-slate-500">Progress driven by milestone completion.</p>
         </div>
       </div>
+
+      {/* AI Insights — risk scoring, compliance flags, drafting */}
+      {(() => {
+        const risk = grantRiskScore(grant.id);
+        const riskColor = risk.score >= 60 ? 'text-red-600 bg-red-50 border-red-200' : risk.score >= 30 ? 'text-aims-orange bg-aims-orange/10 border-aims-orange/20' : 'text-aims-green bg-aims-green/10 border-aims-green/20';
+        return (
+          <div className="bg-white rounded-xl border border-slate-200 border-l-4 border-l-aims-navy p-5 shadow-sm">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="w-8 h-8 rounded-lg bg-aims-navy/10 flex items-center justify-center"><span className="material-symbols-outlined text-aims-navy text-[20px]">auto_awesome</span></span>
+              <div>
+                <h3 className="text-sm font-extrabold text-slate-900">AI Insights — Grant Risk & Compliance</h3>
+                <p className="text-[10px] font-bold text-aims-navy uppercase tracking-wider">Auto-generated · review before submission</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-3 mb-3">
+              <span className={cn('text-xs font-extrabold px-3 py-1 rounded-full border', riskColor)}>Risk score: {risk.score}/100 — {risk.label}</span>
+              <button onClick={handleAiDraft} disabled={drafting} className={cn('px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5', drafting ? 'bg-slate-100 text-slate-400' : 'bg-aims-navy text-white hover:bg-aims-navy/90')}>
+                <span className="material-symbols-outlined text-[15px]">auto_awesome</span>{drafting ? 'Drafting…' : 'AI Draft Problem Statement'}
+              </button>
+            </div>
+            {risk.flags.length > 0 && (
+              <ul className="space-y-1">
+                {risk.flags.map((f, i) => (
+                  <li key={i} className="text-xs text-slate-600 flex gap-2"><span className={cn('mt-0.5', risk.score >= 60 ? 'text-red-500' : 'text-aims-orange')}>•</span>{f}</li>
+                ))}
+              </ul>
+            )}
+            {risk.flags.length === 0 && <p className="text-xs text-slate-500 italic">No compliance risks detected — this grant looks submission-ready.</p>}
+            {aiDraft && (
+              <div className="mt-4 pt-4 border-t border-slate-100">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">AI Draft — Problem Statement</p>
+                <div className="p-4 bg-slate-50 rounded-lg border border-slate-100 whitespace-pre-wrap text-sm text-slate-700 max-h-80 overflow-y-auto">{aiDraft}</div>
+                <button onClick={() => setAiDraft(null)} className="mt-2 text-[10px] font-bold text-aims-navy hover:underline">Dismiss</button>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Tabs */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">

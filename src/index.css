@@ -24,13 +24,28 @@
   }
   body {
     @apply bg-slate-100 text-slate-900;
-    font-weight: 500;
+    font-weight: 400;
+    letter-spacing: -0.01em;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply text-slate-900 font-bold tracking-tight;
   }
   p, label, td, th, li {
     @apply text-slate-800;
+  }
+  /* Keyboard focus — clearly visible for accessibility */
+  :focus-visible {
+    outline: 2px solid var(--aims-navy);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: rgba(40, 107, 37, 0.25);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 

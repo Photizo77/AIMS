@@ -16,6 +16,8 @@ import { PerformanceTab } from '@/components/admin/PerformanceTab';
 import { OffboardingTab } from '@/components/admin/OffboardingTab';
 import { HRSummary } from '@/components/admin/HRSummary';
 import { FormsShortcut } from '@/components/forms/FormsShortcut';
+import { AIPanel } from '@/components/ai/AIPanel';
+import { sentimentSummary, contractRenewalAdvice, type AiInsight } from '@/lib/aiEngine';
 
 type AdminTab = 'directory' | 'payslips' | 'leave' | 'contracts' | 'appraisals' | 'offboarding';
 
@@ -85,6 +87,21 @@ export function HR() {
       </div>
 
       <FormsShortcut module={['hr', 'attendance']} title="HR Forms — Employment Contract · Employee Info · Appraisal · Leave · Offboarding" />
+
+      {/* AI Insights — workforce intelligence */}
+      {(() => {
+        const insights: AiInsight[] = [];
+        const senti = sentimentSummary();
+        insights.push({
+          id: 'hr-sent',
+          module: 'hr',
+          severity: senti.morale === 'concern' ? 'warning' : senti.morale === 'positive' ? 'success' : 'info',
+          title: `Team morale: ${senti.morale}`,
+          detail: senti.detail,
+        });
+        insights.push(...contractRenewalAdvice());
+        return <AIPanel title="AI Insights — Workforce Intelligence" insights={insights} />;
+      })()}
 
       <div className="bg-slate-50 rounded-xl p-5">
         {activeTab === 'directory' && <PeopleTab />}

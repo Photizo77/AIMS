@@ -7,6 +7,8 @@ import { CHIP } from '@/lib/uiTheme';
 import { MOCK_GRANTS, GRANT_STAGES, formatCurrency, daysUntil, grantProgress, type GrantRecord } from '@/data/grants';
 import { GrantsPipelineBoard } from '@/components/grants/GrantsPipelineBoard';
 import { FormsShortcut } from '@/components/forms/FormsShortcut';
+import { AIPanel } from '@/components/ai/AIPanel';
+import { funderMatches } from '@/lib/aiEngine';
 
 
 // Roles that see the FULL org-wide pipeline on this page
@@ -49,6 +51,7 @@ export function Grants() {
           <p className="text-base font-medium text-white">Organization-wide grant tracking from identification to award</p>
         </div>
         <FormsShortcut module="grants" title="Grant Forms — Proposal Cover Sheet · Budget · Milestone Checklist · Closeout Report" />
+        <AIPanel title="AI Insights — Funder Matching" insights={funderMatches()} />
         <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
           <GrantsPipelineBoard />
         </div>

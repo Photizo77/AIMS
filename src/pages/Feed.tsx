@@ -18,6 +18,7 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
+import { ExecutiveBrief } from '@/components/ai/ExecutiveBrief';
 
 interface ChatMessage {
   id: string;
@@ -351,7 +352,11 @@ export function Feed() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-7rem)] gap-0 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+    <div className="space-y-4">
+      {/* AI Executive Brief — contextual summary of the whole system */}
+      <ExecutiveBrief />
+
+      <div className="flex h-[calc(100vh-19rem)] gap-0 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       {/* ── Channel Sidebar (role-scoped) ── */}
       <div className="w-56 flex-shrink-0 border-r border-slate-200 bg-slate-50 p-3 space-y-0.5 overflow-y-auto">
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">Channels</p>
@@ -552,6 +557,7 @@ export function Feed() {
             )}
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
