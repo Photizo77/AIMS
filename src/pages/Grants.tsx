@@ -6,8 +6,8 @@ import { cn } from '@/lib/utils';
 import { MOCK_GRANTS, GRANT_STAGES, formatCurrency, daysUntil, grantProgress, type GrantRecord } from '@/data/grants';
 import { GrantsPipelineBoard } from '@/components/grants/GrantsPipelineBoard';
 
-type ColorKey = 'green' | 'navy' | 'orange' | 'mint';
-const CHIP: Record<ColorKey, string> = { green: 'bg-aims-green text-white', navy: 'bg-aims-navy text-white', orange: 'bg-aims-orange text-white', mint: 'bg-aims-mint text-aims-green' };
+type ColorKey = 'green' | 'navy' | 'orange' | 'mint' | 'red';
+const CHIP: Record<ColorKey, string> = { green: 'bg-aims-green text-white', navy: 'bg-aims-navy text-white', orange: 'bg-aims-orange text-white', mint: 'bg-aims-mint text-aims-green', red: 'bg-red-500 text-white' };
 
 // Roles that see the FULL org-wide pipeline on this page
 const FULL_VIEW_ROLES = ['CD', 'ED', 'COMPANY_ADMIN', 'SYS_ADMIN'];
@@ -36,6 +36,7 @@ export function Grants() {
   const [showClosed, setShowClosed] = useState(false);
   const [stageFilter, setStageFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
 
   if (!user) return <div className="p-8 text-center text-slate-500">Loading…</div>;
 
@@ -121,6 +122,49 @@ export function Grants() {
         </div>
       )}
 
+      {/* View toggle */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center bg-slate-100 rounded-lg p-1">
+          <button onClick={() => setViewMode('kanban')} className={cn('px-4 py-1.5 rounded-md text-xs font-bold transition-all', viewMode === 'kanban' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700')}><span className="material-symbols-outlined text-[14px] align-middle mr-1">view_kanban</span>Kanban</button>
+          <button onClick={() => setViewMode('list')} className={cn('px-4 py-1.5 rounded-md text-xs font-bold transition-all', viewMode === 'list' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700')}><span className="material-symbols-outlined text-[14px] align-middle mr-1">view_list</span>List</button>
+        </div>
+        <p className="text-[10px] text-slate-400 italic">Showing grants where you are Handler or Contributor</p>
+      </div>
+
+      {/* Kanban — My Grants by stage */}
+      {viewMode === 'kanban' && visible.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+          {GRANT_STAGES.map((stage) => {
+            const stageGrants = visible.filter((g) => g.stage === stage.key);
+            return (
+              <div key={stage.key} className="flex flex-col">
+                <div className={cn('rounded-t-xl px-3 py-2.5 flex items-center justify-between', CHIP[stage.color])}><span className="text-xs font-bold uppercase tracking-wider text-white">{stage.label}</span><span className="text-xs font-extrabold text-white bg-white/20 px-2 py-0.5 rounded-full">{stageGrants.length}</span></div>
+                <div className="bg-slate-50 rounded-b-xl border border-slate-200 border-t-0 p-2 space-y-2 min-h-[120px]">
+                  {stageGrants.length === 0 && <p className="text-xs text-slate-400 text-center py-6 italic">None</p>}
+                  {stageGrants.map((g) => {
+                    const progress = grantProgress(g);
+                    const days = daysUntil(g.deadline);
+                    return (
+                      <div key={g.id} onClick={() => navigate(`/grants/${g.id}`)} className="bg-white rounded-lg border border-slate-200 p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
+                        <p className="text-sm font-bold text-slate-900 mb-1 group-hover:text-aims-navy transition-colors">{g.title}</p>
+                        <p className="text-[10px] text-slate-500 mb-1">{g.funder}</p>
+                        <div className="mb-2"><div className="w-full bg-slate-100 rounded-full h-1.5"><div className="h-1.5 rounded-full bg-aims-green" style={{ width: `${progress}%` }} /></div></div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-slate-700">{formatCurrency(g.amountRequested)}</span>
+                          <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded border', days <= 7 ? 'text-red-500 bg-red-50 border-red-200' : days <= 30 ? 'text-aims-orange bg-aims-orange/10 border-aims-orange/20' : 'text-slate-500 bg-slate-50 border-slate-200')}>{days}d</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* List — expandable grant rows */}
+      {viewMode === 'list' && visible.length > 0 && (
       <div className="space-y-4">
         {visible.map((g) => {
           const days = daysUntil(g.deadline);
@@ -197,6 +241,7 @@ export function Grants() {
           );
         })}
       </div>
+      )}
     </div>
   );
 }

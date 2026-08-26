@@ -1,6 +1,5 @@
 // src/pages/Procurement.tsx
 import { useState } from 'react';
-import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
 
@@ -45,7 +44,6 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
 }
 
 export function Procurement() {
-  const { user } = useAuth();
   const { showToast } = useNotifications();
   const [showVendorForm, setShowVendorForm] = useState(false);
   const [showPOForm, setShowPOForm] = useState(false);

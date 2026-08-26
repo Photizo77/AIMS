@@ -1,7 +1,6 @@
 // src/components/admin/PayslipsTab.tsx
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { useNotifications } from '@/context/NotificationContext';
 
 interface PayslipRecord {
   id: string; employeeName: string; position: string; period: string;
@@ -19,7 +18,6 @@ const MOCK_PAYSLIPS: PayslipRecord[] = [
 ];
 
 export function PayslipsTab() {
-  const { showToast } = useNotifications();
   const [payslips] = useState(MOCK_PAYSLIPS);
   const [filterStatus, setFilterStatus] = useState<string>('all');
 

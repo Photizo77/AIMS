@@ -1,6 +1,5 @@
 // src/pages/Email.tsx
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
 
@@ -63,7 +62,7 @@ function formatFullDate(iso: string): string {
   return new Date(iso).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + ' at ' + new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 }
 
-function AutocompleteEmailInput({ label, value, onChange, contacts }: { label: string; value: string; onChange: (val: string) => void; contacts: string[] }) {
+function AutocompleteEmailInput({ label, value, onChange, contacts }: { label: React.ReactNode; value: string; onChange: (val: string) => void; contacts: string[] }) {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [highlightIndex, setHighlightIndex] = useState(0);
 
@@ -115,7 +114,6 @@ function AutocompleteEmailInput({ label, value, onChange, contacts }: { label: s
 }
 
 export function EmailPage() {
-  const { user } = useAuth();
   const { showToast } = useNotifications();
   const [activeFolder, setActiveFolder] = useState<Folder>('inbox');
   const [selectedEmail, setSelectedEmail] = useState<EmailMessage | null>(null);

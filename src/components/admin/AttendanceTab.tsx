@@ -6,7 +6,12 @@ import type { AttendanceStatus } from '@/types';
 
 type ViewTab = 'register' | 'timesheets';
 
-const MOCK_DAILY: any[] = [
+interface DailyRecord {
+  id: string; name: string; position: string; department: string;
+  checkIn: string; checkOut: string; status: AttendanceStatus; location: string; hours: number;
+}
+
+const MOCK_DAILY: DailyRecord[] = [
   { id: 'a1', name: 'Nassir Mwanje', position: 'Country Director', department: 'Executive', checkIn: '08:00', checkOut: '17:00', status: 'present', location: 'On-site (2.7750° N, 32.2986° E)', hours: 9 },
   { id: 'a2', name: 'Amos Ojok', position: 'Finance Officer', department: 'Finance', checkIn: '08:45', checkOut: '17:30', status: 'late', location: 'On-site (2.7750° N, 32.2986° E)', hours: 8.75 },
   { id: 'a3', name: 'Sarah Aciro', position: 'Grants Manager', department: 'Grants', checkIn: '08:15', checkOut: '16:45', status: 'remote', location: 'Remote (IP: 197.239.xx.xx)', hours: 8.5 },

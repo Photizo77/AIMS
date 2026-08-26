@@ -75,7 +75,7 @@ const GRANT_WRITER_NAV_ITEMS: NavItem[] = [
 
 const INNOVATOR_NAV_ITEMS: NavItem[] = [
   { title: 'Dashboard', href: '/dashboard', icon: 'dashboard', roles: ['INNOVATOR'] },
-  { title: 'Innovations & Tasks', href: '/innovations', icon: 'lightbulb', roles: ['INNOVATOR'] },
+  { title: 'Innovations & Tasks', href: '/tasks', icon: 'lightbulb', roles: ['INNOVATOR'] },
   { title: 'My Attendance', href: '/attendance', icon: 'schedule', roles: ['INNOVATOR'] },
   { title: 'Feed', href: '/feed', icon: 'feed', roles: ['INNOVATOR'] },
   { title: 'Email', href: '/email', icon: 'mail', roles: ['INNOVATOR'] },

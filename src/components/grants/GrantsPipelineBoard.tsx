@@ -2,42 +2,58 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
-import { MOCK_GRANTS, GRANT_STAGES, formatCurrency, daysUntil, grantProgress, type GrantRecord } from '@/data/grants';
+import { GRANT_STAGES, formatCurrency, daysUntil, grantProgress, type GrantRecord } from '@/data/grants';
+import { grantService } from '@/services/grantService';
 
-type ColorKey = 'green' | 'navy' | 'orange' | 'mint';
-const CHIP: Record<ColorKey, string> = { green: 'bg-aims-green text-white', navy: 'bg-aims-navy text-white', orange: 'bg-aims-orange text-white', mint: 'bg-aims-mint text-aims-green' };
-const ACCENT: Record<ColorKey, string> = { green: 'border-t-aims-green', navy: 'border-t-aims-navy', orange: 'border-t-aims-orange', mint: 'border-t-aims-mint' };
+type ColorKey = 'green' | 'navy' | 'orange' | 'mint' | 'red';
+const CHIP: Record<ColorKey, string> = { green: 'bg-aims-green text-white', navy: 'bg-aims-navy text-white', orange: 'bg-aims-orange text-white', mint: 'bg-aims-mint text-aims-green', red: 'bg-red-500 text-white' };
+const ACCENT: Record<ColorKey, string> = { green: 'border-t-aims-green', navy: 'border-t-aims-navy', orange: 'border-t-aims-orange', mint: 'border-t-aims-mint', red: 'border-t-red-500' };
 
 export function GrantsPipelineBoard() {
   const { user } = useAuth();
+  const { showToast, addNotification } = useNotifications();
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [searchQuery, setSearchQuery] = useState('');
   const [summaryGrant, setSummaryGrant] = useState<GrantRecord | null>(null);
+  const [grants, setGrants] = useState<GrantRecord[]>(() => grantService.getAllGrants());
 
   if (!user) return null;
   const isCD = user.role === 'CD';
+  const canExpressInterest = user.role === 'GRANT_WRITER' || user.role === 'GRANTS_MANAGER';
 
-  const filtered = MOCK_GRANTS.filter((g) => {
+  const filtered = grants.filter((g) => {
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
     return g.title.toLowerCase().includes(q) || g.funder.toLowerCase().includes(q) || g.pillar.toLowerCase().includes(q) || g.handler.toLowerCase().includes(q);
   });
 
-  // Aggregate KPIs
-  const totalSecured = MOCK_GRANTS.filter((g) => g.stage === 'awarded').reduce((s, g) => s + (g.amountAwarded ?? 0), 0);
-  const activeGrants = MOCK_GRANTS.filter((g) => !['awarded', 'declined'].includes(g.stage));
+  const totalSecured = grants.filter((g) => g.stage === 'awarded').reduce((s, g) => s + (g.amountAwarded ?? 0), 0);
+  const activeGrants = grants.filter((g) => !['awarded', 'declined'].includes(g.stage));
   const totalPipeline = activeGrants.reduce((s, g) => s + g.amountRequested, 0);
-  const awardedCount = MOCK_GRANTS.filter((g) => g.stage === 'awarded').length;
-  const decidedCount = MOCK_GRANTS.filter((g) => ['awarded', 'declined'].includes(g.stage)).length;
+  const awardedCount = grants.filter((g) => g.stage === 'awarded').length;
+  const decidedCount = grants.filter((g) => ['awarded', 'declined'].includes(g.stage)).length;
   const winRate = decidedCount > 0 ? Math.round((awardedCount / decidedCount) * 100) : 0;
+  const unassignedCount = grants.filter((g) => !g.handler || g.handler === 'Unassigned').length;
 
   const getDeadlineColor = (days: number) => days <= 7 ? 'text-red-500 bg-red-50 border-red-200' : days <= 30 ? 'text-aims-orange bg-aims-orange/10 border-aims-orange/20' : 'text-slate-500 bg-slate-50 border-slate-200';
 
   const handleCardClick = (g: GrantRecord) => {
     if (isCD) { setSummaryGrant(g); return; }
     navigate(`/grants/${g.id}`);
+  };
+
+  const handleExpressInterest = (g: GrantRecord) => {
+    const updated = grantService.expressInterest(g.id, user.name);
+    if (updated && updated.handler === user.name) {
+      setGrants([...grantService.getAllGrants()]);
+      addNotification({ title: 'Grant Assigned', message: `You are now assigned to "${g.title}".`, type: 'success', link: `/grants/${g.id}` });
+      showToast({ title: 'Assigned', message: `You are now the handler for "${g.title}".`, type: 'success' });
+    } else {
+      showToast({ title: 'Already Assigned', message: 'Another writer already took this grant.', type: 'warning' });
+    }
   };
 
   return (
@@ -47,7 +63,7 @@ export function GrantsPipelineBoard() {
         <div className={cn('bg-white rounded-xl border border-slate-200 border-t-4 p-4 shadow-sm', ACCENT.green)}><p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Secured</p><p className="text-xl font-extrabold text-slate-900 mt-1">{formatCurrency(totalSecured)}</p><p className="text-[10px] text-slate-400 mt-0.5">{awardedCount} awarded</p></div>
         <div className={cn('bg-white rounded-xl border border-slate-200 border-t-4 p-4 shadow-sm', ACCENT.navy)}><p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Pipeline Value</p><p className="text-xl font-extrabold text-slate-900 mt-1">{formatCurrency(totalPipeline)}</p><p className="text-[10px] text-slate-400 mt-0.5">{activeGrants.length} active proposals</p></div>
         <div className={cn('bg-white rounded-xl border border-slate-200 border-t-4 p-4 shadow-sm', ACCENT.orange)}><p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Win Rate</p><p className="text-xl font-extrabold text-slate-900 mt-1">{winRate}%</p><p className="text-[10px] text-slate-400 mt-0.5">{decidedCount} decided</p></div>
-        <div className={cn('bg-white rounded-xl border border-slate-200 border-t-4 p-4 shadow-sm', ACCENT.mint)}><p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Grants</p><p className="text-xl font-extrabold text-slate-900 mt-1">{MOCK_GRANTS.length}</p><p className="text-[10px] text-slate-400 mt-0.5">{new Set(MOCK_GRANTS.map((g) => g.pillar)).size} pillars</p></div>
+        <div className={cn('bg-white rounded-xl border border-slate-200 border-t-4 p-4 shadow-sm', ACCENT.red)}><p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Unassigned</p><p className="text-xl font-extrabold text-slate-900 mt-1">{unassignedCount}</p><p className="text-[10px] text-slate-400 mt-0.5">awaiting a handler</p></div>
       </div>
 
       {/* Toggle + Search */}
@@ -75,15 +91,23 @@ export function GrantsPipelineBoard() {
                   {stageGrants.map((g) => {
                     const days = daysUntil(g.deadline);
                     const progress = grantProgress(g);
+                    const unassigned = !g.handler || g.handler === 'Unassigned';
                     return (
                       <div key={g.id} onClick={() => handleCardClick(g)} className="bg-white rounded-lg border border-slate-200 p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
                         <p className="text-sm font-bold text-slate-900 mb-1 group-hover:text-aims-navy transition-colors">{g.title}</p>
                         <div className="flex items-center gap-1 mb-2 flex-wrap"><span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-aims-navy/10 text-aims-navy uppercase">{g.pillar}</span><span className="text-[9px] text-slate-400">{g.funder}</span></div>
                         <p className="text-[10px] text-slate-500 mb-2">Handler: {g.handler}</p>
                         <div className="mb-2"><div className="flex justify-between text-[10px] mb-0.5"><span className="font-semibold text-slate-500">Progress</span><span className="font-bold text-slate-900">{progress}%</span></div><div className="w-full bg-slate-100 rounded-full h-1.5"><div className="h-1.5 rounded-full bg-aims-green" style={{ width: `${progress}%` }} /></div></div>
-                        <div className="flex items-center justify-between mt-2">
+                        <div className="flex items-center justify-between mt-2 gap-2 flex-wrap">
                           <span className="text-[10px] font-bold text-slate-700">{formatCurrency(g.amountRequested)}</span>
-                          <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded border', getDeadlineColor(days))}>{days}d left</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded border', getDeadlineColor(days))}>{days}d left</span>
+                            {unassigned && canExpressInterest && (
+                              <button onClick={(e) => { e.stopPropagation(); handleExpressInterest(g); }} className="text-[10px] font-bold px-2 py-1 rounded bg-aims-green text-white hover:bg-aims-green/90 flex items-center gap-0.5">
+                                <span className="material-symbols-outlined text-[12px]">handshake</span>Express Interest
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     );
@@ -105,6 +129,7 @@ export function GrantsPipelineBoard() {
                 const days = daysUntil(g.deadline);
                 const progress = grantProgress(g);
                 const stageColor = GRANT_STAGES.find((s) => s.key === g.stage)?.color ?? 'navy';
+                const unassigned = !g.handler || g.handler === 'Unassigned';
                 return (
                   <tr key={g.id} className="hover:bg-slate-50 transition-colors">
                     <td className="py-2.5 font-bold text-slate-900">{g.title}</td>
@@ -115,7 +140,14 @@ export function GrantsPipelineBoard() {
                     <td className="py-2.5 text-xs font-bold text-slate-900">{formatCurrency(g.amountRequested)}</td>
                     <td className="py-2.5"><div className="flex items-center gap-2"><div className="w-14 bg-slate-100 rounded-full h-1.5"><div className="h-1.5 rounded-full bg-aims-green" style={{ width: `${progress}%` }} /></div><span className="text-[10px] font-bold text-slate-700">{progress}%</span></div></td>
                     <td className="py-2.5"><span className={cn('text-[10px] font-bold px-2 py-0.5 rounded border', getDeadlineColor(days))}>{days}d</span></td>
-                    <td className="py-2.5 text-right"><button onClick={() => handleCardClick(g)} className="text-xs font-bold text-aims-navy hover:underline">{isCD ? 'Summary' : 'Open'}</button></td>
+                    <td className="py-2.5 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        {unassigned && canExpressInterest && (
+                          <button onClick={() => handleExpressInterest(g)} className="text-[10px] font-bold px-2 py-1 rounded bg-aims-green text-white hover:bg-aims-green/90">Express Interest</button>
+                        )}
+                        <button onClick={() => handleCardClick(g)} className="text-xs font-bold text-aims-navy hover:underline">{isCD ? 'Summary' : 'Open'}</button>
+                      </div>
+                    </td>
                   </tr>
                 );
               })}

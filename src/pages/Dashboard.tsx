@@ -7,7 +7,11 @@ import { useNotifications } from '@/context/NotificationContext';
 import { CheckInCard } from '@/components/dashboard/CheckInCard';
 import { PayslipReviewPanel } from '@/components/admin/PayslipReviewPanel';
 import { GrantsPipelineBoard } from '@/components/grants/GrantsPipelineBoard';
+import { GrantReviewQueue } from '@/components/grants/GrantReviewQueue';
 import { SharedLibraryWidget } from '@/components/dashboard/SharedLibraryWidget';
+import { innovationService } from '@/services/innovationService'; // Importing our centralized service
+import { grantService } from '@/services/grantService';
+import { GRANT_STAGES } from '@/data/grants';
 
 type ColorKey = 'green' | 'navy' | 'orange' | 'mint';
 
@@ -171,14 +175,14 @@ export function Dashboard() {
   const searchParams = new URLSearchParams(location.search);
   const view = searchParams.get('view');
 
-  // 1. QUERY PARAM OVERRIDES (For sidebar links that want to show dashboard views)
+  // 1. QUERY PARAM OVERRIDES
   if (view === 'grants') return <GrantDashboard />;
   if (view === 'finance') return <FinanceDashboard />;
   if (view === 'innovations') return <InnovatorDashboard />;
   if (view === 'hr') return <HRDashboard />;
   if (view === 'inventory') return <InventoryDashboard />;
 
-  // 2. DEFAULT ROLE-BASED ROUTING (Handles the base /dashboard route)
+  // 2. DEFAULT ROLE-BASED ROUTING
   if (role === 'CD') return <CDDashboard />;
   if (role === 'ED') return <EDDashboard />;
   if (role === 'COMPANY_ADMIN') return <AdminDashboard />;
@@ -286,36 +290,13 @@ function EDDashboard() {
   const navigate = useNavigate();
   const handleAction = (msg: string) => showToast({ title: 'Action Logged', message: msg, type: 'success' });
   const [expandedApproval, setExpandedApproval] = useState<string | null>(null);
-  const [expandedGrant, setExpandedGrant] = useState<string | null>(null);
   return (
     <div className="space-y-6">
       <DashHeader gradient="bg-grad-navy" title="Executive Director Dashboard" subtitle="Operational execution, team leadership & daily management" />
       <CheckInCard />
 
-      <Section title="Grant Approvals & Deadlines" subtitle="Grants reviewed by Team Lead — awaiting your final approval before external submission">
-        <AdvancedFilterBar dateLabel="Deadline" statusOptions={['Awaiting Your Review', 'You Approved', 'Submitted', 'You Returned to TL', 'You Rejected']} ownerOptions={['Sarah Aciro', 'Janet Apio', 'Grants Team']} showAmountRange presets={[{ id: 'gd1', name: 'Due within 7 days' }, { id: 'gd2', name: 'Awaiting my review' }]} onExport={(fmt) => handleAction(`Exporting grants ${fmt.toUpperCase()}`)} onSavePreset={(name) => handleAction(`Saved preset: ${name}`)} />
-        <div className="space-y-3">
-          {[
-            { id: 'g3', title: 'Community Land Rights Documentation', uniqueId: 'GRANT-LAND-2026-001', funder: 'USAID', amount: 'UGX 450M', status: 'Awaiting Your Review', tlName: 'Sarah Aciro', tlDate: 'Aug 20', tlComment: 'Budget aligned with RFP requirements. Recommend approval.', deadline: 'Aug 29', days: 7 },
-            { id: 'g1', title: 'Climate-Smart Farming Initiative', uniqueId: 'GRANT-AGRIC-2026-001', funder: 'EU Delegation', amount: 'UGX 820M', status: 'Awaiting Your Review', tlName: 'Sarah Aciro', tlDate: 'Aug 19', tlComment: 'Technical proposal strengthened. M&E framework complete.', deadline: 'Sep 6', days: 15 },
-            { id: 'g5', title: 'Youth Digital Literacy Program', uniqueId: 'GRANT-EDU-2026-003', funder: 'Mastercard Foundation', amount: 'UGX 310M', status: 'You Returned to TL', tlName: 'Janet Apio', tlDate: 'Aug 18', tlComment: 'Initial draft submitted.', deadline: 'Sep 19', days: 28, edReturnComment: 'Budget narrative too vague on sustainability plan.', edReturnDate: 'Aug 19' },
-          ].map((g) => (
-            <div key={g.id} className={cn('rounded-lg border transition-all', expandedGrant === g.id ? 'border-aims-navy shadow-md bg-white' : 'border-slate-200 bg-slate-50')}>
-              <div className="flex items-center justify-between p-3 cursor-pointer" onClick={() => setExpandedGrant(expandedGrant === g.id ? null : g.id)}>
-                <div className="flex items-center gap-3"><span className="material-symbols-outlined text-slate-400 text-[18px]">{expandedGrant === g.id ? 'expand_less' : 'expand_more'}</span><div><p className="text-sm font-bold text-slate-900">{g.title}</p><p className="text-xs text-slate-500">{g.uniqueId} • {g.funder} • {g.amount}</p></div></div>
-                <div className="text-right flex items-center gap-3"><span className={cn('inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide', g.status.includes('Awaiting Your') ? 'bg-aims-orange/15 text-aims-orange' : g.status.includes('You Returned') ? 'bg-red-50 text-red-500' : 'bg-aims-navy/10 text-aims-navy')}>{g.status}</span><span className={cn('text-xs font-extrabold', g.days <= 7 ? 'text-aims-orange' : 'text-slate-600')}>{g.days}d</span></div>
-              </div>
-              {expandedGrant === g.id && (
-                <div className="px-3 pb-3 space-y-3">
-                  <div className="bg-aims-navy/5 rounded-lg p-3 border border-aims-navy/10"><div className="flex items-center gap-2 mb-1"><span className="material-symbols-outlined text-aims-navy text-[16px]">verified_user</span><p className="text-xs font-bold text-aims-navy">Team Lead Review — {g.tlName} ({g.tlDate})</p></div><p className="text-xs text-slate-700 italic">"{g.tlComment}"</p></div>
-                  {g.edReturnComment && <div className="bg-red-50 rounded-lg p-3 border border-red-100"><div className="flex items-center gap-2 mb-1"><span className="material-symbols-outlined text-red-500 text-[16px]">assignment_return</span><p className="text-xs font-bold text-red-600">You Returned This ({g.edReturnDate})</p></div><p className="text-xs text-slate-700 italic">"{g.edReturnComment}"</p></div>}
-                  <div className="flex items-center gap-2 text-xs"><span className="material-symbols-outlined text-[16px] text-slate-400">event</span><span className="text-slate-600">Funder deadline: <strong className={cn(g.days <= 7 ? 'text-aims-orange' : 'text-slate-900')}>{g.deadline}</strong> ({g.days} days remaining)</span></div>
-                  {g.status.includes('Awaiting Your') && <ApprovalActionPanel itemName={g.title} itemType="Grant Proposal" onViewFull={() => handleAction(`Opened full grant proposal for ${g.uniqueId}`)} onApprove={(c) => handleAction(`YOU APPROVED GRANT ${g.uniqueId}: ${c}`)} onReject={(c) => handleAction(`YOU RETURNED GRANT ${g.uniqueId} to TL: ${c}`)} />}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+      <Section title="Grant Approvals & Deadlines" subtitle="Grants awaiting your final decision — approve or request changes">
+        <GrantReviewQueue />
       </Section>
 
       <Section title="Your Pending Approvals" subtitle="Requisitions and payslips awaiting your decision — you are the sole approval authority">
@@ -566,47 +547,50 @@ function FinanceDashboard() {
 }
 
 function GrantDashboard() {
+  const grants = grantService.getAllGrants();
+  const unassigned = grants.filter((g) => !g.handler || g.handler === 'Unassigned').length;
+  const active = grants.filter((g) => !['awarded', 'declined'].includes(g.stage)).length;
+  const pipelineTotal = grants.filter((g) => !['awarded', 'declined'].includes(g.stage)).reduce((s, g) => s + g.amountRequested, 0);
+  const pipelineLabel = pipelineTotal >= 1000000000 ? `UGX ${(pipelineTotal / 1000000000).toFixed(1)}B` : `UGX ${(pipelineTotal / 1000000).toFixed(0)}M`;
   return (
     <div className="space-y-6">
-      <DashHeader gradient="bg-grad-navy" title="Grants & Proposals" subtitle="AI-assisted drafting & deadline tracking" />
+      <DashHeader gradient="bg-grad-navy" title="Grants & Proposals" subtitle="Discover, claim and track grants — AI-assisted drafting & deadline tracking" />
       <CheckInCard />
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <StatCard title="Active Grants" value="4" icon="edit_note" color="navy" />
-        <StatCard title="Deadlines < 30d" value="2" icon="event_busy" color="orange" />
-        <StatCard title="Awarded (YTD)" value="UGX 890M" icon="workspace_premium" color="green" />
+      {/* Stage counts — whole organizational pipeline */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        {GRANT_STAGES.map((s) => {
+          const count = grants.filter((g) => g.stage === s.key).length;
+          return (
+            <div key={s.key} className={cn('bg-white rounded-xl border border-slate-200 border-t-4 p-4 shadow-sm text-center', s.color === 'red' ? 'border-t-red-500' : s.color === 'green' ? 'border-t-aims-green' : s.color === 'orange' ? 'border-t-aims-orange' : s.color === 'mint' ? 'border-t-aims-mint' : 'border-t-aims-navy')}>
+              <p className="text-2xl font-extrabold text-slate-900">{count}</p>
+              <p className="text-xs font-semibold text-slate-500 mt-1">{s.label}</p>
+            </div>
+          );
+        })}
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
+        <StatCard title="Active Proposals" value={String(active)} icon="edit_note" color="navy" />
+        <StatCard title="Unassigned — Claimable" value={String(unassigned)} icon="handshake" color="orange" />
+        <StatCard title="Pipeline (Active)" value={pipelineLabel} icon="workspace_premium" color="green" />
         <StatCard title="AI Assists" value="28" icon="smart_toy" color="mint" />
       </div>
       <SharedLibraryWidget />
-      <Section title="Grants Pipeline" subtitle="Full organizational pipeline — open any grant to work on it">
+      <Section title="Grants Pipeline" subtitle="Full organizational pipeline — express interest on unassigned grants, open any grant to work on it">
         <GrantsPipelineBoard />
       </Section>
     </div>
   );
 }
 
+// REFACTORED INNOVATOR DASHBOARD - Shows ALL projects for strategic overview
 function InnovatorDashboard() {
-  const { showToast } = useNotifications();
   const navigate = useNavigate();
-  const handleAction = (msg: string) => showToast({ title: 'Action Logged', message: msg, type: 'success' });
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
-  const STAGES = [
-    { key: 'research', label: 'Research', color: 'mint' as ColorKey },
-    { key: 'concept', label: 'Concept', color: 'orange' as ColorKey },
-    { key: 'prototype', label: 'Prototype', color: 'navy' as ColorKey },
-    { key: 'testing', label: 'Testing', color: 'mint' as ColorKey },
-    { key: 'production', label: 'Production', color: 'green' as ColorKey },
-    { key: 'deployed', label: 'Deployed', color: 'navy' as ColorKey },
-  ];
-  const projects = [
-    { id: 'inv-001', title: 'Solar-Powered Grain Dryer', stage: 'prototype', lead: 'Pius Odong', contributors: ['Florence Adong', 'Isaac Tumusiime'], progress: 62, daysInStage: 9, milestoneCount: 5, milestoneDone: 3 },
-    { id: 'inv-002', title: 'Community Land Mapping Drone', stage: 'testing', lead: 'Florence Adong', contributors: ['Pius Odong'], progress: 78, daysInStage: 4, milestoneCount: 4, milestoneDone: 3 },
-    { id: 'inv-003', title: 'Mobile USSD Farmer Advisory', stage: 'concept', lead: 'Pius Odong', contributors: ['Janet Apio', 'Grace Nakamya', 'David Okello'], progress: 35, daysInStage: 18, milestoneCount: 6, milestoneDone: 2 },
-    { id: 'inv-004', title: 'Biogas Digester Pilot', stage: 'research', lead: 'Florence Adong', contributors: ['Pius Odong'], progress: 15, daysInStage: 3, milestoneCount: 3, milestoneDone: 0 },
-    { id: 'inv-005', title: 'Post-Harvest Loss Tracker App', stage: 'production', lead: 'Pius Odong', contributors: ['Florence Adong', 'Isaac Tumusiime', 'Grace Nakamya'], progress: 91, daysInStage: 22, milestoneCount: 8, milestoneDone: 7 },
-    { id: 'inv-006', title: 'Soil Moisture IoT Sensor', stage: 'deployed', lead: 'Florence Adong', contributors: ['Pius Odong', 'Isaac Tumusiime'], progress: 100, daysInStage: 5, milestoneCount: 6, milestoneDone: 6 },
-    { id: 'inv-007', title: 'Seed Bank Management System', stage: 'concept', lead: 'Grace Nakamya', contributors: ['Pius Odong'], progress: 20, daysInStage: 6, milestoneCount: 4, milestoneDone: 1 },
-    { id: 'inv-008', title: 'Weather Station Network', stage: 'research', lead: 'Isaac Tumusiime', contributors: ['Florence Adong'], progress: 8, daysInStage: 12, milestoneCount: 3, milestoneDone: 0 },
-  ];
+
+  // FIX: Use getAllProjects to show the ENTIRE organizational pipeline
+  const projects = innovationService.getAllProjects();
+  const STAGES = innovationService.getStages();
+
   const getAgingColor = (days: number) => {
     if (days > 14) return 'text-red-500 bg-red-50 border-red-200';
     if (days >= 7) return 'text-aims-orange bg-aims-orange/10 border-aims-orange/20';
@@ -617,24 +601,28 @@ function InnovatorDashboard() {
     if (days >= 7) return 'bg-aims-orange';
     return 'bg-aims-green';
   };
+
   return (
     <div className="space-y-6">
       <DashHeader gradient="bg-grad-navy" title="Innovation Pipeline" subtitle="Research execution, prototyping & production tracking" />
       <CheckInCard />
       <SharedLibraryWidget />
+      
+      {/* Stats for ALL projects */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         {STAGES.map((s) => {
           const count = projects.filter((p) => p.stage === s.key).length;
           return (<div key={s.key} className={cn('bg-white rounded-xl border border-slate-200 border-t-4 p-4 shadow-sm text-center', ACCENT[s.color])}><p className="text-2xl font-extrabold text-slate-900">{count}</p><p className="text-xs font-semibold text-slate-500 mt-1">{s.label}</p></div>);
         })}
       </div>
+
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center bg-slate-100 rounded-lg p-1">
           <button onClick={() => setViewMode('kanban')} className={cn('px-4 py-1.5 rounded-md text-xs font-bold transition-all', viewMode === 'kanban' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700')}><span className="material-symbols-outlined text-[14px] align-middle mr-1">view_kanban</span>Kanban</button>
           <button onClick={() => setViewMode('list')} className={cn('px-4 py-1.5 rounded-md text-xs font-bold transition-all', viewMode === 'list' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700')}><span className="material-symbols-outlined text-[14px] align-middle mr-1">view_list</span>List</button>
         </div>
-        <AdvancedFilterBar dateLabel="Created" statusOptions={['Research', 'Concept', 'Prototype', 'Testing', 'Production', 'Deployed']} ownerOptions={['Pius Odong', 'Florence Adong', 'Isaac Tumusiime', 'Grace Nakamya']} presets={[{ id: 'inv-p1', name: 'My projects' }, { id: 'inv-p2', name: 'Stalled (>14d)' }]} onExport={(fmt) => handleAction(`Exporting innovations ${fmt.toUpperCase()}`)} onSavePreset={(name) => handleAction(`Saved preset: ${name}`)} />
       </div>
+
       {viewMode === 'kanban' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
           {STAGES.map((stage) => {
@@ -647,11 +635,12 @@ function InnovatorDashboard() {
                   {stageProjects.map((p) => (
                     <div key={p.id} onClick={() => navigate(`/innovations/${p.id}`)} className="bg-white rounded-lg border border-slate-200 p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
                       <p className="text-sm font-bold text-slate-900 mb-1 group-hover:text-aims-navy transition-colors">{p.title}</p>
-                      <p className="text-[10px] text-slate-500 mb-2">Lead: {p.lead}</p>
-                      <p className="text-[10px] text-slate-400 mb-2">{p.contributors.length} contributor{p.contributors.length !== 1 ? 's' : ''}</p>
-                      <div className="mb-2"><div className="flex justify-between text-[10px] mb-0.5"><span className="font-semibold text-slate-500">Progress</span><span className="font-bold text-slate-900">{p.progress}%</span></div><div className="w-full bg-slate-100 rounded-full h-1.5"><div className="h-1.5 rounded-full bg-aims-green" style={{ width: `${p.progress}%` }} /></div></div>
-                      <p className="text-[10px] text-slate-500 mb-2">{p.milestoneDone}/{p.milestoneCount} milestones</p>
-                      <div className={cn('flex items-center gap-1.5 px-2 py-1 rounded border text-[10px] font-bold', getAgingColor(p.daysInStage))}><span className={cn('w-1.5 h-1.5 rounded-full', getAgingDot(p.daysInStage))} />{p.daysInStage}d in stage</div>
+                      <p className="text-[10px] text-slate-500 mb-1">Lead: {p.leadName} • {p.contributorNames.length > 0 ? `${p.contributorNames.join(', ')}` : 'no contributors'}</p>
+                      <div className="mb-2"><div className="w-full bg-slate-100 rounded-full h-1.5"><div className="h-1.5 rounded-full bg-aims-green" style={{ width: `${p.progressPercent}%` }} /></div></div>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[10px] font-semibold text-slate-500">{p.milestones?.filter(m => m.completed).length || 0}/{p.milestones?.length || 0} milestones</span>
+                        <div className={cn('flex items-center gap-1.5 px-2 py-1 rounded border text-[10px] font-bold', getAgingColor(p.daysInStage))}><span className={cn('w-1.5 h-1.5 rounded-full', getAgingDot(p.daysInStage))} />{p.daysInStage}d</div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -660,6 +649,7 @@ function InnovatorDashboard() {
           })}
         </div>
       )}
+
       {viewMode === 'list' && (
         <Section title="All Projects" subtitle="Sortable table view of innovation pipeline">
           <div className="overflow-x-auto">
@@ -670,10 +660,10 @@ function InnovatorDashboard() {
                   <tr key={p.id} className="hover:bg-slate-50 transition-colors">
                     <td className="py-2.5 font-bold text-slate-900">{p.title}</td>
                     <td className="py-2.5"><span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-aims-navy/10 text-aims-navy capitalize">{p.stage}</span></td>
-                    <td className="py-2.5 text-slate-600">{p.lead}</td>
-                    <td className="py-2.5 text-slate-500 text-xs">{p.contributors.join(', ')}</td>
-                    <td className="py-2.5"><div className="flex items-center gap-2"><div className="w-16 bg-slate-100 rounded-full h-1.5"><div className="h-1.5 rounded-full bg-aims-green" style={{ width: `${p.progress}%` }} /></div><span className="text-xs font-bold text-slate-900">{p.progress}%</span></div></td>
-                    <td className="py-2.5 text-xs text-slate-600">{p.milestoneDone}/{p.milestoneCount}</td>
+                    <td className="py-2.5 text-slate-600">{p.leadName}</td>
+                    <td className="py-2.5 text-slate-500 text-xs">{p.contributorNames.join(', ')}</td>
+                    <td className="py-2.5"><div className="flex items-center gap-2"><div className="w-16 bg-slate-100 rounded-full h-1.5"><div className="h-1.5 rounded-full bg-aims-green" style={{ width: `${p.progressPercent}%` }} /></div><span className="text-xs font-bold text-slate-900">{p.progressPercent}%</span></div></td>
+                    <td className="py-2.5 text-xs text-slate-600">{p.milestones?.filter(m => m.completed).length || 0}/{p.milestones?.length || 0}</td>
                     <td className="py-2.5"><span className={cn('inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border', getAgingColor(p.daysInStage))}><span className={cn('w-1.5 h-1.5 rounded-full', getAgingDot(p.daysInStage))} />{p.daysInStage}d</span></td>
                     <td className="py-2.5 text-right"><button onClick={() => navigate(`/innovations/${p.id}`)} className="text-xs font-bold text-aims-navy hover:underline">Open</button></td>
                   </tr>

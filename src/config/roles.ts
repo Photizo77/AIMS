@@ -36,11 +36,16 @@ const MODULE_ACCESS: Record<string, Role[]> = {
   approvals: ['CD', 'ED', 'FINANCE'],
   documents: ['CD', 'ED', 'SYS_ADMIN', 'COMPANY_ADMIN', 'FINANCE', 'GRANTS_MANAGER', 'GRANT_WRITER', 'INNOVATOR'],
   knowledge: ['CD', 'ED', 'SYS_ADMIN', 'COMPANY_ADMIN', 'FINANCE', 'GRANTS_MANAGER', 'GRANT_WRITER', 'INNOVATOR'],
+  research: ['CD', 'ED', 'SYS_ADMIN', 'COMPANY_ADMIN', 'FINANCE', 'GRANTS_MANAGER', 'GRANT_WRITER', 'INNOVATOR'],
+  forms: ['CD', 'ED', 'SYS_ADMIN', 'COMPANY_ADMIN', 'FINANCE', 'GRANTS_MANAGER', 'GRANT_WRITER', 'INNOVATOR'],
   crm: ['CD', 'ED', 'COMPANY_ADMIN'],
   analytics: ['CD', 'ED', 'SYS_ADMIN', 'COMPANY_ADMIN', 'FINANCE', 'GRANTS_MANAGER', 'GRANT_WRITER', 'INNOVATOR'],
   rbac: ['SYS_ADMIN'],
   settings: ['CD', 'ED', 'SYS_ADMIN', 'COMPANY_ADMIN', 'FINANCE', 'GRANTS_MANAGER', 'GRANT_WRITER', 'INNOVATOR'],
 };
+
+/** Union of all module keys used for route protection */
+export type ModuleKey = keyof typeof MODULE_ACCESS;
 
 /**
  * Check if a role has access to a specific module

@@ -171,9 +171,6 @@ export function Feed() {
 
   const handleSend = () => {
     if (!messageText.trim()) return;
-    // Extract mentions
-    const mentionMatches = messageText.match(/@([\w\s]+?)(?=\s@|\s$|$)/g);
-    const mentions = mentionMatches ? mentionMatches.map((m) => m.replace('@', '').trim()) : [];
     showToast({ title: 'Message Sent', message: `Posted to #${activeChannel}`, type: 'success' });
     setMessageText('');
     setShowMentionPicker(false);

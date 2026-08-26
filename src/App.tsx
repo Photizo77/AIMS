@@ -6,11 +6,15 @@ import { AuthProvider } from '@/context/AuthContext';
 import { NotificationProvider } from '@/context/NotificationContext';
 import { AttendanceProvider } from '@/context/AttendanceContext';
 
+// Auth & Layout
 import { LoginMFA } from '@/pages/auth/LoginMFA';
+
+// Core Pages
 import { Dashboard } from '@/pages/Dashboard';
 import { Feed } from '@/pages/Feed';
 import { EmailPage } from '@/pages/Email';
-import { Tasks } from '@/pages/Tasks';
+import { Tasks } from '@/pages/Tasks'; // The Innovator "My Work" Module
+import { ProjectDetail } from '@/pages/ProjectDetail'; // The Detailed View
 import { Attendance } from '@/pages/Attendance';
 import { HR } from '@/pages/HR';
 import { Grants } from '@/pages/Grants';
@@ -27,7 +31,6 @@ import { CRM } from '@/pages/CRM';
 import { RBAC } from '@/pages/RBAC';
 import { Settings } from '@/pages/Settings';
 import { AIAssistant } from '@/pages/AIAssistant';
-import { InnovationDetail } from '@/pages/InnovationDetail';
 import { FormsLibrary } from '@/pages/FormsLibrary';
 
 export function App() {
@@ -45,7 +48,11 @@ export function App() {
                 <Route path="/dashboard" element={<ProtectedRoute module="dashboard"><Dashboard /></ProtectedRoute>} />
                 <Route path="/feed" element={<ProtectedRoute module="feed"><Feed /></ProtectedRoute>} />
                 <Route path="/email" element={<ProtectedRoute><EmailPage /></ProtectedRoute>} />
+                
+                {/* Innovations Module Routes */}
                 <Route path="/tasks" element={<ProtectedRoute module="innovations"><Tasks /></ProtectedRoute>} />
+                <Route path="/innovations/:id" element={<ProtectedRoute module="innovations"><ProjectDetail /></ProtectedRoute>} />
+                
                 <Route path="/attendance" element={<ProtectedRoute module="attendance"><Attendance /></ProtectedRoute>} />
                 <Route path="/hr" element={<ProtectedRoute module="hr_admin"><HR /></ProtectedRoute>} />
                 <Route path="/grants" element={<ProtectedRoute module="grants"><Grants /></ProtectedRoute>} />
@@ -62,8 +69,6 @@ export function App() {
                 <Route path="/rbac" element={<ProtectedRoute module="rbac"><RBAC /></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute module="settings"><Settings /></ProtectedRoute>} />
                 <Route path="/ai-assistant" element={<ProtectedRoute><AIAssistant /></ProtectedRoute>} />
-                <Route path="/innovations" element={<ProtectedRoute module="innovations"><InnovationDetail /></ProtectedRoute>} />
-                <Route path="/innovations/:innovationId" element={<ProtectedRoute module="innovations"><InnovationDetail /></ProtectedRoute>} />
                 <Route path="/forms" element={<ProtectedRoute module="forms"><FormsLibrary /></ProtectedRoute>} />
 
                 {/* ── Catch-all: redirect to dashboard ── */}

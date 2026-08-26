@@ -22,7 +22,7 @@ function getDistanceMeters(lat1: number, lon1: number, lat2: number, lon2: numbe
 export function CheckInCard() {
   const { user } = useAuth();
   const { showToast } = useNotifications();
-  const { isCheckedIn, checkInTime, checkInMode, checkIn, checkOut } = useAttendance();
+  const { isCheckedIn, checkInTime, checkIn, checkOut } = useAttendance();
   const [selectedMode, setSelectedMode] = useState<'physical' | 'remote'>('physical');
   const [isLocating, setIsLocating] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);

@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { FORMS_LIBRARY } from '@/config/forms';
 import type { FormDefinition } from '@/config/forms';
 import { FormRenderer } from '@/components/forms/FormRenderer';
-import { cn } from '@/lib/utils';
 
 const MODULE_LABELS: Record<string, string> = {
   hr: 'Human Resources',

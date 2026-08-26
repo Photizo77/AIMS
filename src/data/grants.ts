@@ -3,19 +3,25 @@ export type GrantStage = 'identified' | 'drafting' | 'submitted' | 'under_review
 
 export interface GrantMilestone { id: string; title: string; dueDate: string; completed: boolean; assignee: string; }
 export interface GrantActivity { id: string; actor: string; action: string; timestamp: string; }
+export interface GrantDocument { id: string; title: string; fileType: string; size: string; uploadedBy: string; uploadedAt: string; version: number; }
+export interface GrantComment { id: string; author: string; role: string; content: string; timestamp: string; }
 
 export interface GrantRecord {
   id: string; title: string; funder: string; pillar: string; handler: string; contributors: string[];
   stage: GrantStage; deadline: string; amountRequested: number; amountAwarded?: number;
   milestones: GrantMilestone[];
   activity: GrantActivity[];
+  description?: string;
+  documents?: GrantDocument[];
+  comments?: GrantComment[];
+  edNotes?: string;
 }
 
-export const GRANT_STAGES: { key: GrantStage; label: string; color: 'green' | 'navy' | 'orange' | 'mint' }[] = [
+export const GRANT_STAGES: { key: GrantStage; label: string; color: 'green' | 'navy' | 'orange' | 'mint' | 'red' }[] = [
   { key: 'identified', label: 'Identified', color: 'mint' },
   { key: 'drafting', label: 'Drafting', color: 'orange' },
   { key: 'submitted', label: 'Submitted', color: 'navy' },
-  { key: 'under_review', label: 'Under Review', color: 'navy' },
+  { key: 'under_review', label: 'Under Review', color: 'red' },
   { key: 'awarded', label: 'Awarded', color: 'green' },
   { key: 'declined', label: 'Declined', color: 'orange' },
 ];
@@ -39,6 +45,16 @@ export const MOCK_GRANTS: GrantRecord[] = [
   {
     id: 'g1', title: 'Community Land Rights Documentation', funder: 'USAID', pillar: 'Land Governance',
     handler: 'Sarah Aciro', contributors: ['Janet Apio'], stage: 'under_review', deadline: '2026-09-05', amountRequested: 450000000,
+    description: 'Comprehensive documentation of customary land rights across 12 sub-counties in Northern Uganda. Includes community mapping, legal validation, and issuance of certificates of customary ownership. Aligns with USAID\'s Land Governance Activity strategic objective 2.1.',
+    documents: [
+      { id: 'g1d1', title: 'Concept Note v2.pdf', fileType: 'PDF', size: '420 KB', uploadedBy: 'Sarah Aciro', uploadedAt: '2026-07-10', version: 2 },
+      { id: 'g1d2', title: 'Full Proposal v3.docx', fileType: 'DOCX', size: '1.8 MB', uploadedBy: 'Sarah Aciro', uploadedAt: '2026-08-01', version: 3 },
+      { id: 'g1d3', title: 'Budget Sheet v3.xlsx', fileType: 'XLSX', size: '340 KB', uploadedBy: 'Janet Apio', uploadedAt: '2026-08-05', version: 3 },
+    ],
+    comments: [
+      { id: 'g1c1', author: 'Janet Apio', role: 'GRANT_WRITER', content: 'Budget narrative for M&E section needs strengthening. Suggest adding specific indicators per output.', timestamp: '2026-07-22T10:00:00Z' },
+      { id: 'g1c2', author: 'Sarah Aciro', role: 'GRANTS_MANAGER', content: 'Funder requested clarification on partner co-financing. Working with Finance to confirm matching funds.', timestamp: '2026-08-20T09:00:00Z' },
+    ],
     milestones: [
       { id: 'g1m1', title: 'Concept note drafted', dueDate: '2026-06-20', completed: true, assignee: 'Sarah Aciro' },
       { id: 'g1m2', title: 'Internal concept review', dueDate: '2026-07-01', completed: true, assignee: 'Janet Apio' },
@@ -151,6 +167,29 @@ export const MOCK_GRANTS: GrantRecord[] = [
     ],
     activity: [
       { id: 'g8a1', actor: 'Florence Adong', action: 'Created grant in Identified stage', timestamp: '2026-08-18T09:00:00Z' },
+    ],
+  },
+  {
+    id: 'g9', title: 'Digital Skills for Rural Youth', funder: 'GIZ', pillar: 'Education',
+    handler: 'Unassigned', contributors: [], stage: 'identified', deadline: '2026-12-10', amountRequested: 240000000,
+    description: 'A 12-month digital literacy and job-readiness program for out-of-school youth in rural districts, delivered through community digital hubs.',
+    milestones: [
+      { id: 'g9m1', title: 'Funder RFP analyzed', dueDate: '2026-09-15', completed: false, assignee: '—' },
+      { id: 'g9m2', title: 'Concept note drafted', dueDate: '2026-10-01', completed: false, assignee: '—' },
+    ],
+    activity: [
+      { id: 'g9a1', actor: 'System', action: 'Grant discovered from GIZ funding portal — awaiting assignment', timestamp: '2026-08-22T09:00:00Z' },
+    ],
+  },
+  {
+    id: 'g10', title: 'Wetland Restoration & Livelihoods', funder: 'UNDP', pillar: 'Environment',
+    handler: 'Unassigned', contributors: [], stage: 'identified', deadline: '2026-11-20', amountRequested: 510000000,
+    description: 'Community-led wetland restoration with alternative livelihood support for 600 households in the Lake Victoria basin.',
+    milestones: [
+      { id: 'g10m1', title: 'Eligibility check', dueDate: '2026-09-25', completed: false, assignee: '—' },
+    ],
+    activity: [
+      { id: 'g10a1', actor: 'System', action: 'Grant discovered from UNDP call — awaiting assignment', timestamp: '2026-08-21T09:00:00Z' },
     ],
   },
 ];

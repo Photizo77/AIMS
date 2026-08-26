@@ -20,6 +20,7 @@ const ROLE_COLORS: Record<Role, string> = {
   SYS_ADMIN: 'bg-red-100 text-red-700',
   COMPANY_ADMIN: 'bg-blue-100 text-blue-700',
   FINANCE: 'bg-green-100 text-green-700',
+  GRANTS_MANAGER: 'bg-cyan-100 text-cyan-700',
   GRANT_WRITER: 'bg-yellow-100 text-yellow-700',
   INNOVATOR: 'bg-orange-100 text-orange-700',
 };

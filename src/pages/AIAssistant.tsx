@@ -115,7 +115,7 @@ export function AIAssistant() {
   const [isTyping, setIsTyping] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const renameInputRef = useRef<HTMLInputElement>(null);
+  const renameInputRef = useRef<HTMLInputElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Persist to localStorage
@@ -543,7 +543,7 @@ export function AIAssistant() {
                     )}
                   >
                     {msg.role === 'user' ? (
-                      user.name.split(' ').map((n) => n[0]).join('').slice(0, 2)
+                      (user?.name ?? '').split(' ').map((n) => n[0]).join('').slice(0, 2) || 'U'
                     ) : (
                       <span className="material-symbols-outlined text-[16px]">smart_toy</span>
                     )}
@@ -781,7 +781,7 @@ function ConversationItem({
   isActive: boolean;
   isRenaming: boolean;
   renameValue: string;
-  renameInputRef: React.RefObject<HTMLInputElement | null>;
+  renameInputRef: React.LegacyRef<HTMLInputElement>;
   onSelect: () => void;
   onRenameChange: (v: string) => void;
   onRenameCommit: () => void;
