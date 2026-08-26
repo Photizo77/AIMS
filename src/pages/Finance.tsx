@@ -65,6 +65,8 @@ export function Finance() {
 
   const fmtUSD = (n: number) => (n >= 1000000 ? `$${(n / 1000000).toFixed(1)}M` : n >= 1000 ? `$${(n / 1000).toFixed(0)}K` : `$${n}`);
 
+  const canEditRecords = user?.role === 'FINANCE';
+
   const openEdit = (type: FinanceRecordType, id: string, label: string, amount: number) => {
     setEditTarget({ type, id, label, amount });
     setEditValue(String(amount));
@@ -162,8 +164,8 @@ export function Finance() {
       <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
         <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
           <div>
-            <h3 className="text-base font-bold text-slate-900">Financial Records — Edit & Submit for ED Approval</h3>
-            <p className="text-xs text-slate-500 mt-0.5">Finance can edit income, expenditure and budgets. Every change is queued and the ED is notified immediately; the change applies only after ED approval.</p>
+            <h3 className="text-base font-bold text-slate-900">Financial Records{canEditRecords ? ' — Edit & Submit for ED Approval' : ' — Read-Only View'}</h3>
+            <p className="text-xs text-slate-500 mt-0.5">{canEditRecords ? 'Finance can edit income, expenditure and budgets. Every change is queued and the ED is notified immediately; the change applies only after ED approval.' : 'View-only for this role. Edits are restricted to the Finance team and take effect only after ED approval.'}</p>
           </div>
           {pendingEdits.length > 0 && (
             <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-aims-orange/15 text-aims-orange uppercase">{pendingEdits.length} pending ED approval</span>
@@ -186,9 +188,11 @@ export function Finance() {
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-sm font-extrabold text-slate-900">{fmtUSD(r.amount)}</span>
-                  <button onClick={() => openEdit(recordTab, r.id, r.label, r.amount)} className="text-[10px] font-bold text-aims-navy border border-aims-navy/20 rounded-lg px-2.5 py-1.5 hover:bg-aims-navy/5 flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[13px]">edit</span>Edit
-                  </button>
+                  {canEditRecords && (
+                    <button onClick={() => openEdit(recordTab, r.id, r.label, r.amount)} className="text-[10px] font-bold text-aims-navy border border-aims-navy/20 rounded-lg px-2.5 py-1.5 hover:bg-aims-navy/5 flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[13px]">edit</span>Edit
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
@@ -207,9 +211,11 @@ export function Finance() {
                     <div className="w-full bg-slate-100 rounded-full h-2"><div className={cn('h-2 rounded-full', pct >= 90 ? 'bg-red-500' : pct >= 75 ? 'bg-aims-orange' : 'bg-aims-green')} style={{ width: `${Math.min(100, pct)}%` }} /></div>
                     <p className="text-[10px] text-slate-500 mt-1">Budget: {fmtUSD(b.budget)} · Spent: {fmtUSD(b.actual)}</p>
                   </div>
-                  <button onClick={() => openEdit('budget', b.id, `Budget — ${b.dept}`, b.budget)} className="ml-3 text-[10px] font-bold text-aims-navy border border-aims-navy/20 rounded-lg px-2.5 py-1.5 hover:bg-aims-navy/5 flex items-center gap-1 shrink-0">
-                    <span className="material-symbols-outlined text-[13px]">edit</span>Edit Budget
-                  </button>
+                  {canEditRecords && (
+                    <button onClick={() => openEdit('budget', b.id, `Budget — ${b.dept}`, b.budget)} className="ml-3 text-[10px] font-bold text-aims-navy border border-aims-navy/20 rounded-lg px-2.5 py-1.5 hover:bg-aims-navy/5 flex items-center gap-1 shrink-0">
+                      <span className="material-symbols-outlined text-[13px]">edit</span>Edit Budget
+                    </button>
+                  )}
                 </div>
               );
             })}

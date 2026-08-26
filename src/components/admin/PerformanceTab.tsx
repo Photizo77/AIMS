@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import type { Appraisal } from '@/types';
 
@@ -36,8 +37,22 @@ const MOCK_APPRAISALS: Appraisal[] = [
 ];
 
 export function PerformanceTab() {
+  const { user } = useAuth();
   const { showToast } = useNotifications();
   const [selectedAppraisal, setSelectedAppraisal] = useState<Appraisal | null>(null);
+  const isED = user?.role === 'ED';
+
+  const [countersignQueue, setCountersignQueue] = useState([
+    { id: 'cs-1', employee: 'Sarah Aciro', manager: 'Grace Aceng', rating: '4.2/5', submitted: '2026-08-20' },
+    { id: 'cs-2', employee: 'Janet Apio', manager: 'Grace Aceng', rating: '3.9/5', submitted: '2026-08-19' },
+    { id: 'cs-3', employee: 'Pius Odong', manager: 'Isaac Tumusiime', rating: '4.1/5', submitted: '2026-08-22' },
+    { id: 'cs-4', employee: 'Grace Nakamya', manager: 'Isaac Tumusiime', rating: '3.8/5', submitted: '2026-08-20' },
+  ]);
+
+  const countersign = (id: string, employee: string) => {
+    setCountersignQueue((prev) => prev.filter((c) => c.id !== id));
+    showToast({ title: 'Appraisal Countersigned', message: `${employee}'s Q3 appraisal countersigned by ED and filed.`, type: 'success' });
+  };
 
   const handleSubmitAppraisal = (appraisal: Appraisal) => {
     showToast({
@@ -54,6 +69,28 @@ export function PerformanceTab() {
         <h2 className="text-lg font-semibold text-gray-800">Performance Appraisals</h2>
         <p className="text-sm text-gray-500">View, edit, and submit KPI-based performance reviews</p>
       </div>
+
+      {/* ED Countersignature Panel */}
+      {isED && countersignQueue.length > 0 && (
+        <div className="bg-white rounded-xl border border-aims-navy/30 border-l-4 border-l-aims-navy p-5 mb-4 shadow-sm">
+          <h4 className="text-sm font-extrabold text-slate-900 mb-1">Appraisals Awaiting ED Countersignature (Q3 2026)</h4>
+          <p className="text-xs text-slate-500 mb-3">Manager assessments submitted — ED provides final approval. Auto-files to Documents {'>'} HR &amp; Contracts on signing.</p>
+          <div className="space-y-2">
+            {countersignQueue.map((c) => (
+              <div key={c.id} className="flex items-center justify-between gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
+                <div>
+                  <p className="text-sm font-bold text-slate-900">{c.employee} — Rating: <span className="text-aims-navy">{c.rating}</span></p>
+                  <p className="text-[10px] text-slate-500 mt-0.5">Manager: {c.manager} · Submitted {c.submitted}</p>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <button onClick={() => showToast({ title: 'Revisions Requested', message: `Revisions requested on ${c.employee}'s appraisal.`, type: 'warning' })} className="px-3 py-1.5 bg-aims-orange text-white text-[10px] font-bold rounded-lg hover:bg-aims-orange/90">Request Revisions</button>
+                  <button onClick={() => countersign(c.id, c.employee)} className="px-3 py-1.5 bg-aims-green text-white text-[10px] font-bold rounded-lg hover:bg-aims-green/90 flex items-center gap-1"><span className="material-symbols-outlined text-[13px]">edit_note</span>Approve & Sign</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {MOCK_APPRAISALS.map((appraisal) => (

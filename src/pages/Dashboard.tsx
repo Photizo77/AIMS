@@ -10,6 +10,8 @@ import { GrantsPipelineBoard } from '@/components/grants/GrantsPipelineBoard';
 import { GrantReviewQueue } from '@/components/grants/GrantReviewQueue';
 import { FinanceEditApprovals } from '@/components/finance/FinanceEditApprovals';
 import { openGrantsAssistant } from '@/components/grants/GrantsAssistant';
+import { openFlagForED } from '@/components/grants/FlagForEDModal';
+import { flagService } from '@/services/flagService';
 import { SharedLibraryWidget } from '@/components/dashboard/SharedLibraryWidget';
 import { innovationService } from '@/services/innovationService'; // Importing our centralized service
 import { grantService } from '@/services/grantService';
@@ -139,14 +141,39 @@ function CDDashboard() {
   const handleAction = (msg: string) => showToast({ title: 'Action Logged', message: msg, type: 'success' });
   return (
     <div className="space-y-6">
-      <DashHeader gradient="bg-grad-navy" title="Country Director Dashboard" subtitle="Strategic oversight, governance & organizational leadership" />
-      <CheckInCard />
+      <DashHeader gradient="bg-grad-navy" title="Country Director Dashboard" subtitle="Strategic oversight, governance & organizational leadership — view everything, flag for ED, approve nothing" />
       <SharedLibraryWidget />
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <StatCard title="Total Income (MTD)" value="UGX 1.2B" icon="trending_up" color="green" />
-        <StatCard title="Total Expenditure (MTD)" value="UGX 850M" icon="trending_down" color="orange" />
-        <StatCard title="Active Grants" value="10" icon="volunteer_activism" color="navy" />
-        <StatCard title="Org Health" value="94%" icon="monitor_heart" color="mint" />
+
+      {/* At a Glance strip */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-green p-4 shadow-sm"><p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Income</p><p className="text-2xl font-extrabold text-slate-900 mt-1">UGX 1.2B</p><p className="text-[10px] text-slate-400 mt-0.5">MTD · headline KPI</p></div>
+        <div className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-mint p-4 shadow-sm"><p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Org Health Score</p><p className="text-2xl font-extrabold text-aims-green mt-1">94%</p><p className="text-[10px] text-slate-400 mt-0.5">composite indicator</p></div>
+        <button onClick={() => openFlagForED({ recordLabel: 'General — Country Director Review', sourceModule: 'dashboard' })} className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-orange p-4 shadow-sm text-left hover:shadow-md transition-shadow group">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Unresolved Flags</p>
+          <p className="text-2xl font-extrabold text-aims-orange mt-1">{flagService.getOpenFlags().length}</p>
+          <p className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1">tone-alerted · <span className="text-aims-orange font-bold group-hover:underline">Raise new</span></p>
+        </button>
+        <button onClick={() => navigate('/approvals?view=readonly')} className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-navy p-4 shadow-sm text-left hover:shadow-md transition-shadow group">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Approvals In Progress</p>
+          <p className="text-2xl font-extrabold text-aims-navy mt-1">3</p>
+          <p className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1">currently with ED · <span className="text-aims-navy font-bold group-hover:underline">track</span></p>
+        </button>
+      </div>
+
+      {/* AI Insight block */}
+      <div className="bg-white rounded-xl border border-slate-200 border-l-4 border-l-aims-navy p-5 shadow-sm">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="w-8 h-8 rounded-lg bg-aims-navy/10 flex items-center justify-center"><span className="material-symbols-outlined text-aims-navy text-[20px]">auto_awesome</span></span>
+          <div>
+            <h3 className="text-sm font-extrabold text-slate-900">System Summary (AI-Generated)</h3>
+            <p className="text-[10px] font-bold text-aims-navy uppercase tracking-wider">Powered by Tier 1 AI — Insights</p>
+          </div>
+        </div>
+        <div className="bg-slate-50 rounded-lg border border-slate-100 p-4">
+          <p className="text-sm text-slate-700 leading-relaxed">
+            "Expenditure is tracking 12% below the annual plan through Q3 — reserve building is ahead of the Sustainability Plan's Year 3 target. One urgent CD flag awaits ED action."
+          </p>
+        </div>
       </div>
       <Section title="Approvals in Progress" subtitle="Visibility into ED's review pipeline — read only">
         <AdvancedFilterBar dateLabel="Submitted" statusOptions={['ED Review', 'Awaiting Finance', 'Awaiting HR', 'Disbursed']} ownerOptions={['Finance Dept', 'HR Admin', 'Grants Team', 'Procurement']} showAmountRange presets={[{ id: 'p1', name: 'Over 3 days' }, { id: 'p2', name: 'High value (>10M)' }]} onExport={(fmt) => handleAction(`Exporting approvals ${fmt.toUpperCase()}`)} onSavePreset={(name) => handleAction(`Saved preset: ${name}`)} />
@@ -225,14 +252,65 @@ function CDDashboard() {
 }
 
 function EDDashboard() {
+  const { user } = useAuth();
   const { showToast } = useNotifications();
   const navigate = useNavigate();
   const handleAction = (msg: string) => showToast({ title: 'Action Logged', message: msg, type: 'success' });
   const [expandedApproval, setExpandedApproval] = useState<string | null>(null);
   return (
     <div className="space-y-6">
-      <DashHeader gradient="bg-grad-navy" title="Executive Director Dashboard" subtitle="Operational execution, team leadership & daily management" />
+      <DashHeader gradient="bg-grad-navy" title="Executive Director Dashboard" subtitle="Operational execution, team leadership & daily management — sole approval authority" />
       <CheckInCard />
+
+      {/* At a Glance strip */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <button onClick={() => navigate('/approvals')} className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-orange p-4 shadow-sm text-left hover:shadow-md transition-shadow group">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Approvals Pending</p>
+          <p className="text-2xl font-extrabold text-aims-orange mt-1">2</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">1 overdue (SLA aging) · <span className="text-aims-orange font-bold group-hover:underline">open queue</span></p>
+        </button>
+        <button onClick={() => navigate('/attendance')} className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-green p-4 shadow-sm text-left hover:shadow-md transition-shadow group">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Attendance Today</p>
+          <p className="text-2xl font-extrabold text-aims-green mt-1">128/142</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">4 remote · 1 leave · 2 absent · <span className="text-aims-green font-bold group-hover:underline">oversight</span></p>
+        </button>
+        <button onClick={() => navigate('/grants')} className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-navy p-4 shadow-sm text-left hover:shadow-md transition-shadow group">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Grants Due (7d)</p>
+          <p className="text-2xl font-extrabold text-aims-navy mt-1">3</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">approaching deadline · <span className="text-aims-navy font-bold group-hover:underline">portfolio</span></p>
+        </button>
+        <button onClick={() => navigate('/approvals')} className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-red-500 p-4 shadow-sm text-left hover:shadow-md transition-shadow group">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">CD Flags Awaiting</p>
+          <p className="text-2xl font-extrabold text-red-500 mt-1">{flagService.getOpenFlags().length}</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">priority interrupts · <span className="text-red-500 font-bold group-hover:underline">resolve in queue</span></p>
+        </button>
+      </div>
+
+      {/* CD Flags — priority interrupts */}
+      {flagService.getOpenFlags().length > 0 && (
+        <div className="bg-white rounded-xl border border-red-200 border-l-4 border-l-red-500 p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-bold text-red-600 uppercase tracking-wider flex items-center gap-1.5"><span className="material-symbols-outlined text-[16px]">flag</span>CD Flags — Priority Interrupts ({flagService.getOpenFlags().length})</p>
+            <button onClick={() => navigate('/approvals')} className="text-[11px] font-bold text-aims-navy hover:underline">Open Approvals Queue</button>
+          </div>
+          <div className="space-y-2">
+            {flagService.getOpenFlags().map((f) => (
+              <div key={f.id} className="flex items-start justify-between gap-3 p-3 bg-red-50/50 rounded-lg border border-red-100">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className={f.priority === 'urgent' ? 'text-[9px] font-bold px-1.5 py-0.5 rounded bg-red-500 text-white uppercase' : 'text-[9px] font-bold px-1.5 py-0.5 rounded bg-aims-orange/20 text-aims-orange uppercase'}>{f.priority}</span>
+                    <span className="text-[10px] font-bold text-slate-500">{f.raisedBy}</span>
+                    <span className="text-[10px] text-slate-400">{new Date(f.raisedAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
+                  </div>
+                  <p className="text-sm font-bold text-slate-900 mt-1">{f.recordLabel}</p>
+                  <p className="text-xs text-slate-600 italic">"{f.note}"</p>
+                </div>
+                <button onClick={() => flagService.resolveFlag(f.id, user?.name ?? 'ED')} className="px-3 py-1.5 bg-aims-navy text-white text-[10px] font-bold rounded-lg hover:bg-aims-navy/90 shrink-0">Resolve</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <Section title="Grant Approvals & Deadlines" subtitle="Grants awaiting your final decision — approve or request changes">
         <GrantReviewQueue />

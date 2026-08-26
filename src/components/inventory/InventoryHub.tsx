@@ -6,6 +6,7 @@
 // ============================================================
 
 import { useState } from 'react';
+import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
 
@@ -42,9 +43,11 @@ const MOCK_STOCK: StockItem[] = [
 ];
 
 const MOCK_REORDERS = [
-  { id: 'r1', item: 'Toner Cartridges (Canon)', current: 2, qty: 10, unitCost: 'UGX 80K', est: 'UGX 800K', status: 'Draft', vendors: [{ name: 'Vendor A', unit: 'UGX 75K', lead: '3 days' }, { name: 'Vendor B', unit: 'UGX 85K', lead: '1 day' }] },
-  { id: 'r2', item: 'USB Dongles', current: 3, qty: 12, unitCost: 'UGX 25K', est: 'UGX 300K', status: 'ED Pending', vendors: [{ name: 'Vendor A', unit: 'UGX 24K', lead: '2 days' }] },
+  { id: 'r1', item: 'Toner Cartridges (Canon)', current: 2, qty: 10, unitCost: 'UGX 80K', est: 'UGX 800K', status: 'Draft' as ReorderStatus, vendors: [{ name: 'Vendor A', unit: 'UGX 75K', lead: '3 days' }, { name: 'Vendor B', unit: 'UGX 85K', lead: '1 day' }] },
+  { id: 'r2', item: 'USB Dongles', current: 3, qty: 12, unitCost: 'UGX 25K', est: 'UGX 300K', status: 'ED Pending' as ReorderStatus, vendors: [{ name: 'Vendor A', unit: 'UGX 24K', lead: '2 days' }] },
 ];
+
+type ReorderStatus = 'Draft' | 'ED Pending' | 'Approved' | 'Ordered' | 'Received' | 'Rejected';
 
 const MOCK_ASSIGNMENTS = [
   { id: 'as1', person: 'Pius Odong (New Hire)', due: 'Aug 20', items: ['Laptop (IT Equipment)', 'Phone (Mobile Device)', 'Access Card', 'Desk & Chair'], done: 2, total: 4, status: 'In Progress' },
@@ -63,11 +66,20 @@ const MOCK_STOCKTAKE = [
 ];
 
 export function InventoryHub() {
+  const { user } = useAuth();
   const { showToast } = useNotifications();
   const [activeTab, setActiveTab] = useState<TabKey>('assets');
   const [assetSearch, setAssetSearch] = useState('');
+  const [reorders, setReorders] = useState(MOCK_REORDERS);
 
   const notify = (title: string, message: string, type: 'success' | 'info' | 'warning' = 'success') => showToast({ title, message, type });
+
+  const isED = user?.role === 'ED';
+
+  const reorderDecision = (id: string, decision: ReorderStatus, msg: string) => {
+    setReorders((prev) => prev.map((r) => (r.id === id ? { ...r, status: decision } : r)));
+    notify(decision === 'Approved' ? 'Reorder Approved' : decision === 'Rejected' ? 'Reorder Rejected' : 'Status Updated', msg, decision === 'Rejected' ? 'warning' : 'success');
+  };
 
   const lowStock = MOCK_STOCK.filter((s) => s.qty < s.threshold);
   const filteredAssets = MOCK_ASSETS.filter((a) => !assetSearch || a.name.toLowerCase().includes(assetSearch.toLowerCase()) || a.tag.toLowerCase().includes(assetSearch.toLowerCase()) || a.custodian.toLowerCase().includes(assetSearch.toLowerCase()));
@@ -157,7 +169,7 @@ export function InventoryHub() {
           <div className="flex justify-end">
             <button onClick={() => notify('Reorder Drafted', 'Manual reorder request created.')} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90">+ Draft New Reorder</button>
           </div>
-          {MOCK_REORDERS.map((r) => (
+          {reorders.map((r) => (
             <div key={r.id} className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
               <div className="flex items-start justify-between flex-wrap gap-3 mb-3">
                 <div>
@@ -174,7 +186,15 @@ export function InventoryHub() {
                 ))}
               </div>
               <div className="mt-3 pt-3 border-t border-slate-100">
-                <button onClick={() => notify('Routed to ED', `${r.item} reorder routed to ED for authorization.`)} className="px-4 py-2 bg-aims-green text-white text-xs font-bold rounded-lg hover:bg-aims-green/90">Route to ED for Authorization</button>
+                {isED ? (
+                  <div className="flex gap-2 flex-wrap">
+                    <button onClick={() => reorderDecision(r.id, 'Approved', `${r.item} approved — order placed with vendor.`)} className="px-4 py-2 bg-aims-green text-white text-xs font-bold rounded-lg hover:bg-aims-green/90">✓ Approve & Order</button>
+                    <button onClick={() => reorderDecision(r.id, 'Rejected', `${r.item} rejected.`)} className="px-4 py-2 bg-red-50 text-red-600 text-xs font-bold rounded-lg hover:bg-red-100">✗ Reject</button>
+                    <button onClick={() => notify('Revisions Requested', `${r.item} returned to Company Admin for revisions.`, 'warning')} className="px-4 py-2 bg-aims-orange text-white text-xs font-bold rounded-lg hover:bg-aims-orange/90">◄ Request Revisions</button>
+                  </div>
+                ) : (
+                  <button onClick={() => reorderDecision(r.id, 'ED Pending', `${r.item} reorder routed to ED for authorization.`)} className="px-4 py-2 bg-aims-green text-white text-xs font-bold rounded-lg hover:bg-aims-green/90">Route to ED for Authorization</button>
+                )}
               </div>
             </div>
           ))}

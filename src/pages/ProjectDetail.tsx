@@ -56,7 +56,8 @@ export function ProjectDetail() {
 
   const isLead = user.name === project.leadName;
   const isContributor = project.contributorNames.includes(user.name);
-  const canEdit = isLead || isContributor;
+  // ED has full control on every project; CD remains view-only
+  const canEdit = isLead || isContributor || user.role === 'ED';
 
   const currentStageIndex = STAGE_ORDER.indexOf(project.stage);
   const nextStage = currentStageIndex >= 0 && currentStageIndex < STAGE_ORDER.length - 1 ? STAGE_ORDER[currentStageIndex + 1] : null;

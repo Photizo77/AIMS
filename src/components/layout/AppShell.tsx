@@ -5,6 +5,7 @@ import { TopNavBar } from './TopNavBar';
 import { SideNavBar } from './SideNavBar';
 import { Toaster } from '@/components/ui/Toaster';
 import { GrantsAssistant } from '@/components/grants/GrantsAssistant';
+import { FlagForEDModal } from '@/components/grants/FlagForEDModal';
 import { cn } from '@/lib/utils';
 
 export function AppShell() {
@@ -48,6 +49,9 @@ export function AppShell() {
 
       {/* Floating ARDHI Grants Assistant — available on every page */}
       <GrantsAssistant />
+
+      {/* Flag-for-ED modal — available on every page (CD capability) */}
+      <FlagForEDModal />
     </div>
   );
 }

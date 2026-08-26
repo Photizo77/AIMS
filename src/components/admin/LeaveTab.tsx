@@ -6,6 +6,7 @@
 // ============================================================
 
 import { useState } from 'react';
+import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
 
@@ -41,8 +42,10 @@ const MOCK_BALANCES: { name: string; annual: number; sick: number; study: number
 ];
 
 export function LeaveTab() {
+  const { user } = useAuth();
   const { showToast } = useNotifications();
   const [pending, setPending] = useState(MOCK_PENDING);
+  const isED = user?.role === 'ED';
 
   const notify = (title: string, message: string, type: 'success' | 'info' | 'warning' = 'success') =>
     showToast({ title, message, type });
@@ -71,14 +74,15 @@ export function LeaveTab() {
               </div>
               {r.status === 'pending' && (
                 <div className="mt-3 pt-3 border-t border-slate-100 flex gap-2 flex-wrap">
-                  <button onClick={() => act(r.id, 'approved', `${r.name}'s ${r.type} approved.`)} className="px-3 py-1.5 bg-aims-green text-white text-[10px] font-bold rounded-lg hover:bg-aims-green/90">{r.days < 2 ? 'Approve (Quick)' : 'Approve'}</button>
+                  <button onClick={() => act(r.id, 'approved', `${r.name}'s ${r.type} approved.`)} className="px-3 py-1.5 bg-aims-green text-white text-[10px] font-bold rounded-lg hover:bg-aims-green/90">{isED ? 'Approve' : r.days < 2 ? 'Approve (Quick)' : 'Approve'}</button>
                   <button onClick={() => notify('More Info Requested', `Additional information requested from ${r.name}.`, 'info')} className="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 text-[10px] font-bold rounded-lg hover:bg-slate-50">Request More Info</button>
                   <button onClick={() => act(r.id, 'denied', `${r.name}'s leave request denied.`)} className="px-3 py-1.5 bg-red-50 text-red-600 text-[10px] font-bold rounded-lg hover:bg-red-100">Deny</button>
-                  {r.exceedsThreshold ? (
+                  {!isED && (r.exceedsThreshold ? (
                     <button onClick={() => act(r.id, 'routed', `${r.name}'s request routed to ED (exceeds 2-day threshold).`)} className="px-3 py-1.5 bg-aims-navy text-white text-[10px] font-bold rounded-lg hover:bg-aims-navy/90">Route to ED (Exceeds Threshold)</button>
                   ) : (
                     <button onClick={() => act(r.id, 'routed', `${r.name}'s request sent to ED for review.`)} className="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 text-[10px] font-bold rounded-lg hover:bg-slate-50">Send to ED</button>
-                  )}
+                  ))}
+                  {isED && r.exceedsThreshold && <span className="text-[10px] font-bold text-aims-navy bg-aims-navy/5 px-2 py-1 rounded self-center">ED decision required</span>}
                 </div>
               )}
               {r.status !== 'pending' && <p className="text-[10px] text-slate-400 mt-2 italic">Decision recorded: {r.status.replace('_', ' ')}.</p>}

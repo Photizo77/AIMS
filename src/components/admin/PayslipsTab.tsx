@@ -1,6 +1,8 @@
 // src/components/admin/PayslipsTab.tsx
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/context/AuthContext';
+import { useNotifications } from '@/context/NotificationContext';
 
 interface PayslipRecord {
   id: string; employeeName: string; position: string; period: string;
@@ -18,10 +20,23 @@ const MOCK_PAYSLIPS: PayslipRecord[] = [
 ];
 
 export function PayslipsTab() {
-  const [payslips] = useState(MOCK_PAYSLIPS);
+  const { user } = useAuth();
+  const { showToast } = useNotifications();
+  const [payslips, setPayslips] = useState(MOCK_PAYSLIPS);
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const isED = user?.role === 'ED';
 
   const filtered = filterStatus === 'all' ? payslips : payslips.filter(function(p) { return p.status === filterStatus; });
+  const pendingCount = payslips.filter(function(p) { return p.status === 'pending'; }).length;
+
+  const edDecision = (decision: 'approved' | 'rejected') => {
+    setPayslips((prev) => prev.map((p) => (p.status === 'pending' ? { ...p, status: decision, notes: decision === 'approved' ? 'Authorized by ED' : 'Returned by ED for revision' } : p)));
+    showToast({
+      title: decision === 'approved' ? 'Payroll Authorized' : 'Payroll Returned',
+      message: decision === 'approved' ? `August batch (${pendingCount} payslips) authorized & signed — ready for disbursement.` : 'August batch returned to Company Admin for revision.',
+      type: decision === 'approved' ? 'success' : 'warning',
+    });
+  };
 
   return (
     <div>
@@ -35,6 +50,30 @@ export function PayslipsTab() {
           })}
         </div>
       </div>
+
+      {/* ED Payroll Authorization Panel */}
+      {isED && pendingCount > 0 && (
+        <div className="bg-white rounded-xl border border-aims-navy/30 border-l-4 border-l-aims-navy p-5 mb-4 shadow-sm">
+          <div className="flex items-center justify-between flex-wrap gap-3 mb-3">
+            <div>
+              <h4 className="text-sm font-extrabold text-slate-900">Payroll Batch — August 2026 · Awaiting ED Authorization</h4>
+              <p className="text-xs text-slate-500 mt-0.5">Submitted by Grace Aceng (Company Admin) · {pendingCount} payslips · total UGX 186M · ED is the sole signatory</p>
+            </div>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-aims-orange/15 text-aims-orange uppercase">SLA: Overdue by 1 day</span>
+          </div>
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100"><p className="text-[10px] font-bold text-slate-500 uppercase">Employee Count</p><p className="text-lg font-extrabold text-slate-900">{pendingCount}</p></div>
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100"><p className="text-[10px] font-bold text-slate-500 uppercase">Verification</p><p className="text-sm font-bold text-aims-green mt-1">✓ Matched to headcount</p></div>
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100"><p className="text-[10px] font-bold text-slate-500 uppercase">Compliance</p><p className="text-sm font-bold text-aims-green mt-1">✓ Taxes withheld</p></div>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            <button onClick={() => edDecision('approved')} className="px-4 py-2 bg-aims-green text-white text-xs font-bold rounded-lg hover:bg-aims-green/90 flex items-center gap-1.5"><span className="material-symbols-outlined text-[15px]">approval</span>Authorize & Sign</button>
+            <button onClick={() => edDecision('rejected')} className="px-4 py-2 bg-red-50 text-red-600 text-xs font-bold rounded-lg hover:bg-red-100">✗ Reject & Return</button>
+            <button onClick={() => showToast({ title: 'Revisions Requested', message: 'Payroll batch returned to Company Admin for revision.', type: 'warning' })} className="px-4 py-2 bg-aims-orange text-white text-xs font-bold rounded-lg hover:bg-aims-orange/90">◄ Request Revisions</button>
+          </div>
+        </div>
+      )}
+
       <div className="bg-white rounded-xl border border-slate-200 overflow-x-auto">
         <table className="w-full text-sm">
           <thead><tr className="bg-slate-50 border-b border-slate-200">

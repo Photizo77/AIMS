@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import type { Contract } from '@/types';
 
@@ -18,9 +19,22 @@ const STATUS_STYLES: Record<Contract['status'], string> = {
 };
 
 export function ContractsTab() {
+  const { user } = useAuth();
   const { showToast } = useNotifications();
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
+  const isED = user?.role === 'ED';
+
+  // Contracts awaiting ED employer signature
+  const [signQueue, setSignQueue] = useState([
+    { id: 'sig-1', employee: 'Isaac Tumusiime', role: 'Senior Technical Lead', type: 'Permanent', effective: '2026-09-01', salary: '$48,000 annually' },
+    { id: 'sig-2', employee: 'Okello Komakech', role: 'System Administrator', type: 'Permanent (renewal)', effective: 'Renewal due', salary: '—' },
+  ]);
+
+  const signContract = (id: string, employee: string) => {
+    setSignQueue((prev) => prev.filter((c) => c.id !== id));
+    showToast({ title: 'Contract Signed & Filed', message: `${employee} contract signed (employer signature) and auto-filed to Documents > HR & Contracts.`, type: 'success' });
+  };
 
   const filtered = MOCK_CONTRACTS.filter((c) =>
     c.employeeName.toLowerCase().includes(searchQuery.toLowerCase())
@@ -53,6 +67,28 @@ export function ContractsTab() {
           Add New Contract
         </button>
       </div>
+
+      {/* ED Employer Signature Panel */}
+      {isED && signQueue.length > 0 && (
+        <div className="bg-white rounded-xl border border-aims-navy/30 border-l-4 border-l-aims-navy p-5 mb-4 shadow-sm">
+          <h4 className="text-sm font-extrabold text-slate-900 mb-1">Contracts Ready for ED Signature</h4>
+          <p className="text-xs text-slate-500 mb-3">ED is the employer signatory — signing auto-files to Documents {'>'} HR &amp; Contracts.</p>
+          <div className="space-y-2">
+            {signQueue.map((c) => (
+              <div key={c.id} className="flex items-center justify-between gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
+                <div>
+                  <p className="text-sm font-bold text-slate-900">{c.employee} — {c.role}</p>
+                  <p className="text-[10px] text-slate-500 mt-0.5">{c.type} · Effective: {c.effective} · Salary: {c.salary}</p>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <button onClick={() => showToast({ title: 'Deferred', message: `Signature on ${c.employee}'s contract deferred.`, type: 'info' })} className="px-3 py-1.5 bg-white border border-slate-200 text-slate-600 text-[10px] font-bold rounded-lg hover:bg-slate-50">Defer</button>
+                  <button onClick={() => signContract(c.id, c.employee)} className="px-3 py-1.5 bg-aims-green text-white text-[10px] font-bold rounded-lg hover:bg-aims-green/90 flex items-center gap-1"><span className="material-symbols-outlined text-[13px]">edit_note</span>Sign Contract & File</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <input
         type="text"

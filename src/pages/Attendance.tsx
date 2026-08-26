@@ -4,6 +4,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
 import { AttendanceManagement } from '@/components/admin/AttendanceManagement';
+import { AttendanceSummary } from '@/components/admin/AttendanceSummary';
 
 // Office location (updated coordinates)
 const OFFICE_LAT = 0.2925;
@@ -115,8 +116,8 @@ export function Attendance() {
 
   if (!user) return <div className="p-8 text-center text-slate-500">Loading…</div>;
 
-  // Company Admin (and leadership) see the company-wide management view
-  if (['COMPANY_ADMIN', 'CD', 'ED', 'SYS_ADMIN'].includes(user.role)) {
+  // Company Admin / ED / SYS_ADMIN see the company-wide management view
+  if (['COMPANY_ADMIN', 'ED', 'SYS_ADMIN'].includes(user.role)) {
     return (
       <div className="space-y-6">
         <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
@@ -124,6 +125,19 @@ export function Attendance() {
           <p className="text-base font-medium text-white">Company-wide individual-level visibility — presence, records, leave, anomalies & analytics</p>
         </div>
         <AttendanceManagement />
+      </div>
+    );
+  }
+
+  // Country Director sees aggregate-only summary (no individual records, no export)
+  if (user.role === 'CD') {
+    return (
+      <div className="space-y-6">
+        <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
+          <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">Attendance</h1>
+          <p className="text-base font-medium text-white">Aggregate presence & punctuality trends — summary level</p>
+        </div>
+        <AttendanceSummary />
       </div>
     );
   }

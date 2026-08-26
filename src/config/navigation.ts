@@ -18,12 +18,13 @@ const CD_NAV_ITEMS: NavItem[] = [
 
 const ED_NAV_ITEMS: NavItem[] = [
   { title: 'Dashboard', href: '/dashboard', icon: 'dashboard', roles: ['ED'] },
-  { title: 'Grants', href: '/dashboard?view=grants', icon: 'volunteer_activism', roles: ['ED'] },
+  { title: 'Grants', href: '/grants', icon: 'volunteer_activism', roles: ['ED'] },
   { title: 'Approvals Queue', href: '/approvals', icon: 'approval', roles: ['ED'] },
   { title: 'Finance & Procurement', href: '/dashboard?view=finance', icon: 'account_balance', roles: ['ED'] },
   { title: 'Attendance', href: '/attendance', icon: 'schedule', roles: ['ED'] },
-  { title: 'HR & People Management', href: '/dashboard?view=hr', icon: 'people', roles: ['ED'] },
-  { title: 'Innovations & Tasks', href: '/dashboard?view=innovations', icon: 'lightbulb', roles: ['ED'] },
+  { title: 'HR & People Management', href: '/hr', icon: 'people', roles: ['ED'] },
+  { title: 'Innovations & Tasks', href: '/tasks', icon: 'lightbulb', roles: ['ED'] },
+  { title: 'Inventory', href: '/inventory', icon: 'inventory_2', roles: ['ED'] },
   { title: 'Documents', href: '/documents', icon: 'folder', roles: ['ED'] },
   { title: 'Feed', href: '/feed', icon: 'feed', roles: ['ED'] },
   { title: 'Email', href: '/email', icon: 'mail', roles: ['ED'] },

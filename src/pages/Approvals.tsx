@@ -4,6 +4,8 @@ import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
+import { flagService, subscribeFlags } from '@/services/flagService';
+import { openFlagForED } from '@/components/grants/FlagForEDModal';
 
 type RequisitionStatus = 'draft' | 'pushed' | 'returned' | 'approved' | 'disbursed' | 'rejected';
 type FinanceTab = 'drafts' | 'pushed' | 'returned' | 'history';
@@ -371,28 +373,46 @@ function FinanceRequisitionWorkspace({ userName }: { userName: string }) {
   );
 }
 
-// ── ED APPROVAL QUEUE (approve / reject) ──
+// ── ED APPROVAL QUEUE (approve / reject / pushback + CD flag interrupts) ──
 function EDApprovalQueue() {
+  const { user } = useAuth();
   const { showToast, addNotification } = useNotifications();
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [, setFlagVersion] = useState(0);
+  useEffect(() => subscribeFlags(() => setFlagVersion((v) => v + 1)), []);
   const requisitions = useRequisitions();
   const pending = requisitions.filter((r) => r.status === 'pushed');
+  const openFlags = flagService.getOpenFlags();
 
-  const decide = (id: string, action: 'approved' | 'returned') => {
+  const resolveFlag = (id: string) => {
+    const flag = flagService.resolveFlag(id, user?.name ?? 'ED');
+    if (!flag) return;
+    addNotification({ title: 'CD Flag Resolved', message: `"${flag.recordLabel}" resolved by ${user?.name}.`, type: 'success' });
+    showToast({ title: 'Flag Resolved', message: 'Removed from the queue.', type: 'success' });
+  };
+
+  const decide = (id: string, action: 'approved' | 'rejected' | 'returned') => {
     mutateRequisitions((list) => {
       const r = list.find((x) => x.id === id);
       if (r && r.status === 'pushed') {
         r.status = action;
-        r.edDecision = { action, comment: action === 'approved' ? 'Approved. Finance to process disbursement.' : 'Returned for revision. Please review the ED notes.', date: new Date().toISOString() };
+        r.edDecision = {
+          action,
+          comment: action === 'approved' ? 'Approved. Finance to process disbursement.' : action === 'returned' ? 'Returned for revision. Please review the ED notes.' : 'Rejected. See ED notes.',
+          date: new Date().toISOString(),
+        };
         r.updatedAt = new Date().toISOString();
       }
     });
     if (action === 'approved') {
-      addNotification({ title: 'Requisition Approved', message: `${id} approved — routed to Finance for disbursement.`, type: 'success', link: '/approvals', actionUrl: '/approvals' });
+      addNotification({ title: 'Requisition Approved', message: `${id} approved → routed to Finance for disbursement.`, type: 'success', link: '/approvals', actionUrl: '/approvals' });
       showToast({ title: 'Approved', message: `${id} approved → routed to Finance for disbursement.`, type: 'success' });
+    } else if (action === 'returned') {
+      addNotification({ title: 'Requisition Pushed Back', message: `${id} pushed back to Finance for revision.`, type: 'warning', link: '/approvals', actionUrl: '/approvals' });
+      showToast({ title: 'Pushed Back', message: `${id} returned to Finance for revision.`, type: 'warning' });
     } else {
-      addNotification({ title: 'Requisition Returned', message: `${id} returned to Finance for revision.`, type: 'warning', link: '/approvals', actionUrl: '/approvals' });
-      showToast({ title: 'Returned', message: `${id} returned to Finance for revision.`, type: 'warning' });
+      addNotification({ title: 'Requisition Rejected', message: `${id} rejected. See ED notes.`, type: 'error', link: '/approvals', actionUrl: '/approvals' });
+      showToast({ title: 'Rejected', message: `${id} rejected.`, type: 'warning' });
     }
   };
 
@@ -400,9 +420,39 @@ function EDApprovalQueue() {
     <div className="space-y-6">
       <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
         <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">Approvals Queue</h1>
-        <p className="text-base font-medium text-white">Requisitions awaiting your approval — you are the sole approval authority</p>
+        <p className="text-base font-medium text-white">Exclusive to ED — requisitions, payslips and CD flags · sole approval authority</p>
       </div>
+
+      {/* CD Flag interrupts — priority at top of queue */}
+      {openFlags.length > 0 && (
+        <div className="space-y-3">
+          <p className="text-xs font-bold text-aims-orange uppercase tracking-wider flex items-center gap-1.5">
+            <span className="material-symbols-outlined text-[16px]">flag</span>CD Flags — Priority Interrupts ({openFlags.length})
+          </p>
+          {openFlags.map((f) => (
+            <div key={f.id} className={cn('rounded-lg border p-4 shadow-sm', f.priority === 'urgent' ? 'bg-red-50 border-red-200' : 'bg-aims-orange/5 border-aims-orange/20')}>
+              <div className="flex items-start justify-between flex-wrap gap-2">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <span className={cn('text-[9px] font-bold px-1.5 py-0.5 rounded uppercase', f.priority === 'urgent' ? 'bg-red-500 text-white' : 'bg-aims-orange/20 text-aims-orange')}>{f.priority}</span>
+                    <span className="text-[10px] font-bold text-slate-500">{f.raisedBy} · {new Date(f.raisedAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
+                    <span className="text-[10px] font-bold text-aims-navy bg-aims-navy/5 px-1.5 py-0.5 rounded uppercase">{f.sourceModule}</span>
+                  </div>
+                  <p className="text-sm font-bold text-slate-900">{f.recordLabel}</p>
+                  <p className="text-xs text-slate-600 mt-1 italic">"{f.note}"</p>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <button onClick={() => openFlagForED({ recordLabel: f.recordLabel, sourceModule: f.sourceModule })} className="px-3 py-1.5 bg-white border border-slate-200 text-slate-600 text-[10px] font-bold rounded-lg hover:bg-slate-50">Comment</button>
+                  <button onClick={() => resolveFlag(f.id)} className="px-3 py-1.5 bg-aims-navy text-white text-[10px] font-bold rounded-lg hover:bg-aims-navy/90">Resolve Flag</button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="space-y-3">
+        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Requisitions & Payslips Awaiting Decision</p>
         {pending.length === 0 && <div className="bg-white rounded-xl border border-slate-200 p-12 text-center"><p className="text-sm text-slate-400 italic">No requisitions awaiting approval.</p></div>}
         {pending.map((r) => {
           const isExp = expandedId === r.id;
@@ -431,7 +481,8 @@ function EDApprovalQueue() {
                     </tbody>
                   </table>
                   <div className="flex justify-end gap-2">
-                    <button onClick={() => decide(r.id, 'returned')} className="px-4 py-2 bg-red-50 text-red-600 text-xs font-bold rounded-lg hover:bg-red-100 flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">close</span>Reject / Return</button>
+                    <button onClick={() => decide(r.id, 'rejected')} className="px-4 py-2 bg-red-50 text-red-600 text-xs font-bold rounded-lg hover:bg-red-100 flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">close</span>Reject</button>
+                    <button onClick={() => decide(r.id, 'returned')} className="px-4 py-2 bg-aims-orange text-white text-xs font-bold rounded-lg hover:bg-aims-orange/90 flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">undo</span>Push Back</button>
                     <button onClick={() => decide(r.id, 'approved')} className="px-4 py-2 bg-aims-green text-white text-xs font-bold rounded-lg hover:bg-aims-green/90 flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">check</span>Approve</button>
                   </div>
                 </div>
@@ -444,14 +495,14 @@ function EDApprovalQueue() {
   );
 }
 
-// ── READ-ONLY VIEW (CD) ──
+// ── READ-ONLY VIEW (CD — Approvals in Progress) ──
 function ReadonlyApprovals() {
-  const all = MOCK_REQUISITIONS;
+  const all = requisitions;
   return (
     <div className="space-y-6">
       <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
         <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">Approvals in Progress</h1>
-        <p className="text-base font-medium text-white">Read-only visibility into the approval pipeline</p>
+        <p className="text-base font-medium text-white">Read-only status tracker — where requisitions and payslips sit in ED's pipeline</p>
       </div>
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
         <table className="w-full text-left text-sm">
@@ -461,6 +512,7 @@ function ReadonlyApprovals() {
             <th className="px-4 py-3 font-bold text-slate-500 text-xs uppercase">Dept</th>
             <th className="px-4 py-3 font-bold text-slate-500 text-xs uppercase">Amount</th>
             <th className="px-4 py-3 font-bold text-slate-500 text-xs uppercase">Status</th>
+            <th className="px-4 py-3 font-bold text-slate-500 text-xs uppercase text-right">Action</th>
           </tr></thead>
           <tbody className="divide-y divide-slate-100">
             {all.map((r) => (
@@ -470,6 +522,11 @@ function ReadonlyApprovals() {
                 <td className="px-4 py-3 text-slate-600 text-xs">{r.dept}</td>
                 <td className="px-4 py-3 font-bold text-slate-900 text-xs">{fmtMoney(r.amount)}</td>
                 <td className="px-4 py-3"><span className={cn('text-[9px] font-bold px-1.5 py-0.5 rounded uppercase', STATUS_BADGE[r.status].cls)}>{STATUS_BADGE[r.status].label}</span></td>
+                <td className="px-4 py-3 text-right">
+                  <button onClick={() => openFlagForED({ recordLabel: `${r.id} — ${r.title}`, sourceModule: 'approvals' })} className="text-[10px] font-bold text-aims-orange hover:underline flex items-center gap-1 justify-end">
+                    <span className="material-symbols-outlined text-[13px]">flag</span>Flag for ED
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>

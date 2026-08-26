@@ -6,6 +6,7 @@
 
 import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
 import { PeopleTab } from '@/components/admin/PeopleTab';
 import { PayslipsTab } from '@/components/admin/PayslipsTab';
@@ -13,6 +14,7 @@ import { LeaveTab } from '@/components/admin/LeaveTab';
 import { ContractsTab } from '@/components/admin/ContractsTab';
 import { PerformanceTab } from '@/components/admin/PerformanceTab';
 import { OffboardingTab } from '@/components/admin/OffboardingTab';
+import { HRSummary } from '@/components/admin/HRSummary';
 
 type AdminTab = 'directory' | 'payslips' | 'leave' | 'contracts' | 'appraisals' | 'offboarding';
 
@@ -41,8 +43,22 @@ function initialTab(stateTab?: string): AdminTab {
 }
 
 export function HR() {
+  const { user } = useAuth();
   const location = useLocation();
   const [activeTab, setActiveTab] = useState<AdminTab>(() => initialTab((location.state as { tab?: string } | null)?.tab));
+
+  // Country Director gets the consolidated HR & Admin Summary (no individual records)
+  if (user?.role === 'CD') {
+    return (
+      <div className="space-y-6">
+        <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
+          <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">HR & Admin Summary</h1>
+          <p className="text-base font-medium text-white">Consolidated workforce indicators — headcount, contracts, appraisals</p>
+        </div>
+        <HRSummary />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
