@@ -1,4 +1,19 @@
 // src/pages/Feed.tsx
+// ============================================================
+// AIMS — Company Feed (interconnected across personas)
+// Each role only sees the channels applicable to them:
+//   ED            : every channel, full moderation
+//   CD            : General (post-only) + Governance (full moderation)
+//   COMPANY_ADMIN : General (post-only) + HR & Admin (full moderation)
+//   FINANCE       : General (post-only) + Finance (full moderation)
+//   GRANTS_*      : General (post-only) + Grants (full moderation)
+//   INNOVATOR     : General (post-only) + Innovations (full moderation)
+//   SYS_ADMIN     : General (post-only) + System (full moderation)
+// Messages live in a shared store (persisted), so a post made by one
+// persona appears for every other persona with access to that channel.
+// @mentions notify the tagged person (bell + email).
+// ============================================================
+
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
@@ -14,44 +29,149 @@ interface ChatMessage {
   timestamp: string;
   channel: string;
   mentions: string[];
+  pinned?: boolean;
+  edited?: boolean;
   attachment?: { name: string; type: string; size: string; url?: string };
   isImage?: boolean;
 }
 
-const CHANNELS = [
-  { id: 'general', label: '# General', icon: 'tag' },
-  { id: 'grants', label: '# Grants', icon: 'volunteer_activism' },
-  { id: 'finance', label: '# Finance', icon: 'account_balance' },
-  { id: 'hr', label: '# HR & Admin', icon: 'people' },
-  { id: 'innovations', label: '# Innovations', icon: 'lightbulb' },
-  { id: 'procurement', label: '# Procurement', icon: 'shopping_cart' },
-  { id: 'research', label: '# Research', icon: 'science' },
+interface ChannelDef {
+  id: string;
+  label: string;
+  icon: string;
+  owner: string;
+  description: string;
+}
+
+const CHANNELS: ChannelDef[] = [
+  { id: 'general', label: '# General', icon: 'tag', owner: 'ED', description: 'Company-wide announcements — ED owns and moderates' },
+  { id: 'governance', label: '# Governance', icon: 'account_balance', owner: 'CD', description: 'Governance & board matters — CD\'s channel' },
+  { id: 'hr-admin', label: '# HR & Admin', icon: 'people', owner: 'COMPANY_ADMIN', description: 'People, HR and administration' },
+  { id: 'finance', label: '# Finance', icon: 'account_balance', owner: 'FINANCE', description: 'Finance, budgets and disbursements' },
+  { id: 'grants', label: '# Grants', icon: 'volunteer_activism', owner: 'GRANTS', description: 'Grants pipeline and proposals' },
+  { id: 'innovations', label: '# Innovations', icon: 'lightbulb', owner: 'INNOVATIONS', description: 'Innovation projects and prototypes' },
+  { id: 'system', label: '# System', icon: 'settings', owner: 'SYS_ADMIN', description: 'System operations and security' },
 ];
 
-const ALL_USERS = [
-  { id: 'u-sarah', name: 'Sarah Aciro', role: 'GRANTS_MANAGER', dept: 'Grants' },
-  { id: 'u-nassir', name: 'Nassir Mukiibi', role: 'ED', dept: 'Executive' },
-  { id: 'u-chairman', name: 'Dr. Sarah Namukasa', role: 'CD', dept: 'Executive' },
-  { id: 'u-pius', name: 'Pius Odong', role: 'INNOVATOR', dept: 'Innovation' },
-  { id: 'u-florence', name: 'Florence Adong', role: 'INNOVATOR', dept: 'Research' },
-  { id: 'u-david', name: 'David Okello', role: 'FINANCE', dept: 'Finance' },
-  { id: 'u-grace', name: 'Grace Nakamya', role: 'COMPANY_ADMIN', dept: 'HR' },
-  { id: 'u-isaac', name: 'Isaac Tumusiime', role: 'COMPANY_ADMIN', dept: 'Procurement' },
-  { id: 'u-janet', name: 'Janet Apio', role: 'GRANT_WRITER', dept: 'Grants' },
+interface Person { id: string; name: string; role: string; dept: string }
+
+const ALL_USERS: Person[] = [
+  { id: 'user-cd-001', name: 'Nassir Mwanje', role: 'CD', dept: 'Executive' },
+  { id: 'user-ed-001', name: 'Peter Byamugisha', role: 'ED', dept: 'Executive' },
+  { id: 'user-admin-001', name: 'Grace Aceng', role: 'COMPANY_ADMIN', dept: 'HR & Admin' },
+  { id: 'user-sysadmin-001', name: 'Okello Komakech', role: 'SYS_ADMIN', dept: 'IT' },
+  { id: 'user-finance-001', name: 'Amos Ojok', role: 'FINANCE', dept: 'Finance' },
+  { id: 'user-gm-001', name: 'Sarah Aciro', role: 'GRANTS_MANAGER', dept: 'Grants' },
+  { id: 'user-gw-001', name: 'Janet Apio', role: 'GRANT_WRITER', dept: 'Grants' },
+  { id: 'user-innov-001', name: 'Pius Odong', role: 'INNOVATOR', dept: 'Innovation' },
+  { id: 'u-florence', name: 'Florence Adong', role: 'GRANT_WRITER', dept: 'Grants' },
+  { id: 'u-isaac', name: 'Isaac Tumusiime', role: 'FINANCE', dept: 'Finance' },
+  { id: 'u-grace-n', name: 'Grace Nakamya', role: 'COMPANY_ADMIN', dept: 'HR & Admin' },
 ];
 
-const MOCK_MESSAGES: ChatMessage[] = [
-  { id: 'm1', authorId: 'u-sarah', authorName: 'Sarah Aciro', authorRole: 'GRANTS_MANAGER', authorDepartment: 'Grants', content: 'Q3 grant pipeline updated. USAID Land Rights deadline confirmed for Sep 5. All compliance docs attached in Documents hub.', timestamp: '2026-08-22T09:30:00Z', channel: 'grants', mentions: [] },
-  { id: 'm2', authorId: 'u-grace', authorName: 'Grace Nakamya', authorRole: 'COMPANY_ADMIN', authorDepartment: 'HR', content: 'Reminder: All staff must complete the updated leave policy acknowledgment by Friday. Link in Documents hub.', timestamp: '2026-08-22T08:45:00Z', channel: 'hr', mentions: [] },
-  { id: 'm3', authorId: 'u-pius', authorName: 'Pius Odong', authorRole: 'INNOVATOR', authorDepartment: 'Innovation', content: 'Solar grain dryer prototype assembly complete! 🎉 Field testing starts next week with 5 farmer groups in Gulu.', timestamp: '2026-08-21T17:00:00Z', channel: 'innovations', mentions: [], attachment: { name: 'prototype-photos.zip', type: 'ZIP', size: '4.2 MB' } },
-  { id: 'm4', authorId: 'u-david', authorName: 'David Okello', authorRole: 'FINANCE', authorDepartment: 'Finance', content: 'August expenditure report finalized. Net surplus UGX 350M. Full breakdown available in Finance module.', timestamp: '2026-08-21T15:20:00Z', channel: 'finance', mentions: [] },
-  { id: 'm5', authorId: 'u-chairman', authorName: 'Dr. Sarah Namukasa', authorRole: 'CD', authorDepartment: 'Executive', content: 'Q2 Board minutes approved. Key action: all department heads submit Q3 budget revisions by Aug 25.', timestamp: '2026-08-21T11:30:00Z', channel: 'general', mentions: ['Nassir Mukiibi'] },
-  { id: 'm6', authorId: 'u-florence', authorName: 'Florence Adong', authorRole: 'INNOVATOR', authorDepartment: 'Research', content: 'Weather station sensor specs finalized. Procurement request submitted for 15 units. Budget: UGX 8.5M.', timestamp: '2026-08-20T14:00:00Z', channel: 'innovations', mentions: [], attachment: { name: 'sensor-specs-v2.pdf', type: 'PDF', size: '890 KB' } },
-  { id: 'm7', authorId: 'u-isaac', authorName: 'Isaac Tumusiime', authorRole: 'COMPANY_ADMIN', authorDepartment: 'Procurement', content: 'Vendor shortlist for field equipment procurement completed. 3 quotes received. Evaluation matrix shared with Finance.', timestamp: '2026-08-20T10:15:00Z', channel: 'procurement', mentions: [] },
-  { id: 'm8', authorId: 'u-janet', authorName: 'Janet Apio', authorRole: 'GRANT_WRITER', authorDepartment: 'Grants', content: 'Youth Digital Literacy proposal draft ready for TL review. Sustainability section needs strengthening.', timestamp: '2026-08-19T16:30:00Z', channel: 'grants', mentions: ['Sarah Aciro'] },
-  { id: 'm9', authorId: 'u-nassir', authorName: 'Nassir Mukiibi', authorRole: 'ED', authorDepartment: 'Executive', content: 'All department Q3 budget proposals received. Consolidated review underway. Final approval expected by Aug 28.', timestamp: '2026-08-19T09:00:00Z', channel: 'general', mentions: [] },
-  { id: 'm10', authorId: 'u-grace', authorName: 'Grace Nakamya', authorRole: 'COMPANY_ADMIN', authorDepartment: 'HR', content: 'New hire onboarding: Mercy Atim (Research Assistant) starts Monday. Credentials being provisioned. Welcome her! 👋', timestamp: '2026-08-18T14:45:00Z', channel: 'hr', mentions: [] },
+// ── Channel access rules ──
+interface ChannelAccess { id: string; canPost: boolean; canModerate: boolean }
+
+function channelAccessFor(role: string): ChannelAccess[] {
+  const rules: Record<string, { canPost: boolean; canModerate: boolean }[]> = {
+    ED: CHANNELS.map(() => ({ canPost: true, canModerate: true })),
+    CD: [
+      { canPost: true, canModerate: false }, // general — post only
+      { canPost: true, canModerate: true },  // governance — CD's channel
+    ],
+    COMPANY_ADMIN: [
+      { canPost: true, canModerate: false }, // general
+      { canPost: true, canModerate: true },  // hr-admin
+    ],
+    FINANCE: [
+      { canPost: true, canModerate: false }, // general
+      { canPost: true, canModerate: true },  // finance
+    ],
+    GRANTS_MANAGER: [
+      { canPost: true, canModerate: false }, // general
+      { canPost: true, canModerate: true },  // grants
+    ],
+    GRANT_WRITER: [
+      { canPost: true, canModerate: false }, // general
+      { canPost: true, canModerate: true },  // grants
+    ],
+    INNOVATOR: [
+      { canPost: true, canModerate: false }, // general
+      { canPost: true, canModerate: true },  // innovations
+    ],
+    SYS_ADMIN: [
+      { canPost: true, canModerate: false }, // general
+      { canPost: true, canModerate: true },  // system
+    ],
+  };
+  const access = rules[role] ?? [{ canPost: true, canModerate: false }];
+  return access.map((a, i) => ({ ...a, id: CHANNELS[i].id }));
+}
+
+// ── Shared feed store (persisted, interconnected across personas) ──
+const STORAGE_KEY = 'aims_feed_messages';
+
+function loadMessages(): ChatMessage[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw) as ChatMessage[];
+  } catch { /* ignore */ }
+  return [];
+}
+
+const SEED: ChatMessage[] = [
+  { id: 'm9', authorId: 'user-ed-001', authorName: 'Peter Byamugisha', authorRole: 'ED', authorDepartment: 'Executive', content: 'All department Q3 budget proposals received. Consolidated review underway. Final approval expected by Aug 28.', timestamp: '2026-08-25T09:00:00Z', channel: 'general', mentions: [] },
+  { id: 'm5', authorId: 'user-cd-001', authorName: 'Nassir Mwanje', authorRole: 'CD', authorDepartment: 'Executive', content: 'Q2 Board minutes approved. Key action: all department heads submit Q3 budget revisions by Aug 25.', timestamp: '2026-08-25T11:30:00Z', channel: 'governance', mentions: ['Peter Byamugisha'] },
+  { id: 'm10', authorId: 'user-admin-001', authorName: 'Grace Aceng', authorRole: 'COMPANY_ADMIN', authorDepartment: 'HR & Admin', content: 'New hire onboarding: Mercy Atim (Research Assistant) starts Monday. Credentials being provisioned. Welcome her!', timestamp: '2026-08-24T14:45:00Z', channel: 'hr-admin', mentions: [] },
+  { id: 'm2', authorId: 'user-grace-n', authorName: 'Grace Nakamya', authorRole: 'COMPANY_ADMIN', authorDepartment: 'HR & Admin', content: 'Reminder: All staff must complete the updated leave policy acknowledgment by Friday. Link in Documents hub.', timestamp: '2026-08-24T08:45:00Z', channel: 'hr-admin', mentions: [] },
+  { id: 'm4', authorId: 'user-finance-001', authorName: 'Amos Ojok', authorRole: 'FINANCE', authorDepartment: 'Finance', content: 'August expenditure report finalized. Net surplus UGX 350M. Full breakdown available in Finance module.', timestamp: '2026-08-24T15:20:00Z', channel: 'finance', mentions: [] },
+  { id: 'm1', authorId: 'user-gm-001', authorName: 'Sarah Aciro', authorRole: 'GRANTS_MANAGER', authorDepartment: 'Grants', content: 'Q3 grant pipeline updated. USAID Land Rights deadline confirmed for Sep 5. All compliance docs attached in Documents hub.', timestamp: '2026-08-24T09:30:00Z', channel: 'grants', mentions: [] },
+  { id: 'm8', authorId: 'user-gw-001', authorName: 'Janet Apio', authorRole: 'GRANT_WRITER', authorDepartment: 'Grants', content: 'Youth Digital Literacy proposal draft ready for TL review. Sustainability section needs strengthening.', timestamp: '2026-08-23T16:30:00Z', channel: 'grants', mentions: ['Sarah Aciro'] },
+  { id: 'm3', authorId: 'user-innov-001', authorName: 'Pius Odong', authorRole: 'INNOVATOR', authorDepartment: 'Innovation', content: 'Solar grain dryer prototype assembly complete! Field testing starts next week with 5 farmer groups in Gulu.', timestamp: '2026-08-23T17:00:00Z', channel: 'innovations', mentions: [], attachment: { name: 'prototype-photos.zip', type: 'ZIP', size: '4.2 MB' } },
+  { id: 'm6', authorId: 'u-florence', authorName: 'Florence Adong', authorRole: 'GRANT_WRITER', authorDepartment: 'Grants', content: 'Weather station sensor specs finalized. Procurement request submitted for 15 units. Budget: UGX 8.5M.', timestamp: '2026-08-22T14:00:00Z', channel: 'innovations', mentions: [], attachment: { name: 'sensor-specs-v2.pdf', type: 'PDF', size: '890 KB' } },
 ];
+
+let feedMessages: ChatMessage[] = (() => {
+  const loaded = loadMessages();
+  return loaded.length > 0 ? loaded : SEED;
+})();
+
+const feedListeners = new Set<() => void>();
+function persist(): void {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(feedMessages.slice(-200))); } catch { /* ignore */ }
+  feedListeners.forEach((l) => l());
+}
+function useFeedMessages(): ChatMessage[] {
+  const [, setV] = useState(0);
+  useEffect(() => {
+    const l = () => setV((v) => v + 1);
+    feedListeners.add(l);
+    return () => { feedListeners.delete(l); };
+  }, []);
+  return feedMessages;
+}
+function postFeedMessage(msg: ChatMessage): void {
+  feedMessages = [...feedMessages, msg];
+  persist();
+}
+function deleteFeedMessage(id: string): void {
+  feedMessages = feedMessages.filter((m) => m.id !== id);
+  persist();
+}
+function editFeedMessage(id: string, content: string): void {
+  feedMessages = feedMessages.map((m) => (m.id === id ? { ...m, content, edited: true } : m));
+  persist();
+}
+function togglePin(id: string): void {
+  feedMessages = feedMessages.map((m) => (m.id === id ? { ...m, pinned: !m.pinned } : m));
+  persist();
+}
+
+let msgCounter = 0;
+function nextMsgId(): string {
+  msgCounter += 1;
+  return `fm-${Date.now()}-${msgCounter}`;
+}
 
 function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
@@ -77,29 +197,30 @@ function roleColor(role: string): string {
 
 export function Feed() {
   const { user } = useAuth();
-  const { showToast } = useNotifications();
-  const [activeChannel, setActiveChannel] = useState('general');
+  const { showToast, addNotification } = useNotifications();
+  const messages = useFeedMessages();
+  const [activeChannel, setActiveChannel] = useState<string>('general');
   const [messageText, setMessageText] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [showMentionPicker, setShowMentionPicker] = useState(false);
   const [mentionFilter, setMentionFilter] = useState('');
   const [typingUser, setTypingUser] = useState<string | null>(null);
+  const [editingMsg, setEditingMsg] = useState<ChatMessage | null>(null);
+  const [editText, setEditText] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   if (!user) return null;
 
-  const canSeeAll = ['CD', 'ED', 'COMPANY_ADMIN'].includes(user.role);
-  const userDept = user.department.toLowerCase();
-
-  const accessibleChannels = CHANNELS.filter((ch) => {
-    if (ch.id === 'general') return true;
-    if (canSeeAll) return true;
-    return ch.id === userDept;
-  });
+  const access = channelAccessFor(user.role);
+  const accessibleChannels = CHANNELS.map((ch, i) => ({ ...ch, access: access[i] })).filter((c) => c.access);
+  const activeDef = accessibleChannels.find((c) => c.id === activeChannel) ?? accessibleChannels[0];
+  const activeAccess = activeDef?.access ?? { canPost: true, canModerate: false };
+  const canPost = activeAccess.canPost;
+  const canModerate = activeAccess.canModerate;
 
   const filteredMessages = useMemo(() => {
-    return MOCK_MESSAGES
+    return messages
       .filter((m) => {
         if (m.channel !== activeChannel) return false;
         if (!searchQuery.trim()) return true;
@@ -107,25 +228,24 @@ export function Feed() {
         return m.content.toLowerCase().includes(q) || m.authorName.toLowerCase().includes(q);
       })
       .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-  }, [activeChannel, searchQuery]);
+  }, [messages, activeChannel, searchQuery]);
 
-  // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [filteredMessages]);
+  }, [filteredMessages, typingUser]);
 
-  // Simulate typing indicator
+  // Simulated typing indicator among users who can see this channel
   useEffect(() => {
     const interval = setInterval(() => {
-      const otherUsers = ALL_USERS.filter((u) => u.id !== user.id);
-      const randomUser = otherUsers[Math.floor(Math.random() * otherUsers.length)];
+      const eligible = ALL_USERS.filter((u) => u.id !== user.id && channelAccessFor(u.role).some((a) => a.id === activeChannel && a.canPost));
+      if (eligible.length === 0) return;
+      const randomUser = eligible[Math.floor(Math.random() * eligible.length)];
       setTypingUser(randomUser.name);
       setTimeout(() => setTypingUser(null), 3000);
     }, 15000);
     return () => clearInterval(interval);
-  }, [user]);
+  }, [user, activeChannel]);
 
-  // Group messages by date
   const groupedMessages: { date: string; messages: ChatMessage[] }[] = [];
   let currentDate = '';
   for (const msg of filteredMessages) {
@@ -138,7 +258,6 @@ export function Feed() {
     }
   }
 
-  // Mention picker users
   const mentionUsers = useMemo(() => {
     const q = mentionFilter.toLowerCase();
     return ALL_USERS.filter((u) => u.id !== user.id && u.name.toLowerCase().includes(q));
@@ -147,7 +266,6 @@ export function Feed() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setMessageText(val);
-    // Detect @ trigger
     const lastAt = val.lastIndexOf('@');
     if (lastAt >= 0 && (lastAt === 0 || val[lastAt - 1] === ' ')) {
       const afterAt = val.slice(lastAt + 1);
@@ -169,14 +287,59 @@ export function Feed() {
     inputRef.current?.focus();
   };
 
+  const extractMentions = (text: string): string[] => {
+    const matches = text.match(/@([\w\s]+?)(?=\s@|\s$|$)/g) ?? [];
+    return matches
+      .map((m) => m.replace('@', '').trim())
+      .filter((n) => ALL_USERS.some((u) => u.name.toLowerCase() === n.toLowerCase()));
+  };
+
   const handleSend = () => {
-    if (!messageText.trim()) return;
-    showToast({ title: 'Message Sent', message: `Posted to #${activeChannel}`, type: 'success' });
+    if (!messageText.trim() || !canPost) return;
+    const mentioned = extractMentions(messageText);
+    const msg: ChatMessage = {
+      id: nextMsgId(),
+      authorId: user.id,
+      authorName: user.name,
+      authorRole: user.role,
+      authorDepartment: user.department,
+      content: messageText.trim(),
+      timestamp: new Date().toISOString(),
+      channel: activeChannel,
+      mentions: mentioned,
+    };
+    postFeedMessage(msg);
+
+    // Notify (bell + email) anyone mentioned
+    mentioned.forEach((name) => {
+      addNotification({
+        title: `@${name} — mentioned in #${activeChannel}`,
+        message: `${user.name}: "${msg.content.slice(0, 140)}"`,
+        type: 'info',
+        link: '/feed',
+        actionUrl: '/feed',
+        recipientName: name,
+      });
+    });
+
+    showToast({ title: 'Message Posted', message: `Posted to ${activeDef.label}`, type: 'success' });
     setMessageText('');
     setShowMentionPicker(false);
   };
 
+  const handleEditSave = () => {
+    if (!editingMsg || !editText.trim()) return;
+    editFeedMessage(editingMsg.id, editText.trim());
+    showToast({ title: 'Message Edited', message: 'Your message was updated.', type: 'success' });
+    setEditingMsg(null);
+    setEditText('');
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (editingMsg) {
+      if (e.key === 'Escape') { setEditingMsg(null); return; }
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleEditSave(); return; }
+    }
     if (showMentionPicker) {
       if (e.key === 'Escape') { setShowMentionPicker(false); return; }
       if (e.key === 'Enter' && mentionUsers.length > 0) { e.preventDefault(); insertMention(mentionUsers[0].name); return; }
@@ -189,35 +352,33 @@ export function Feed() {
 
   return (
     <div className="flex h-[calc(100vh-7rem)] gap-0 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-      {/* ── Channel Sidebar ── */}
-      <div className="w-52 flex-shrink-0 border-r border-slate-200 bg-slate-50 p-3 space-y-0.5 overflow-y-auto">
+      {/* ── Channel Sidebar (role-scoped) ── */}
+      <div className="w-56 flex-shrink-0 border-r border-slate-200 bg-slate-50 p-3 space-y-0.5 overflow-y-auto">
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">Channels</p>
         {accessibleChannels.map((ch) => (
           <button
             key={ch.id}
-            onClick={() => { setActiveChannel(ch.id); setSearchQuery(''); }}
+            onClick={() => { setActiveChannel(ch.id); setSearchQuery(''); setEditingMsg(null); }}
             className={cn('w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-colors', activeChannel === ch.id ? 'bg-aims-navy text-white' : 'text-slate-600 hover:bg-slate-200/50')}
           >
             <span className="material-symbols-outlined text-[16px]">{ch.icon}</span>
             <span className="truncate">{ch.label}</span>
+            {ch.access.canModerate && <span className="ml-auto text-[8px] font-bold uppercase opacity-70">mod</span>}
           </button>
         ))}
-        {!canSeeAll && (
-          <div className="mt-4 px-3">
-            <p className="text-[10px] text-slate-400 italic leading-relaxed">Showing your department + general channels only.</p>
-          </div>
-        )}
+        <div className="mt-4 px-3">
+          <p className="text-[10px] text-slate-400 italic leading-relaxed">You can see {accessibleChannels.length} channel(s). General is post-only — {CHANNELS[0].owner} moderates it.</p>
+        </div>
       </div>
 
       {/* ── Chat Area ── */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Header */}
         <div className="px-5 py-3 border-b border-slate-200 flex items-center justify-between flex-shrink-0 bg-white">
           <div>
-            <h2 className="text-sm font-bold text-slate-900 capitalize flex items-center gap-2">
-              <span className="material-symbols-outlined text-[18px] text-slate-400">tag</span>{activeChannel}
+            <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <span className="material-symbols-outlined text-[18px] text-slate-400">{activeDef.icon}</span>{activeDef.label}
             </h2>
-            <p className="text-[10px] text-slate-500">{filteredMessages.length} messages • {accessibleChannels.find((c) => c.id === activeChannel)?.label}</p>
+            <p className="text-[10px] text-slate-500">{activeDef.description} • {filteredMessages.length} messages{canModerate ? ' • you moderate' : ''}</p>
           </div>
           <div className="relative w-56">
             <span className="material-symbols-outlined text-slate-400 text-[16px] absolute left-2.5 top-1/2 -translate-y-1/2">search</span>
@@ -227,6 +388,15 @@ export function Feed() {
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-1 bg-slate-50/30">
+          {filteredMessages.filter((m) => m.pinned).length > 0 && (
+            <div className="mb-3 p-2.5 bg-aims-navy/5 border border-aims-navy/15 rounded-lg">
+              <p className="text-[9px] font-bold text-aims-navy uppercase tracking-wider mb-1">📌 Pinned</p>
+              {filteredMessages.filter((m) => m.pinned).map((m) => (
+                <p key={m.id} className="text-xs text-slate-700"><strong>{m.authorName}:</strong> {m.content.slice(0, 120)}</p>
+              ))}
+            </div>
+          )}
+
           {groupedMessages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-slate-400">
               <span className="material-symbols-outlined text-[48px] mb-3 text-slate-300">chat_bubble</span>
@@ -235,7 +405,6 @@ export function Feed() {
           )}
           {groupedMessages.map((group) => (
             <div key={group.date}>
-              {/* Date Separator */}
               <div className="flex items-center gap-3 my-5">
                 <div className="flex-1 h-px bg-slate-200" />
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2">{group.date}</span>
@@ -249,7 +418,6 @@ export function Feed() {
 
                 return (
                   <div key={msg.id} className={cn('flex gap-2 mb-1', isMe ? 'flex-row-reverse' : 'flex-row', !showAvatar && 'mt-0.5')}>
-                    {/* Avatar */}
                     <div className="w-8 flex-shrink-0">
                       {showAvatar && !isMe && (
                         <div className={cn('w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white', roleColor(msg.authorRole))}>
@@ -258,17 +426,27 @@ export function Feed() {
                       )}
                     </div>
 
-                    {/* Bubble */}
                     <div className={cn('max-w-[70%] min-w-[120px]', isMe ? 'items-end' : 'items-start')}>
                       {showAvatar && !isMe && (
                         <div className="flex items-baseline gap-2 mb-0.5 ml-1">
                           <span className="text-[11px] font-bold text-slate-900">{msg.authorName}</span>
                           <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 uppercase">{msg.authorRole.replace('_', ' ')}</span>
+                          {msg.pinned && <span className="text-[9px] text-aims-navy">📌</span>}
                         </div>
                       )}
                       <div className={cn('px-3 py-2 rounded-2xl text-sm leading-relaxed', isMe ? 'bg-aims-navy text-white rounded-tr-sm' : 'bg-white border border-slate-200 text-slate-800 rounded-tl-sm shadow-sm')}>
-                        <p className="whitespace-pre-wrap">{msg.content}</p>
-                        {/* Mentions */}
+                        {editingMsg?.id === msg.id ? (
+                          <input
+                            type="text"
+                            value={editText}
+                            onChange={(e) => setEditText(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            autoFocus
+                            className="w-full text-sm bg-slate-50 border border-aims-navy/40 rounded px-2 py-1 focus:outline-none"
+                          />
+                        ) : (
+                          <p className="whitespace-pre-wrap">{msg.content}{msg.edited && <span className="text-[9px] opacity-60 ml-1">(edited)</span>}</p>
+                        )}
                         {msg.mentions.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-1.5">
                             {msg.mentions.map((m) => (
@@ -276,7 +454,6 @@ export function Feed() {
                             ))}
                           </div>
                         )}
-                        {/* Attachment */}
                         {msg.attachment && (
                           <div className={cn('mt-2 inline-flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-colors', isMe ? 'bg-white/10 border-white/20 hover:bg-white/20' : 'bg-slate-50 border-slate-200 hover:bg-slate-100')}>
                             <span className={cn('material-symbols-outlined text-[16px]', isMe ? 'text-white/80' : 'text-slate-400')}>
@@ -289,7 +466,17 @@ export function Feed() {
                           </div>
                         )}
                       </div>
-                      <p className={cn('text-[9px] text-slate-400 mt-0.5', isMe ? 'text-right mr-1' : 'ml-1')}>{formatTime(msg.timestamp)}</p>
+
+                      {/* Moderation actions (channel moderators only) */}
+                      {canModerate && (
+                        <div className={cn('flex items-center gap-2 mt-0.5', isMe ? 'justify-end mr-1' : 'justify-start ml-1')}>
+                          <span className="text-[9px] text-slate-400">{formatTime(msg.timestamp)}</span>
+                          <button onClick={() => { setEditingMsg(msg); setEditText(msg.content); }} className="text-[9px] font-bold text-aims-navy hover:underline">Edit</button>
+                          <button onClick={() => { togglePin(msg.id); showToast({ title: msg.pinned ? 'Unpinned' : 'Pinned', message: msg.pinned ? 'Message unpinned.' : 'Message pinned to channel.', type: 'info' }); }} className="text-[9px] font-bold text-aims-navy hover:underline">Pin</button>
+                          <button onClick={() => { deleteFeedMessage(msg.id); showToast({ title: 'Message Deleted', message: 'Removed from the channel.', type: 'info' }); }} className="text-[9px] font-bold text-red-500 hover:underline">Delete</button>
+                        </div>
+                      )}
+                      {!canModerate && <p className={cn('text-[9px] text-slate-400 mt-0.5', isMe ? 'text-right mr-1' : 'ml-1')}>{formatTime(msg.timestamp)}</p>}
                     </div>
                   </div>
                 );
@@ -297,7 +484,6 @@ export function Feed() {
             </div>
           ))}
 
-          {/* Typing Indicator */}
           {typingUser && (
             <div className="flex gap-2 mb-2 mt-2">
               <div className="w-8 flex-shrink-0" />
@@ -318,7 +504,6 @@ export function Feed() {
 
         {/* Input Area */}
         <div className="px-4 py-3 border-t border-slate-200 bg-white flex-shrink-0 relative">
-          {/* Mention Picker */}
           {showMentionPicker && mentionUsers.length > 0 && (
             <div className="absolute bottom-full left-4 right-4 mb-1 bg-white border border-slate-200 rounded-lg shadow-xl max-h-48 overflow-y-auto z-50">
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 py-1.5 border-b border-slate-100">Mention someone</p>
@@ -342,20 +527,29 @@ export function Feed() {
               <input
                 ref={inputRef}
                 type="text"
-                value={messageText}
-                onChange={handleInputChange}
+                value={editingMsg ? editText : messageText}
+                onChange={editingMsg ? (e) => setEditText(e.target.value) : handleInputChange}
                 onKeyDown={handleKeyDown}
-                placeholder={`Message #${activeChannel}… (type @ to mention)`}
+                placeholder={canPost ? `Message ${activeDef.label}… (type @ to mention)` : `Read-only in this channel`}
+                readOnly={!canPost}
+                disabled={!canPost}
                 className="w-full text-sm border border-slate-200 rounded-full px-4 py-2.5 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-aims-navy/30 focus:bg-white transition-colors"
               />
             </div>
-            <button
-              onClick={handleSend}
-              disabled={!messageText.trim()}
-              className={cn('p-2.5 rounded-full transition-colors flex-shrink-0', messageText.trim() ? 'bg-aims-navy text-white hover:bg-aims-navy/90 shadow-md' : 'bg-slate-100 text-slate-400 cursor-not-allowed')}
-            >
-              <span className="material-symbols-outlined text-[22px]">send</span>
-            </button>
+            {editingMsg ? (
+              <>
+                <button onClick={handleEditSave} className="p-2.5 rounded-full bg-aims-green text-white hover:bg-aims-green/90 shadow-md"><span className="material-symbols-outlined text-[22px]">check</span></button>
+                <button onClick={() => setEditingMsg(null)} className="p-2.5 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200"><span className="material-symbols-outlined text-[22px]">close</span></button>
+              </>
+            ) : (
+              <button
+                onClick={handleSend}
+                disabled={!messageText.trim() || !canPost}
+                className={cn('p-2.5 rounded-full transition-colors flex-shrink-0', messageText.trim() && canPost ? 'bg-aims-navy text-white hover:bg-aims-navy/90 shadow-md' : 'bg-slate-100 text-slate-400 cursor-not-allowed')}
+              >
+                <span className="material-symbols-outlined text-[22px]">send</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
