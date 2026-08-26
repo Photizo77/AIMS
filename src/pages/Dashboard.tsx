@@ -3,6 +3,7 @@ import { type ReactNode, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
+import { CHIP, ACCENT, FILL, type ColorKey } from '@/lib/uiTheme';
 import { useNotifications } from '@/context/NotificationContext';
 import { CheckInCard } from '@/components/dashboard/CheckInCard';
 import { PayslipReviewPanel } from '@/components/admin/PayslipReviewPanel';
@@ -18,11 +19,6 @@ import { grantService } from '@/services/grantService';
 import { financeService } from '@/services/financeService';
 import { GRANT_STAGES } from '@/data/grants';
 
-type ColorKey = 'green' | 'navy' | 'orange' | 'mint' | 'red';
-
-const CHIP: Record<ColorKey, string> = { green: 'bg-aims-green text-white', navy: 'bg-aims-navy text-white', orange: 'bg-aims-orange text-white', mint: 'bg-aims-mint text-aims-green', red: 'bg-red-500 text-white' };
-const ACCENT: Record<ColorKey, string> = { green: 'border-t-aims-green', navy: 'border-t-aims-navy', orange: 'border-t-aims-orange', mint: 'border-t-aims-mint', red: 'border-t-red-500' };
-const FILL: Record<ColorKey, string> = { green: 'bg-aims-green', navy: 'bg-aims-navy', orange: 'bg-aims-orange', mint: 'bg-aims-green', red: 'bg-red-500' };
 
 function DashHeader({ gradient, title, subtitle }: { gradient: string; title: string; subtitle: string }) {
   return (<div className={cn('rounded-2xl p-7 text-white shadow-lg', gradient)}><h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">{title}</h1><p className="text-base font-medium text-white">{subtitle}</p></div>);
@@ -56,19 +52,39 @@ interface FilterPreset { id: string; name: string }
 interface AdvancedFilterBarProps { dateLabel?: string; statusOptions: string[]; ownerOptions: string[]; showAmountRange?: boolean; presets?: FilterPreset[]; onFilterChange?: (filters: Record<string, string>) => void; onExport?: (format: 'csv' | 'pdf') => void; onSavePreset?: (name: string) => void; }
 
 function AdvancedFilterBar({ dateLabel = 'Date', statusOptions, ownerOptions, showAmountRange = false, presets = [], onFilterChange, onExport, onSavePreset }: AdvancedFilterBarProps) {
+  const { showToast } = useNotifications();
   const [showPresets, setShowPresets] = useState(false);
   const [presetName, setPresetName] = useState('');
+  const [filters, setFilters] = useState<Record<string, string>>({});
+  const [activeCount, setActiveCount] = useState(0);
+
+  const update = (key: string, value: string) => {
+    const next = { ...filters, [key]: value };
+    setFilters(next);
+    setActiveCount(Object.values(next).filter(Boolean).length);
+    onFilterChange?.(next);
+  };
+
+  const clearAll = () => {
+    setFilters({});
+    setActiveCount(0);
+    onFilterChange?.({});
+  };
+
+  const inputCls = 'w-full text-xs border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-aims-navy/30';
+
   return (
     <div className="mb-4 space-y-3">
       <div className="flex flex-wrap gap-2 items-end">
-        <div className="flex-1 min-w-[180px]"><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Search</label><input type="text" placeholder="Title, description, ID…" className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-aims-navy/30" onChange={(e) => onFilterChange?.({ keyword: e.target.value })} /></div>
-        <div className="min-w-[140px]"><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{dateLabel}</label><select className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-aims-navy/30"><option value="">All time</option><option value="today">Today</option><option value="7d">Last 7 days</option><option value="30d">Last 30 days</option><option value="90d">Last 90 days</option><option value="custom">Custom range…</option></select></div>
-        <div className="min-w-[130px]"><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Status</label><select className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-aims-navy/30"><option value="">All statuses</option>{statusOptions.map((s) => <option key={s} value={s}>{s}</option>)}</select></div>
-        <div className="min-w-[130px]"><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Owner / Dept</label><select className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-aims-navy/30"><option value="">All</option>{ownerOptions.map((o) => <option key={o} value={o}>{o}</option>)}</select></div>
-        {showAmountRange && (<div className="min-w-[120px]"><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Amount</label><select className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-aims-navy/30"><option value="">Any amount</option><option value="lt-1m">&lt; UGX 1M</option><option value="1m-5m">UGX 1M – 5M</option><option value="5m-20m">UGX 5M – 20M</option><option value="gt-20m">&gt; UGX 20M</option></select></div>)}
+        <div className="flex-1 min-w-[180px]"><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Search</label><input type="text" placeholder="Title, description, ID…" value={filters.keyword ?? ''} onChange={(e) => update('keyword', e.target.value)} className={inputCls} /></div>
+        <div className="min-w-[140px]"><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{dateLabel}</label><select value={filters.date ?? ''} onChange={(e) => update('date', e.target.value)} className={inputCls}><option value="">All time</option><option value="today">Today</option><option value="7d">Last 7 days</option><option value="30d">Last 30 days</option><option value="90d">Last 90 days</option><option value="custom">Custom range…</option></select></div>
+        <div className="min-w-[130px]"><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Status</label><select value={filters.status ?? ''} onChange={(e) => update('status', e.target.value)} className={inputCls}><option value="">All statuses</option>{statusOptions.map((s) => <option key={s} value={s}>{s}</option>)}</select></div>
+        <div className="min-w-[130px]"><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Owner / Dept</label><select value={filters.owner ?? ''} onChange={(e) => update('owner', e.target.value)} className={inputCls}><option value="">All</option>{ownerOptions.map((o) => <option key={o} value={o}>{o}</option>)}</select></div>
+        {showAmountRange && (<div className="min-w-[120px]"><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Amount</label><select value={filters.amount ?? ''} onChange={(e) => update('amount', e.target.value)} className={inputCls}><option value="">Any amount</option><option value="lt-1m">&lt; UGX 1M</option><option value="1m-5m">UGX 1M – 5M</option><option value="5m-20m">UGX 5M – 20M</option><option value="gt-20m">&gt; UGX 20M</option></select></div>)}
       </div>
       <div className="flex items-center gap-2 flex-wrap">
-        {presets.length > 0 && (<div className="relative"><button onClick={() => setShowPresets(!showPresets)} className="text-[10px] font-bold text-aims-navy hover:underline flex items-center gap-1"><span className="material-symbols-outlined text-[12px]">bookmark</span>Presets ({presets.length})</button>{showPresets && (<div className="absolute top-full left-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg p-2 z-10 min-w-[180px]">{presets.map((p) => <button key={p.id} className="block w-full text-left text-xs px-2 py-1.5 hover:bg-slate-50 rounded text-slate-700">{p.name}</button>)}</div>)}</div>)}
+        {activeCount > 0 && <button onClick={clearAll} className="text-[10px] font-bold text-red-500 hover:underline flex items-center gap-0.5"><span className="material-symbols-outlined text-[12px]">filter_alt_off</span>Clear ({activeCount})</button>}
+        {presets.length > 0 && (<div className="relative"><button onClick={() => setShowPresets(!showPresets)} className="text-[10px] font-bold text-aims-navy hover:underline flex items-center gap-1"><span className="material-symbols-outlined text-[12px]">bookmark</span>Presets ({presets.length})</button>{showPresets && (<div className="absolute top-full left-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg p-2 z-10 min-w-[180px]">{presets.map((p) => <button key={p.id} onClick={() => showToast({ title: 'Preset Applied', message: p.name, type: 'info' })} className="block w-full text-left text-xs px-2 py-1.5 hover:bg-slate-50 rounded text-slate-700">{p.name}</button>)}</div>)}</div>)}
         <div className="flex items-center gap-1"><input type="text" placeholder="Save filter as…" value={presetName} onChange={(e) => setPresetName(e.target.value)} className="text-[10px] border border-slate-200 rounded px-2 py-1 w-32 focus:outline-none focus:ring-1 focus:ring-aims-navy/30" /><button onClick={() => { if (presetName.trim()) { onSavePreset?.(presetName); setPresetName(''); } }} className="text-[10px] font-bold text-aims-green hover:underline">Save</button></div>
         <div className="ml-auto flex items-center gap-2"><span className="text-[10px] text-slate-400 italic">Filters combine with AND</span><button onClick={() => onExport?.('csv')} className="text-[10px] font-bold text-aims-navy hover:underline flex items-center gap-0.5"><span className="material-symbols-outlined text-[12px]">download</span>CSV</button><button onClick={() => onExport?.('pdf')} className="text-[10px] font-bold text-aims-navy hover:underline flex items-center gap-0.5"><span className="material-symbols-outlined text-[12px]">picture_as_pdf</span>PDF</button></div>
       </div>
@@ -139,6 +155,18 @@ function CDDashboard() {
   const { showToast } = useNotifications();
   const navigate = useNavigate();
   const handleAction = (msg: string) => showToast({ title: 'Action Logged', message: msg, type: 'success' });
+  const [approvalFilters, setApprovalFilters] = useState<Record<string, string>>({});
+  const cdApprovals = [
+    { id: 'req-041', title: 'Q3 Field Equipment Procurement', type: 'Requisition', amount: 'UGX 12.4M', status: 'ED Review', daysInQueue: 2 },
+    { id: 'pay-089', title: 'August Payroll Batch', type: 'Payslip Batch', amount: 'UGX 186M', status: 'ED Review', daysInQueue: 1 },
+    { id: 'req-038', title: 'Community Workshop Venue Rental', type: 'Requisition', amount: 'UGX 3.2M', status: 'Awaiting Finance', daysInQueue: 4 },
+  ];
+  const filteredCdApprovals = cdApprovals.filter((item) => {
+    const q = (approvalFilters.keyword ?? '').toLowerCase();
+    if (q && !item.title.toLowerCase().includes(q) && !item.id.toLowerCase().includes(q)) return false;
+    if (approvalFilters.status && item.status !== approvalFilters.status) return false;
+    return true;
+  });
   return (
     <div className="space-y-6">
       <DashHeader gradient="bg-grad-navy" title="Country Director Dashboard" subtitle="Strategic oversight, governance & organizational leadership — view everything, flag for ED, approve nothing" />
@@ -176,13 +204,9 @@ function CDDashboard() {
         </div>
       </div>
       <Section title="Approvals in Progress" subtitle="Visibility into ED's review pipeline — read only">
-        <AdvancedFilterBar dateLabel="Submitted" statusOptions={['ED Review', 'Awaiting Finance', 'Awaiting HR', 'Disbursed']} ownerOptions={['Finance Dept', 'HR Admin', 'Grants Team', 'Procurement']} showAmountRange presets={[{ id: 'p1', name: 'Over 3 days' }, { id: 'p2', name: 'High value (>10M)' }]} onExport={(fmt) => handleAction(`Exporting approvals ${fmt.toUpperCase()}`)} onSavePreset={(name) => handleAction(`Saved preset: ${name}`)} />
+        <AdvancedFilterBar dateLabel="Submitted" statusOptions={['ED Review', 'Awaiting Finance', 'Awaiting HR', 'Disbursed']} onFilterChange={setApprovalFilters} ownerOptions={['Finance Dept', 'HR Admin', 'Grants Team', 'Procurement']} showAmountRange presets={[{ id: 'p1', name: 'Over 3 days' }, { id: 'p2', name: 'High value (>10M)' }]} onExport={(fmt) => handleAction(`Exporting approvals ${fmt.toUpperCase()}`)} onSavePreset={(name) => handleAction(`Saved preset: ${name}`)} />
         <div className="space-y-2">
-          {[
-            { id: 'req-041', title: 'Q3 Field Equipment Procurement', type: 'Requisition', amount: 'UGX 12.4M', status: 'ED Review', daysInQueue: 2 },
-            { id: 'pay-089', title: 'August Payroll Batch', type: 'Payslip Batch', amount: 'UGX 186M', status: 'ED Review', daysInQueue: 1 },
-            { id: 'req-038', title: 'Community Workshop Venue Rental', type: 'Requisition', amount: 'UGX 3.2M', status: 'Awaiting Finance', daysInQueue: 4 },
-          ].map((item) => (
+          {filteredCdApprovals.map((item) => (
             <div key={item.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
               <div><p className="text-sm font-bold text-slate-900">{item.title}</p><p className="text-xs text-slate-500">{item.type} • {item.amount} • {item.id}</p></div>
               <div className="text-right">
@@ -889,6 +913,7 @@ function InnovatorDashboard() {
 }
 
 function SysAdminDashboard() {
+  const { showToast } = useNotifications();
   const [showAuditLog, setShowAuditLog] = useState(false);
   return (
     <div className="space-y-6">
@@ -910,7 +935,7 @@ function SysAdminDashboard() {
       </div>
       {showAuditLog && (
         <Section title="Geofence Violation Audit Log" subtitle="Failed physical check-in attempts — blocked and logged automatically">
-          <AdvancedFilterBar dateLabel="Attempt Time" statusOptions={['Blocked', 'Flagged']} ownerOptions={['CD', 'ED', 'COMPANY_ADMIN', 'FINANCE', 'GRANTS_MANAGER', 'GRANT_WRITER', 'INNOVATOR']} presets={[{ id: 'gv1', name: 'Last 24 hours' }, { id: 'gv2', name: 'Repeat offenders' }]} onExport={(fmt) => console.log(`Exporting audit log ${fmt}`)} onSavePreset={(name) => console.log(`Saved preset: ${name}`)} />
+          <AdvancedFilterBar dateLabel="Attempt Time" statusOptions={['Blocked', 'Flagged']} ownerOptions={['CD', 'ED', 'COMPANY_ADMIN', 'FINANCE', 'GRANTS_MANAGER', 'GRANT_WRITER', 'INNOVATOR']} presets={[{ id: 'gv1', name: 'Last 24 hours' }, { id: 'gv2', name: 'Repeat offenders' }]} onExport={(fmt) => showToast({ title: 'Exporting Audit Log', message: `CSV/PDF export of the audit log (${fmt}).`, type: 'info' })} onSavePreset={(name) => showToast({ title: 'Preset Saved', message: name, type: 'success' })} />
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead><tr className="border-b border-slate-200"><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Timestamp</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">User</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Role</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Action</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Distance</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Coordinates</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">IP Address</th></tr></thead>

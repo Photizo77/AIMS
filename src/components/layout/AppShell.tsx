@@ -1,16 +1,48 @@
 // src/components/layout/AppShell.tsx
-import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { TopNavBar } from './TopNavBar';
 import { SideNavBar } from './SideNavBar';
 import { Toaster } from '@/components/ui/Toaster';
 import { GrantsAssistant } from '@/components/grants/GrantsAssistant';
 import { FlagForEDModal } from '@/components/grants/FlagForEDModal';
 import { FormLibraryModal } from '@/components/forms/FormLibraryModal';
+import { useAuth } from '@/context/AuthContext';
+import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
+
+/** Automatic logout after 30 minutes of inactivity (security control) */
+const IDLE_TIMEOUT_MS = 30 * 60 * 1000;
+
+function useIdleLogout(): void {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const { showToast } = useNotifications();
+
+  useEffect(() => {
+    if (!user) return;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const reset = () => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        logout();
+        showToast({ title: 'Session Expired', message: 'You were logged out after 30 minutes of inactivity.', type: 'warning' });
+        navigate('/login', { replace: true });
+      }, IDLE_TIMEOUT_MS);
+    };
+    const events: (keyof WindowEventMap)[] = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+    events.forEach((ev) => window.addEventListener(ev, reset, { passive: true }));
+    reset();
+    return () => {
+      events.forEach((ev) => window.removeEventListener(ev, reset));
+      if (timer) clearTimeout(timer);
+    };
+  }, [user, logout, navigate, showToast]);
+}
 
 export function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  useIdleLogout();
 
   return (
     <div className="min-h-screen bg-slate-100">

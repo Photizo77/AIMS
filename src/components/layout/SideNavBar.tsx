@@ -23,11 +23,18 @@ export function SideNavBar() {
 
   const navItems = getVisibleNavItems(user.role);
 
-  // Determine if a nav item is currently active
+  // Determine if a nav item is currently active — exactly one item active at a time
   const isActive = (href: string): boolean => {
-    const basePath = href.split('?')[0].split('#')[0];
-    if (basePath === '/dashboard') return location.pathname === '/dashboard';
-    return location.pathname === basePath || location.pathname.startsWith(basePath + '/');
+    const [pathPart, queryPart] = href.split('?');
+    if (queryPart) {
+      // e.g. /dashboard?view=grants — active only when the same query is present
+      return location.pathname === pathPart && location.search.includes(queryPart);
+    }
+    if (pathPart === '/dashboard') {
+      // The plain Dashboard item must not light up while a ?view= redirect is shown
+      return location.pathname === '/dashboard' && !location.search.includes('view=');
+    }
+    return location.pathname === pathPart || location.pathname.startsWith(pathPart + '/');
   };
 
   return (

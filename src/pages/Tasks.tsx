@@ -3,14 +3,11 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
+import { CHIP, ACCENT, type ColorKey } from '@/lib/uiTheme';
 import { INNOVATION_STAGES, INNOVATION_STAGE_LABELS } from '@/types';
 import { innovationService } from '@/services/innovationService';
 import { FormsShortcut } from '@/components/forms/FormsShortcut';
 
-type ColorKey = 'green' | 'navy' | 'orange' | 'mint';
-
-const ACCENT: Record<ColorKey, string> = { green: 'border-t-aims-green', navy: 'border-t-aims-navy', orange: 'border-t-aims-orange', mint: 'border-t-aims-mint' };
-const CHIP: Record<ColorKey, string> = { green: 'bg-aims-green text-white', navy: 'bg-aims-navy text-white', orange: 'bg-aims-orange text-white', mint: 'bg-aims-mint text-aims-green' };
 
 export function Tasks() {
   const { user } = useAuth();

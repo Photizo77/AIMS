@@ -3,12 +3,11 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
+import { CHIP } from '@/lib/uiTheme';
 import { MOCK_GRANTS, GRANT_STAGES, formatCurrency, daysUntil, grantProgress, type GrantRecord } from '@/data/grants';
 import { GrantsPipelineBoard } from '@/components/grants/GrantsPipelineBoard';
 import { FormsShortcut } from '@/components/forms/FormsShortcut';
 
-type ColorKey = 'green' | 'navy' | 'orange' | 'mint' | 'red';
-const CHIP: Record<ColorKey, string> = { green: 'bg-aims-green text-white', navy: 'bg-aims-navy text-white', orange: 'bg-aims-orange text-white', mint: 'bg-aims-mint text-aims-green', red: 'bg-red-500 text-white' };
 
 // Roles that see the FULL org-wide pipeline on this page
 const FULL_VIEW_ROLES = ['CD', 'ED', 'COMPANY_ADMIN', 'SYS_ADMIN'];

@@ -1,6 +1,7 @@
 // src/components/dashboard/SharedLibraryWidget.tsx
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { useNotifications } from '@/context/NotificationContext';
 
 const QUICK_DOCS = [
   { id: 'd18', title: 'Leave Request Form', fileType: 'PDF', size: '120 KB', icon: 'picture_as_pdf', color: 'text-red-500' },
@@ -11,6 +12,7 @@ const QUICK_DOCS = [
 
 export function SharedLibraryWidget() {
   const navigate = useNavigate();
+  const { showToast } = useNotifications();
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
@@ -35,8 +37,7 @@ export function SharedLibraryWidget() {
           <button
             key={doc.id}
             onClick={() => {
-              // Mock download action
-              console.log(`Downloading ${doc.title}`);
+              showToast({ title: 'Downloading', message: doc.title, type: 'success' });
             }}
             className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-100 hover:bg-slate-50 hover:border-[#286b25]/30 transition-colors text-left group"
           >

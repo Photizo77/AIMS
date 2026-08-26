@@ -434,7 +434,7 @@ export function Feed() {
                           {msg.pinned && <span className="text-[9px] text-aims-navy">📌</span>}
                         </div>
                       )}
-                      <div className={cn('px-3 py-2 rounded-2xl text-sm leading-relaxed', isMe ? 'bg-aims-navy text-white rounded-tr-sm' : 'bg-white border border-slate-200 text-slate-800 rounded-tl-sm shadow-sm')}>
+                      <div className={cn('px-3 py-2 rounded-2xl text-sm leading-relaxed', isMe ? 'bg-[#286b25] text-white rounded-tr-sm' : 'bg-white border border-slate-200 text-slate-800 rounded-tl-sm shadow-sm')}>
                         {editingMsg?.id === msg.id ? (
                           <input
                             type="text"

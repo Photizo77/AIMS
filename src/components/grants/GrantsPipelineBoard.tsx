@@ -4,12 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
+import { CHIP, ACCENT } from '@/lib/uiTheme';
 import { GRANT_STAGES, formatCurrency, daysUntil, grantProgress, type GrantRecord } from '@/data/grants';
 import { grantService } from '@/services/grantService';
 
-type ColorKey = 'green' | 'navy' | 'orange' | 'mint' | 'red';
-const CHIP: Record<ColorKey, string> = { green: 'bg-aims-green text-white', navy: 'bg-aims-navy text-white', orange: 'bg-aims-orange text-white', mint: 'bg-aims-mint text-aims-green', red: 'bg-red-500 text-white' };
-const ACCENT: Record<ColorKey, string> = { green: 'border-t-aims-green', navy: 'border-t-aims-navy', orange: 'border-t-aims-orange', mint: 'border-t-aims-mint', red: 'border-t-red-500' };
 
 export function GrantsPipelineBoard() {
   const { user } = useAuth();
