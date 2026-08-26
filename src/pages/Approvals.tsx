@@ -1,5 +1,5 @@
 // src/pages/Approvals.tsx
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
@@ -59,9 +59,32 @@ function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 function getAgingColor(days: number): string {
-  if (days >= 5) return 'text-red-600 bg-red-50 border-red-200';
-  if (days >= 3) return 'text-aims-orange bg-aims-orange/10 border-aims-orange/20';
-  return 'text-slate-500 bg-slate-50 border-slate-200';
+  if (days >= 3) return 'text-red-600 bg-red-50 border-red-200';
+  if (days >= 1) return 'text-aims-orange bg-aims-orange/10 border-aims-orange/20';
+  return 'text-aims-green bg-aims-green/10 border-aims-green/20';
+}
+
+// ── Shared in-memory requisition store (Finance and ED views stay in sync) ──
+let requisitions: Requisition[] = MOCK_REQUISITIONS.map((r) => ({
+  ...r,
+  lineItems: r.lineItems.map((l) => ({ ...l })),
+  attachments: r.attachments.map((a) => ({ ...a })),
+}));
+const reqListeners = new Set<() => void>();
+
+function mutateRequisitions(fn: (list: Requisition[]) => void): void {
+  fn(requisitions);
+  reqListeners.forEach((l) => l());
+}
+
+function useRequisitions(): Requisition[] {
+  const [, setV] = useState(0);
+  useEffect(() => {
+    const listener = () => setV((v) => v + 1);
+    reqListeners.add(listener);
+    return () => { reqListeners.delete(listener); };
+  }, []);
+  return requisitions;
 }
 const STATUS_BADGE: Record<RequisitionStatus, { label: string; cls: string }> = {
   draft: { label: 'Draft', cls: 'bg-slate-100 text-slate-600' },
@@ -86,15 +109,17 @@ export function Approvals() {
 
 // ── FINANCE REQUISITION WORKSPACE ──
 function FinanceRequisitionWorkspace({ userName }: { userName: string }) {
-  const { showToast } = useNotifications();
+  const { showToast, addNotification } = useNotifications();
+  const location = useLocation();
+  const requisitions = useRequisitions();
   const [activeTab, setActiveTab] = useState<FinanceTab>('drafts');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterDept, setFilterDept] = useState('');
   const [filterAmount, setFilterAmount] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(() => Boolean((location.state as { new?: boolean } | null)?.new));
 
-  const visibleReqs = useMemo(() => MOCK_REQUISITIONS.filter((r) => {
+  const visibleReqs = useMemo(() => requisitions.filter((r) => {
     if (activeTab === 'drafts' && !(r.status === 'draft' && r.requester === userName)) return false;
     if (activeTab === 'pushed' && r.status !== 'pushed') return false;
     if (activeTab === 'returned' && r.status !== 'returned') return false;
@@ -109,14 +134,14 @@ function FinanceRequisitionWorkspace({ userName }: { userName: string }) {
     }
     return true;
   }).sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()),
-  [activeTab, searchQuery, filterDept, filterAmount, userName]);
+  [activeTab, searchQuery, filterDept, filterAmount, userName, requisitions]);
 
   const tabCounts = useMemo(() => ({
-    drafts: MOCK_REQUISITIONS.filter((r) => r.status === 'draft' && r.requester === userName).length,
-    pushed: MOCK_REQUISITIONS.filter((r) => r.status === 'pushed').length,
-    returned: MOCK_REQUISITIONS.filter((r) => r.status === 'returned').length,
-    history: MOCK_REQUISITIONS.filter((r) => ['approved', 'disbursed', 'rejected'].includes(r.status)).length,
-  }), [userName]);
+    drafts: requisitions.filter((r) => r.status === 'draft' && r.requester === userName).length,
+    pushed: requisitions.filter((r) => r.status === 'pushed').length,
+    returned: requisitions.filter((r) => r.status === 'returned').length,
+    history: requisitions.filter((r) => ['approved', 'disbursed', 'rejected'].includes(r.status)).length,
+  }), [userName, requisitions]);
 
   const tabs: { key: FinanceTab; label: string; icon: string }[] = [
     { key: 'drafts', label: 'My Drafts', icon: 'edit_note' },
@@ -125,8 +150,41 @@ function FinanceRequisitionWorkspace({ userName }: { userName: string }) {
     { key: 'history', label: 'Approved & Disbursed', icon: 'check_circle' },
   ];
 
-  const handlePush = (id: string) => showToast({ title: 'Pushed to ED', message: `${id} is now awaiting ED approval.`, type: 'success' });
-  const handleDisburse = (id: string) => showToast({ title: 'Disbursement Processed', message: `${id} disbursed. Ref: DISB-2026-${Math.floor(Math.random() * 900 + 100)}`, type: 'success' });
+  const handlePush = (id: string) => {
+    mutateRequisitions((list) => {
+      const r = list.find((x) => x.id === id);
+      if (r && r.status === 'draft') {
+        r.status = 'pushed';
+        r.daysInStatus = 0;
+        r.updatedAt = new Date().toISOString();
+      }
+    });
+    addNotification({ userId: 'user-ed-001', title: 'Requisition Pushed to ED', message: `${id} is awaiting your approval.`, type: 'approval', actionUrl: '/approvals' });
+    showToast({ title: 'Pushed to ED', message: `${id} is now awaiting ED approval.`, type: 'success' });
+  };
+  const handleRecall = (id: string) => {
+    mutateRequisitions((list) => {
+      const r = list.find((x) => x.id === id);
+      if (r && r.status === 'pushed') { r.status = 'draft'; r.updatedAt = new Date().toISOString(); }
+    });
+    showToast({ title: 'Recalled', message: `${id} returned to My Drafts for editing.`, type: 'info' });
+  };
+  const handleRevise = (id: string) => {
+    mutateRequisitions((list) => {
+      const r = list.find((x) => x.id === id);
+      if (r && r.status === 'returned') { r.status = 'pushed'; r.daysInStatus = 0; r.updatedAt = new Date().toISOString(); }
+    });
+    addNotification({ userId: 'user-ed-001', title: 'Requisition Re-Submitted', message: `${id} revised and re-pushed for your review.`, type: 'approval', actionUrl: '/approvals' });
+    showToast({ title: 'Re-Pushed to ED', message: `${id} revised and sent back to ED.`, type: 'success' });
+  };
+  const handleDisburse = (id: string) => {
+    const ref = `DISB-2026-${Math.floor(Math.random() * 900 + 100)}`;
+    mutateRequisitions((list) => {
+      const r = list.find((x) => x.id === id);
+      if (r && r.status === 'approved') { r.status = 'disbursed'; r.disbursementRef = ref; r.updatedAt = new Date().toISOString(); }
+    });
+    showToast({ title: 'Disbursement Processed', message: `${id} disbursed. Ref: ${ref}`, type: 'success' });
+  };
 
   return (
     <div className="space-y-6">
@@ -167,9 +225,14 @@ function FinanceRequisitionWorkspace({ userName }: { userName: string }) {
             </select>
           </div>
           {(activeTab === 'drafts' || activeTab === 'returned') && (
-            <button onClick={() => setShowCreateForm(!showCreateForm)} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90 transition-colors flex items-center gap-1.5 flex-shrink-0">
-              <span className="material-symbols-outlined text-[16px]">add</span>New Requisition
-            </button>
+            <div className="flex gap-2 flex-shrink-0">
+              <button onClick={() => showToast({ title: 'Template Loaded', message: 'Standard requisition template loaded from Shared Reference Library.', type: 'success' })} className="px-4 py-2 bg-aims-green/10 text-aims-green border border-aims-green/30 text-xs font-bold rounded-lg hover:bg-aims-green/20 transition-colors flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[16px]">description</span>Use Template
+              </button>
+              <button onClick={() => setShowCreateForm(!showCreateForm)} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90 transition-colors flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[16px]">add</span>New Requisition
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -284,9 +347,19 @@ function FinanceRequisitionWorkspace({ userName }: { userName: string }) {
                   <div className="pt-3 border-t border-slate-100 flex justify-end gap-2 flex-wrap">
                     <button onClick={() => showToast({ title: 'Viewing record', message: r.id, type: 'info' })} className="px-3 py-1.5 text-xs font-bold text-aims-navy border border-aims-navy/20 rounded-lg hover:bg-aims-navy/5 flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">visibility</span>View Details</button>
                     {r.status === 'draft' && <button onClick={() => handlePush(r.id)} className="px-3 py-1.5 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90 flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">send</span>Push to ED</button>}
-                    {r.status === 'returned' && <button onClick={() => showToast({ title: 'Editing', message: `${r.id} — addressing ED feedback`, type: 'info' })} className="px-3 py-1.5 bg-aims-orange text-white text-xs font-bold rounded-lg hover:bg-aims-orange/90 flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">edit</span>Revise & Resubmit</button>}
+                    {r.status === 'pushed' && (
+                      <>
+                        <button onClick={() => handleRecall(r.id)} className="px-3 py-1.5 text-xs font-bold text-aims-navy border border-aims-navy/20 rounded-lg hover:bg-aims-navy/5 flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">undo</span>Recall</button>
+                        <p className="text-[10px] text-slate-400 italic flex items-center">Awaiting ED decision</p>
+                      </>
+                    )}
+                    {r.status === 'returned' && (
+                      <>
+                        <button onClick={() => showToast({ title: 'ED Notes', message: r.edDecision?.comment ?? 'No notes', type: 'info' })} className="px-3 py-1.5 text-xs font-bold text-aims-navy border border-aims-navy/20 rounded-lg hover:bg-aims-navy/5 flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">rate_review</span>View ED Notes</button>
+                        <button onClick={() => handleRevise(r.id)} className="px-3 py-1.5 bg-aims-orange text-white text-xs font-bold rounded-lg hover:bg-aims-orange/90 flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">edit</span>Revise & Re-Push</button>
+                      </>
+                    )}
                     {r.status === 'approved' && <button onClick={() => handleDisburse(r.id)} className="px-3 py-1.5 bg-aims-green text-white text-xs font-bold rounded-lg hover:bg-aims-green/90 flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">payments</span>Process Disbursement</button>}
-                    {r.status === 'pushed' && <p className="text-[10px] text-slate-400 italic flex items-center">Read-only — awaiting ED decision</p>}
                   </div>
                 </div>
               )}
@@ -300,9 +373,29 @@ function FinanceRequisitionWorkspace({ userName }: { userName: string }) {
 
 // ── ED APPROVAL QUEUE (approve / reject) ──
 function EDApprovalQueue() {
-  const { showToast } = useNotifications();
+  const { showToast, addNotification } = useNotifications();
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const pending = MOCK_REQUISITIONS.filter((r) => r.status === 'pushed');
+  const requisitions = useRequisitions();
+  const pending = requisitions.filter((r) => r.status === 'pushed');
+
+  const decide = (id: string, action: 'approved' | 'returned') => {
+    mutateRequisitions((list) => {
+      const r = list.find((x) => x.id === id);
+      if (r && r.status === 'pushed') {
+        r.status = action;
+        r.edDecision = { action, comment: action === 'approved' ? 'Approved. Finance to process disbursement.' : 'Returned for revision. Please review the ED notes.', date: new Date().toISOString() };
+        r.updatedAt = new Date().toISOString();
+      }
+    });
+    if (action === 'approved') {
+      addNotification({ title: 'Requisition Approved', message: `${id} approved — routed to Finance for disbursement.`, type: 'success', link: '/approvals', actionUrl: '/approvals' });
+      showToast({ title: 'Approved', message: `${id} approved → routed to Finance for disbursement.`, type: 'success' });
+    } else {
+      addNotification({ title: 'Requisition Returned', message: `${id} returned to Finance for revision.`, type: 'warning', link: '/approvals', actionUrl: '/approvals' });
+      showToast({ title: 'Returned', message: `${id} returned to Finance for revision.`, type: 'warning' });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
@@ -338,8 +431,8 @@ function EDApprovalQueue() {
                     </tbody>
                   </table>
                   <div className="flex justify-end gap-2">
-                    <button onClick={() => showToast({ title: 'Rejected', message: `${r.id} returned to Finance.`, type: 'success' })} className="px-4 py-2 bg-red-50 text-red-600 text-xs font-bold rounded-lg hover:bg-red-100 flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">close</span>Reject / Return</button>
-                    <button onClick={() => showToast({ title: 'Approved', message: `${r.id} approved → routed to Finance for disbursement.`, type: 'success' })} className="px-4 py-2 bg-aims-green text-white text-xs font-bold rounded-lg hover:bg-aims-green/90 flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">check</span>Approve</button>
+                    <button onClick={() => decide(r.id, 'returned')} className="px-4 py-2 bg-red-50 text-red-600 text-xs font-bold rounded-lg hover:bg-red-100 flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">close</span>Reject / Return</button>
+                    <button onClick={() => decide(r.id, 'approved')} className="px-4 py-2 bg-aims-green text-white text-xs font-bold rounded-lg hover:bg-aims-green/90 flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">check</span>Approve</button>
                   </div>
                 </div>
               )}

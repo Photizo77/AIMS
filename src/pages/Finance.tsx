@@ -3,6 +3,7 @@ import { useState, useMemo } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
+import { financeService, type FinanceRecordType } from '@/services/financeService';
 
 interface Transaction {
   id: string;
@@ -46,13 +47,51 @@ function formatDate(iso: string): string {
 
 export function Finance() {
   const { user } = useAuth();
-  const { showToast } = useNotifications();
+  const { showToast, addNotification } = useNotifications();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterDept, setFilterDept] = useState('');
   const [filterChannel, setFilterChannel] = useState('');
   const [filterAmount, setFilterAmount] = useState('');
   const [filterDateRange, setFilterDateRange] = useState('30d');
   const [filterType, setFilterType] = useState<'all' | 'income' | 'expenditure'>('all');
+
+  // ── Editable records (ED-approval gated) ──
+  const [recordTab, setRecordTab] = useState<'income' | 'expense' | 'budget'>('income');
+  const [editTarget, setEditTarget] = useState<{ type: FinanceRecordType; id: string; label: string; amount: number } | null>(null);
+  const [editValue, setEditValue] = useState('');
+  const [, setVersion] = useState(0);
+  const pendingEdits = financeService.getPendingEdits();
+  const refresh = () => setVersion((v) => v + 1);
+
+  const fmtUSD = (n: number) => (n >= 1000000 ? `$${(n / 1000000).toFixed(1)}M` : n >= 1000 ? `$${(n / 1000).toFixed(0)}K` : `$${n}`);
+
+  const openEdit = (type: FinanceRecordType, id: string, label: string, amount: number) => {
+    setEditTarget({ type, id, label, amount });
+    setEditValue(String(amount));
+  };
+
+  const submitEdit = () => {
+    if (!editTarget) return;
+    const newValue = Number(editValue);
+    if (!Number.isFinite(newValue) || newValue <= 0) {
+      showToast({ title: 'Invalid Amount', message: 'Enter a valid positive amount.', type: 'error' });
+      return;
+    }
+    const edit = financeService.submitEdit(editTarget.type, editTarget.id, 'amount', String(newValue), user?.name ?? 'Finance');
+    if (edit) {
+      addNotification({
+        userId: 'user-ed-001',
+        title: 'Finance Record Change — Pending Your Approval',
+        message: `${edit.label}: ${edit.oldValue} → ${edit.newValue} (submitted by ${edit.submittedBy}). Approve or reject.`,
+        type: 'approval',
+        link: '/dashboard',
+        actionUrl: '/dashboard',
+      });
+      showToast({ title: 'Change Submitted', message: `ED has been notified. The change applies after ED approval.`, type: 'success' });
+    }
+    setEditTarget(null);
+    refresh();
+  };
 
   const filteredTransactions = useMemo(() => {
     return MOCK_TRANSACTIONS.filter((t) => {
@@ -116,7 +155,84 @@ export function Finance() {
     <div className="space-y-6">
       <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
         <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">Cash Flow Analytics</h1>
-        <p className="text-base font-medium text-white">Income, expenditure, budget health & disbursement ledger</p>
+        <p className="text-base font-medium text-white">Income, expenditure, budget health & disbursement ledger — records are editable, changes require ED approval</p>
+      </div>
+
+      {/* ── EDITABLE FINANCIAL RECORDS (ED-approval gated) ── */}
+      <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+        <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
+          <div>
+            <h3 className="text-base font-bold text-slate-900">Financial Records — Edit & Submit for ED Approval</h3>
+            <p className="text-xs text-slate-500 mt-0.5">Finance can edit income, expenditure and budgets. Every change is queued and the ED is notified immediately; the change applies only after ED approval.</p>
+          </div>
+          {pendingEdits.length > 0 && (
+            <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-aims-orange/15 text-aims-orange uppercase">{pendingEdits.length} pending ED approval</span>
+          )}
+        </div>
+
+        <div className="flex gap-1 bg-slate-100 p-1 rounded-lg w-fit mb-4">
+          {(['income', 'expense', 'budget'] as const).map((t) => (
+            <button key={t} onClick={() => setRecordTab(t)} className={cn('px-3 py-1.5 rounded-md text-xs font-bold transition-all capitalize', recordTab === t ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700')}>{t === 'income' ? 'Income' : t === 'expense' ? 'Expenditure' : 'Department Budgets'}</button>
+          ))}
+        </div>
+
+        {recordTab !== 'budget' ? (
+          <div className="space-y-2">
+            {(recordTab === 'income' ? financeService.getIncome() : financeService.getExpenses()).map((r) => (
+              <div key={r.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
+                <div>
+                  <p className="text-sm font-bold text-slate-900">{r.label}</p>
+                  <p className="text-[10px] text-slate-500 mt-0.5">{r.detail}</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-extrabold text-slate-900">{fmtUSD(r.amount)}</span>
+                  <button onClick={() => openEdit(recordTab, r.id, r.label, r.amount)} className="text-[10px] font-bold text-aims-navy border border-aims-navy/20 rounded-lg px-2.5 py-1.5 hover:bg-aims-navy/5 flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[13px]">edit</span>Edit
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {financeService.getBudgets().map((b) => {
+              const pct = Math.round((b.actual / b.budget) * 100);
+              return (
+                <div key={b.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-sm font-bold text-slate-900">{b.dept}</p>
+                      <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded border', pct >= 90 ? 'text-red-600 bg-red-50 border-red-200' : pct >= 75 ? 'text-aims-orange bg-aims-orange/10 border-aims-orange/20' : 'text-aims-green bg-aims-green/10 border-aims-green/20')}>{pct}% used · forecast {b.forecastPct}%</span>
+                    </div>
+                    <div className="w-full bg-slate-100 rounded-full h-2"><div className={cn('h-2 rounded-full', pct >= 90 ? 'bg-red-500' : pct >= 75 ? 'bg-aims-orange' : 'bg-aims-green')} style={{ width: `${Math.min(100, pct)}%` }} /></div>
+                    <p className="text-[10px] text-slate-500 mt-1">Budget: {fmtUSD(b.budget)} · Spent: {fmtUSD(b.actual)}</p>
+                  </div>
+                  <button onClick={() => openEdit('budget', b.id, `Budget — ${b.dept}`, b.budget)} className="ml-3 text-[10px] font-bold text-aims-navy border border-aims-navy/20 rounded-lg px-2.5 py-1.5 hover:bg-aims-navy/5 flex items-center gap-1 shrink-0">
+                    <span className="material-symbols-outlined text-[13px]">edit</span>Edit Budget
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Pending ED approval panel */}
+        {pendingEdits.length > 0 && (
+          <div className="mt-4 pt-4 border-t border-slate-100">
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Pending ED Approval — changes are NOT yet applied</p>
+            <div className="space-y-2">
+              {pendingEdits.map((e) => (
+                <div key={e.id} className="flex items-center justify-between p-2.5 bg-aims-orange/5 border border-aims-orange/20 rounded-lg">
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-slate-900">{e.label}</p>
+                    <p className="text-[10px] text-slate-500 mt-0.5">{e.field}: <span className="line-through">{e.oldValue}</span> → <span className="font-bold text-aims-orange">{e.newValue}</span> · by {e.submittedBy}</p>
+                  </div>
+                  <span className={cn('text-[9px] font-bold px-1.5 py-0.5 rounded uppercase shrink-0', e.status === 'pending' ? 'bg-aims-orange/15 text-aims-orange' : e.status === 'approved' ? 'bg-aims-green/15 text-aims-green' : 'bg-red-50 text-red-500')}>{e.status}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="bg-aims-orange/10 border border-aims-orange/30 rounded-xl p-4 flex items-start gap-3">
@@ -313,6 +429,28 @@ export function Finance() {
           </table>
         </div>
       </div>
+
+      {/* Edit record modal — change requires ED approval */}
+      {editTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={() => setEditTarget(null)}>
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-1">
+              <h3 className="text-lg font-bold text-slate-900">Edit Financial Record</h3>
+              <button onClick={() => setEditTarget(null)} className="text-slate-400 hover:text-slate-600"><span className="material-symbols-outlined">close</span></button>
+            </div>
+            <p className="text-sm text-slate-600 mb-4">{editTarget.label}</p>
+            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Amount (USD)</label>
+            <input type="number" value={editValue} onChange={(e) => setEditValue(e.target.value)} min={0} className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 mb-2 focus:outline-none focus:ring-2 focus:ring-aims-navy/30" />
+            <div className="p-3 bg-aims-orange/5 border border-aims-orange/20 rounded-lg mb-4">
+              <p className="text-[11px] text-slate-600 flex items-start gap-1.5"><span className="material-symbols-outlined text-aims-orange text-[16px] mt-0.5">info</span>This change will be <strong>sent to the ED for approval</strong> and the ED notified immediately. It takes effect only after approval.</p>
+            </div>
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setEditTarget(null)} className="px-4 py-2 text-sm font-bold text-slate-500">Cancel</button>
+              <button onClick={submitEdit} className="px-4 py-2 bg-aims-navy text-white text-sm font-bold rounded-lg hover:bg-aims-navy/90">Submit for ED Approval</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -8,10 +8,12 @@ import { CheckInCard } from '@/components/dashboard/CheckInCard';
 import { PayslipReviewPanel } from '@/components/admin/PayslipReviewPanel';
 import { GrantsPipelineBoard } from '@/components/grants/GrantsPipelineBoard';
 import { GrantReviewQueue } from '@/components/grants/GrantReviewQueue';
+import { FinanceEditApprovals } from '@/components/finance/FinanceEditApprovals';
 import { openGrantsAssistant } from '@/components/grants/GrantsAssistant';
 import { SharedLibraryWidget } from '@/components/dashboard/SharedLibraryWidget';
 import { innovationService } from '@/services/innovationService'; // Importing our centralized service
 import { grantService } from '@/services/grantService';
+import { financeService } from '@/services/financeService';
 import { GRANT_STAGES } from '@/data/grants';
 
 type ColorKey = 'green' | 'navy' | 'orange' | 'mint' | 'red';
@@ -101,70 +103,6 @@ function ApprovalActionPanel({ itemName, itemType, onViewFull, onApprove, onReje
   );
 }
 
-function Modal({ title, subtitle, onClose, children }: { title: string; subtitle?: string; onClose: () => void; children: ReactNode }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={onClose}>
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-        <div className="px-5 py-4 bg-aims-navy rounded-t-xl flex items-center justify-between">
-          <div><h3 className="text-sm font-bold text-white">{title}</h3>{subtitle && <p className="text-[11px] text-white/70">{subtitle}</p>}</div>
-          <button onClick={onClose} className="text-white/80 hover:text-white"><span className="material-symbols-outlined text-[20px]">close</span></button>
-        </div>
-        <div className="p-5">{children}</div>
-      </div>
-    </div>
-  );
-}
-
-function NewRequisitionModal({ onClose, onSubmit }: { onClose: () => void; onSubmit: () => void }) {
-  return (
-    <Modal title="Create New Requisition" subtitle="Draft first, then push to ED for approval" onClose={onClose}>
-      <div className="space-y-3">
-        <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Title</label><input type="text" placeholder="e.g., Q4 Training Materials" className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-aims-navy/30" /></div>
-        <div className="grid grid-cols-2 gap-3">
-          <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Department</label><select className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-aims-navy/30"><option>Finance</option><option>Grants</option><option>Innovation</option><option>HR</option><option>IT</option></select></div>
-          <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Amount (UGX)</label><input type="number" placeholder="e.g., 2500000" className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-aims-navy/30" /></div>
-        </div>
-        <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Budget Line</label><select className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-aims-navy/30"><option>GL-5210 Office Supplies</option><option>GL-5220 Communications</option><option>GL-5230 Training</option><option>GL-5315 Field Equipment</option><option>GL-5421 R&D Equipment</option></select></div>
-        <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Purpose</label><textarea rows={2} placeholder="Why is this purchase needed?" className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-aims-navy/30 resize-none" /></div>
-        <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Attachments</label>
-          <div className="border-2 border-dashed border-slate-300 rounded-lg p-3 text-center hover:border-aims-navy/50 cursor-pointer transition-colors">
-            <span className="material-symbols-outlined text-slate-400 text-[22px]">upload_file</span>
-            <p className="text-[11px] text-slate-500 mt-0.5">Click or drag files • PDF, DOCX, XLSX, images</p>
-          </div>
-        </div>
-      </div>
-      <div className="flex justify-end gap-2 mt-5 pt-4 border-t border-slate-100">
-        <button onClick={onClose} className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
-        <button onClick={onSubmit} className="px-4 py-2 text-xs font-bold text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50">Save Draft</button>
-        <button onClick={onSubmit} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90 flex items-center gap-1.5"><span className="material-symbols-outlined text-[14px]">send</span>Push to ED</button>
-      </div>
-    </Modal>
-  );
-}
-
-function PreparePayrollModal({ onClose, onSubmit }: { onClose: () => void; onSubmit: () => void }) {
-  return (
-    <Modal title="Prepare Payroll Batch" subtitle="Finance prepares — ED authorizes before disbursement" onClose={onClose}>
-      <div className="space-y-3">
-        <div className="grid grid-cols-2 gap-3">
-          <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Pay Period</label><input type="month" defaultValue="2026-08" className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-aims-navy/30" /></div>
-          <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Employees</label><input type="text" defaultValue="142 active staff" readOnly className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 bg-slate-50 text-slate-500" /></div>
-        </div>
-        <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Estimated Total (UGX)</label><input type="number" defaultValue="186000000" className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-aims-navy/30" /></div>
-        <div className="p-3 bg-aims-orange/5 rounded-lg border border-aims-orange/20">
-          <div className="flex items-start gap-2">
-            <span className="material-symbols-outlined text-aims-orange text-[16px] mt-0.5">info</span>
-            <p className="text-[11px] text-slate-600">This batch will be routed to the <strong>ED for authorization</strong>. You can process disbursement only after ED approval.</p>
-          </div>
-        </div>
-      </div>
-      <div className="flex justify-end gap-2 mt-5 pt-4 border-t border-slate-100">
-        <button onClick={onClose} className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
-        <button onClick={onSubmit} className="px-4 py-2 bg-aims-green text-white text-xs font-bold rounded-lg hover:bg-aims-green/90 flex items-center gap-1.5"><span className="material-symbols-outlined text-[14px]">send</span>Submit to ED</button>
-      </div>
-    </Modal>
-  );
-}
 
 export function Dashboard() {
   const { user } = useAuth();
@@ -298,6 +236,10 @@ function EDDashboard() {
 
       <Section title="Grant Approvals & Deadlines" subtitle="Grants awaiting your final decision — approve or request changes">
         <GrantReviewQueue />
+      </Section>
+
+      <Section title="Finance Record Changes - Pending Approval" subtitle="Finance edits to income, expenditure and budgets - nothing applies until you approve">
+        <FinanceEditApprovals />
       </Section>
 
       <Section title="Your Pending Approvals" subtitle="Requisitions and payslips awaiting your decision — you are the sole approval authority">
@@ -504,140 +446,214 @@ function AdminDashboard() {
 }
 
 function FinanceDashboard() {
+  const { user } = useAuth();
   const { showToast } = useNotifications();
   const navigate = useNavigate();
-  const [showNewReq, setShowNewReq] = useState(false);
-  const [showPayroll, setShowPayroll] = useState(false);
-  const [expandedApproval, setExpandedApproval] = useState<string | null>(null);
-  const [edSearch, setEdSearch] = useState('');
-  const [edDept, setEdDept] = useState('');
+  const pendingEdits = financeService.getPendingEdits();
+  const budgets = financeService.getBudgets();
 
-  const edApprovals = [
-    { id: 'req-035', title: 'August Payroll Batch', dept: 'Finance', amount: 186000000, approvedBy: 'Nassir Mukiibi (ED)', approvedDate: 'Aug 25', daysSince: 1, comment: 'Approved. Finance to process disbursement.', lineItems: [{ item: 'Base Salaries', qty: 142, total: 'UGX 168M' }, { item: 'Allowances', qty: 142, total: 'UGX 18M' }] },
-    { id: 'req-041', title: 'Q3 Field Equipment Procurement', dept: 'Grants', amount: 12400000, approvedBy: 'Nassir Mukiibi (ED)', approvedDate: 'Aug 24', daysSince: 2, comment: 'Approved. Verify vendor invoice matches PO.', lineItems: [{ item: 'Samsung Galaxy Tab A9', qty: 10, total: 'UGX 6.8M' }, { item: 'GPS Units', qty: 5, total: 'UGX 4.1M' }, { item: 'Solar Chargers', qty: 10, total: 'UGX 1.5M' }] },
-    { id: 'req-045', title: 'Solar Irrigation Sensor Kits', dept: 'Innovation', amount: 11500000, approvedBy: 'Nassir Mukiibi (ED)', approvedDate: 'Aug 26', daysSince: 0, comment: 'Approved. Confirm AgroTech quote is current.', lineItems: [{ item: 'Soil Moisture Sensors', qty: 50, total: 'UGX 6.0M' }, { item: 'Flow Meters', qty: 20, total: 'UGX 4.4M' }] },
-  ];
+  const fmtUSD = (n: number) => (n >= 1000000 ? `${(n / 1000000).toFixed(1)}M` : n >= 1000 ? `${(n / 1000).toFixed(0)}K` : `${n}`);
 
-  const filteredEdApprovals = edApprovals.filter((a) => {
-    if (edDept && a.dept !== edDept) return false;
-    if (edSearch.trim()) {
-      const q = edSearch.toLowerCase();
-      if (!a.title.toLowerCase().includes(q) && !a.id.toLowerCase().includes(q)) return false;
-    }
-    return true;
-  });
-
+  // Requisition pipeline (mirrors the Requisition Queue workspace)
   const awaitingED = [
-    { id: 'req-043', title: 'Land Rights Field Tablets', days: 2 },
-    { id: 'req-044', title: 'Community Sensitization Materials', days: 4 },
+    { id: 'req-047', title: 'Proc Req #47 — Office Equipment (DELL Laptops × 15)', amount: 85000, days: 2, dept: 'Ops' },
+    { id: 'req-045', title: 'Cap Req #5 — IT Infrastructure (Server & Storage)', amount: 340000, days: 0, dept: 'IT' },
   ];
   const returnedToMe = [
-    { id: 'req-039', title: 'Q2 Training Materials', days: 3 },
-    { id: 'req-040', title: 'Workshop Venue Deposit', days: 1 },
+    { id: 'req-043', title: 'Proc Req #43 — Travel Budget (Conference)', amount: 52000, days: 1, edNote: 'Requires quote from alternative vendor. Current quote is 12% above market rate. Resubmit by Aug 30 with competitive bid. -Ed' },
   ];
-  const budgetAlerts = [
-    { dept: 'Innovation', pct: 92 },
-    { dept: 'Procurement', pct: 96 },
-    { dept: 'Grants', pct: 69 },
-    { dept: 'HR', pct: 65 },
-  ];
+  const draftCount = 4;
+  const pendingCount = awaitingED.length;
+  const returnedCount = returnedToMe.length;
 
-  const fmtMoney = (n: number) => {
-    if (n >= 1000000000) return `UGX ${(n / 1000000000).toFixed(1)}B`;
-    if (n >= 1000000) return `UGX ${(n / 1000000).toFixed(0)}M`;
-    return `UGX ${(n / 1000).toFixed(0)}K`;
-  };
-  const getBudgetColor = (pct: number) => pct >= 90 ? 'bg-red-500' : pct >= 75 ? 'bg-aims-orange' : 'bg-aims-green';
-  const getBudgetBadge = (pct: number) => pct >= 90 ? 'text-red-600 bg-red-50 border-red-200' : pct >= 75 ? 'text-aims-orange bg-aims-orange/10 border-aims-orange/20' : 'text-aims-green bg-aims-green/10 border-aims-green/20';
-  const getAging = (days: number) => days >= 3 ? 'bg-red-50 text-red-600' : 'bg-aims-orange/15 text-aims-orange';
-  const handleDisburse = (id: string) => {
-    showToast({ title: 'Disbursement Processed', message: `${id} disbursed. Ref: DISB-2026-${Math.floor(Math.random() * 900 + 100)}`, type: 'success' });
-  };
+  const totalIncome = financeService.totals.totalIncome;
+  const totalExpense = financeService.totals.totalExpense;
+  const net = totalIncome - totalExpense;
+
+  const getAgingColor = (days: number) => (days >= 3 ? 'bg-red-50 text-red-600 border-red-200' : days >= 1 ? 'bg-aims-orange/15 text-aims-orange border-aims-orange/30' : 'bg-aims-green/15 text-aims-green border-aims-green/30');
+
+  const headline = [
+    { label: 'Pending Requisitions (Mine)', value: String(draftCount + pendingCount + returnedCount), sub: `${returnedCount} need your revision`, icon: 'request_quote', color: 'orange' as ColorKey, onClick: () => navigate('/approvals') },
+    { label: 'Disbursed This Month', value: '$2.4M', sub: 'across 47 requisitions', icon: 'payments', color: 'green' as ColorKey, onClick: () => navigate('/finance') },
+    { label: 'Budget Utilization', value: '68%', sub: 'quarterly · 1 dept over 90%', icon: 'monitoring', color: 'navy' as ColorKey, onClick: () => navigate('/finance') },
+    { label: 'Cash Position', value: '$5.2M', sub: 'liquid · ▲ 8% vs. last month', icon: 'account_balance', color: 'mint' as ColorKey, onClick: () => navigate('/finance') },
+  ];
 
   return (
     <div className="space-y-6">
-      <DashHeader gradient="bg-grad-navy" title="Finance Command Center" subtitle="Disbursements, requisitions, cash flow & budget health" />
+      <DashHeader gradient="bg-grad-navy" title="Finance Operational Center" subtitle={`Department: Finance | Reports to: ED — ${user?.name ?? ''}`} />
       <CheckInCard />
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-orange p-4 shadow-sm"><p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Pending Requisitions</p><p className="text-2xl font-extrabold text-slate-900 mt-1">{awaitingED.length + returnedToMe.length}</p><p className="text-[10px] text-slate-400 mt-0.5">{returnedToMe.length} need your revision</p></div>
-        <div className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-green p-4 shadow-sm"><p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Disbursed This Month</p><p className="text-2xl font-extrabold text-slate-900 mt-1">UGX 285M</p><p className="text-[10px] text-slate-400 mt-0.5">across 38 transactions</p></div>
-        <div className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-navy p-4 shadow-sm"><p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Budget Utilization</p><p className="text-2xl font-extrabold text-aims-orange mt-1">78%</p><p className="text-[10px] text-red-500 mt-0.5">2 depts over 90%</p></div>
-        <div className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-mint p-4 shadow-sm"><p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Cash Position</p><p className="text-2xl font-extrabold text-slate-900 mt-1">UGX 350M</p><p className="text-[10px] text-aims-green mt-0.5">▲ 8% vs. last month</p></div>
+
+      {/* Headline stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {headline.map((s) => (
+          <button key={s.label} onClick={s.onClick} className={cn('bg-white rounded-xl border border-slate-200 border-t-4 p-4 shadow-sm text-left hover:shadow-md transition-shadow group', s.color === 'red' ? 'border-t-red-500' : s.color === 'orange' ? 'border-t-aims-orange' : s.color === 'green' ? 'border-t-aims-green' : s.color === 'mint' ? 'border-t-aims-mint' : 'border-t-aims-navy')}>
+            <div className="flex items-center justify-between mb-2">
+              <span className={cn('w-9 h-9 rounded-lg flex items-center justify-center', s.color === 'red' ? 'bg-red-50 text-red-500' : s.color === 'orange' ? 'bg-aims-orange/10 text-aims-orange' : s.color === 'green' ? 'bg-aims-green/10 text-aims-green' : s.color === 'mint' ? 'bg-aims-mint/30 text-aims-green' : 'bg-aims-navy/10 text-aims-navy')}>
+                <span className="material-symbols-outlined text-[20px]">{s.icon}</span>
+              </span>
+              <span className="material-symbols-outlined text-slate-300 group-hover:text-aims-navy transition-colors text-[18px]">open_in_new</span>
+            </div>
+            <p className="text-2xl font-extrabold text-slate-900 tracking-tight">{s.value}</p>
+            <p className="text-xs font-bold text-slate-600 mt-0.5">{s.label}</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">{s.sub}</p>
+          </button>
+        ))}
       </div>
-      <Section title="Approvals from ED — Ready to Disburse" subtitle="ED has approved these. You process the disbursement.">
-        <div className="flex flex-wrap gap-2 items-end mb-3">
-          <div className="flex-1 min-w-[180px]"><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Search</label><input type="text" value={edSearch} onChange={(e) => setEdSearch(e.target.value)} placeholder="Title or requisition ID…" className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-aims-navy/30" /></div>
-          <div className="min-w-[140px]"><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Department</label><select value={edDept} onChange={(e) => setEdDept(e.target.value)} className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-aims-navy/30"><option value="">All depts</option><option>Finance</option><option>Grants</option><option>Innovation</option><option>HR</option></select></div>
+
+      {/* At a Glance strip */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-bold text-slate-900 flex items-center gap-1.5"><span className="material-symbols-outlined text-aims-navy text-[16px]">hourglass_top</span>Requisitions to ED (aging)</p>
+            <span className="text-[10px] font-extrabold text-aims-navy">{pendingCount}</span>
+          </div>
+          {awaitingED.map((r) => (
+            <div key={r.id} className="flex items-center justify-between text-[11px] py-1 border-b border-slate-50 last:border-0">
+              <span className="text-slate-600 truncate max-w-[200px]">{r.title}</span>
+              <span className={cn('px-1.5 py-0.5 rounded text-[9px] font-bold border', getAgingColor(r.days))}>{r.days === 0 ? '<1d' : `${r.days}d`}</span>
+            </div>
+          ))}
+          <button onClick={() => navigate('/approvals')} className="mt-2 text-[11px] font-bold text-aims-navy hover:underline flex items-center gap-0.5">Open Requisition Queue <span className="material-symbols-outlined text-[12px]">arrow_forward</span></button>
         </div>
-        <div className="space-y-2">
-          {filteredEdApprovals.length === 0 && <p className="text-xs text-slate-400 italic text-center py-6">No ED-approved requisitions match your filters.</p>}
-          {filteredEdApprovals.map((a) => {
-            const isExp = expandedApproval === a.id;
-            return (
-              <div key={a.id} className={cn('rounded-lg border transition-all', isExp ? 'border-aims-navy shadow-md bg-white' : 'border-slate-200 bg-slate-50')}>
-                <div className="flex items-center justify-between p-3 cursor-pointer" onClick={() => setExpandedApproval(isExp ? null : a.id)}>
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <span className="material-symbols-outlined text-slate-400 text-[18px]">{isExp ? 'expand_less' : 'expand_more'}</span>
-                    <span className="material-symbols-outlined text-aims-green text-[20px]">verified_user</span>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 mb-0.5 flex-wrap"><span className="text-[10px] font-bold text-slate-400 font-mono">{a.id}</span><span className="text-[9px] font-bold px-1.5 py-0.5 rounded uppercase bg-aims-green/15 text-aims-green">ED Approved</span><span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">{a.dept}</span></div>
-                      <p className="text-sm font-bold text-slate-900 truncate">{a.title}</p>
-                      <p className="text-[10px] text-slate-500 truncate">Approved by {a.approvedBy} • {a.approvedDate}</p>
-                    </div>
-                  </div>
-                  <div className="text-right flex-shrink-0 ml-3"><p className="text-sm font-extrabold text-slate-900">{fmtMoney(a.amount)}</p><span className={cn('text-[10px] font-bold px-2 py-0.5 rounded mt-1 inline-block', getAging(a.daysSince))}>{a.daysSince}d since approval</span></div>
-                </div>
-                {isExp && (
-                  <div className="px-3 pb-3 border-t border-slate-100 pt-3 space-y-3">
-                    <div className="p-3 bg-aims-green/5 rounded-lg border border-aims-green/20"><p className="text-[10px] font-bold text-aims-green uppercase tracking-wider mb-1">ED Decision</p><p className="text-xs text-slate-700 italic">"{a.comment}"</p></div>
-                    <table className="w-full text-xs border border-slate-200 rounded-lg overflow-hidden"><thead className="bg-slate-50"><tr><th className="px-3 py-1.5 text-left text-slate-500 font-bold">Item</th><th className="px-3 py-1.5 text-right text-slate-500 font-bold">Qty</th><th className="px-3 py-1.5 text-right text-slate-500 font-bold">Total</th></tr></thead><tbody className="divide-y divide-slate-100">{a.lineItems.map((li, i) => <tr key={i}><td className="px-3 py-1.5 text-slate-700">{li.item}</td><td className="px-3 py-1.5 text-right text-slate-600">{li.qty}</td><td className="px-3 py-1.5 text-right font-semibold text-slate-900">{li.total}</td></tr>)}</tbody></table>
-                    <div className="flex justify-end gap-2 pt-1">
-                      <button onClick={() => showToast({ title: 'Viewing record', message: a.id, type: 'info' })} className="px-3 py-1.5 text-xs font-bold text-aims-navy border border-aims-navy/20 rounded-lg hover:bg-aims-navy/5 flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">visibility</span>View Details</button>
-                      <button onClick={() => handleDisburse(a.id)} className="px-3 py-1.5 bg-aims-green text-white text-xs font-bold rounded-lg hover:bg-aims-green/90 flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">payments</span>Process Disbursement</button>
-                    </div>
-                  </div>
-                )}
+
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-bold text-slate-900 flex items-center gap-1.5"><span className="material-symbols-outlined text-red-500 text-[16px]">assignment_return</span>Returned / Needs Revision</p>
+            <span className="text-[10px] font-extrabold text-red-600">{returnedCount}</span>
+          </div>
+          {returnedToMe.map((r) => (
+            <div key={r.id} className="py-1 border-b border-slate-50 last:border-0">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-slate-600 truncate max-w-[200px]">{r.title}</span>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-red-100 text-red-600">{r.days}d ago</span>
               </div>
-            );
-          })}
+              <p className="text-[10px] text-slate-400 italic mt-0.5 line-clamp-2">"{r.edNote}"</p>
+            </div>
+          ))}
+          <button onClick={() => navigate('/approvals')} className="mt-2 text-[11px] font-bold text-red-600 hover:underline flex items-center gap-0.5">Revise now <span className="material-symbols-outlined text-[12px]">arrow_forward</span></button>
         </div>
-      </Section>
+
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-bold text-slate-900 flex items-center gap-1.5"><span className="material-symbols-outlined text-aims-orange text-[16px]">warning</span>Budget Utilization Warning</p>
+          </div>
+          <p className="text-[11px] text-slate-600">HR & Admin pacing <strong className="text-aims-orange">4% ahead</strong> of quarterly schedule (77% used, 95% year-end forecast).</p>
+          <p className="text-[10px] text-slate-400 mt-1">Recommend contingency review by month-end.</p>
+          <button onClick={() => navigate('/finance')} className="mt-2 text-[11px] font-bold text-aims-navy hover:underline flex items-center gap-0.5">Review budgets <span className="material-symbols-outlined text-[12px]">arrow_forward</span></button>
+        </div>
+      </div>
+
+      {/* Pending finance edits banner */}
+      {pendingEdits.length > 0 && (
+        <div className="bg-aims-orange/10 border border-aims-orange/30 rounded-xl p-4 flex items-start gap-3">
+          <span className="material-symbols-outlined text-aims-orange text-[22px] mt-0.5">approval</span>
+          <div className="flex-1">
+            <p className="text-xs font-bold text-aims-orange">Finance Record Changes — {pendingEdits.length} awaiting ED approval</p>
+            <p className="text-sm text-slate-700 mt-1">Changes you submitted are pending executive approval and are not yet applied.</p>
+          </div>
+          <button onClick={() => navigate('/finance')} className="text-[11px] font-bold text-aims-navy hover:underline shrink-0">View pending</button>
+        </div>
+      )}
+
+      {/* Widgets */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Section title="My Requisitions" subtitle="Drafts, pushed and returned — one glance">
+          <div className="space-y-2">
+            <button onClick={() => navigate('/approvals')} className="w-full flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100 hover:bg-aims-navy/5 transition-colors">
+              <span className="text-xs font-bold text-slate-700 flex items-center gap-2"><span className="material-symbols-outlined text-slate-500 text-[16px]">edit_note</span>My Drafts</span>
+              <span className="text-lg font-extrabold text-aims-navy">{draftCount}</span>
+            </button>
+            <button onClick={() => navigate('/approvals')} className="w-full flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100 hover:bg-aims-navy/5 transition-colors">
+              <span className="text-xs font-bold text-slate-700 flex items-center gap-2"><span className="material-symbols-outlined text-aims-orange text-[16px]">hourglass_top</span>Pushed to ED (awaiting)</span>
+              <span className="text-lg font-extrabold text-aims-orange">{pendingCount}</span>
+            </button>
+            <button onClick={() => navigate('/approvals')} className="w-full flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100 hover:bg-aims-navy/5 transition-colors">
+              <span className="text-xs font-bold text-slate-700 flex items-center gap-2"><span className="material-symbols-outlined text-red-500 text-[16px]">assignment_return</span>Returned / Revise</span>
+              <span className="text-lg font-extrabold text-red-500">{returnedCount}</span>
+            </button>
+          </div>
+          <button onClick={() => navigate('/approvals')} className="w-full mt-3 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90 flex items-center justify-center gap-1.5">
+            <span className="material-symbols-outlined text-[16px]">request_quote</span>New Requisition
+          </button>
+        </Section>
+
+        <Section title="Cash Flow Snapshot" subtitle="Income vs. expenditure — drill to analytics">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="p-3 bg-aims-green/5 rounded-lg border border-aims-green/20"><p className="text-[10px] font-bold text-slate-500 uppercase">Monthly Income</p><p className="text-xl font-extrabold text-aims-green mt-1">{fmtUSD(totalIncome)}</p></div>
+            <div className="p-3 bg-aims-orange/5 rounded-lg border border-aims-orange/20"><p className="text-[10px] font-bold text-slate-500 uppercase">Monthly Expenses</p><p className="text-xl font-extrabold text-aims-orange mt-1">{fmtUSD(totalExpense)}</p></div>
+            <div className="p-3 bg-aims-navy/5 rounded-lg border border-aims-navy/20"><p className="text-[10px] font-bold text-slate-500 uppercase">Net Position</p><p className={cn('text-xl font-extrabold mt-1', net >= 0 ? 'text-aims-green' : 'text-red-500')}>{net >= 0 ? '+' : ''}{fmtUSD(net)}</p></div>
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100"><p className="text-[10px] font-bold text-slate-500 uppercase">Forecast (12/31)</p><p className="text-xl font-extrabold text-aims-navy mt-1">+$3.1M</p></div>
+          </div>
+          <button onClick={() => navigate('/finance')} className="w-full mt-3 py-2 border border-aims-navy/20 text-aims-navy text-xs font-bold rounded-lg hover:bg-aims-navy/5 flex items-center justify-center gap-1.5">
+            <span className="material-symbols-outlined text-[16px]">analytics</span>Drill to Full Analytics
+          </button>
+        </Section>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Section title="Budget Utilization by Department" subtitle="Year-end forecast vs. healthy range 75-90%">
+          <div className="space-y-3">
+            {budgets.map((b) => {
+              const pct = Math.round((b.actual / b.budget) * 100);
+              const warn = b.forecastPct >= 90;
+              return (
+                <div key={b.id}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-bold text-slate-900">{b.dept}</span>
+                    <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded border', warn ? 'text-red-600 bg-red-50 border-red-200' : pct >= 75 ? 'text-aims-orange bg-aims-orange/10 border-aims-orange/20' : 'text-aims-green bg-aims-green/10 border-aims-green/20')}>{pct}% used{warn ? ' ⚠️' : ''}</span>
+                  </div>
+                  <div className="w-full bg-slate-100 rounded-full h-2"><div className={cn('h-2 rounded-full', warn ? 'bg-red-500' : pct >= 75 ? 'bg-aims-orange' : 'bg-aims-green')} style={{ width: `${Math.min(100, pct)}%` }} /></div>
+                </div>
+              );
+            })}
+          </div>
+          <button onClick={() => navigate('/finance')} className="w-full mt-3 py-2 border border-aims-navy/20 text-aims-navy text-xs font-bold rounded-lg hover:bg-aims-navy/5 flex items-center justify-center gap-1.5">
+            <span className="material-symbols-outlined text-[16px]">monitoring</span>Drill to Full Analytics
+          </button>
+        </Section>
+
+        <Section title="AI Insight" subtitle="Auto-generated anomaly flags — updated daily">
+          <div className="space-y-3">
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
+              <p className="text-xs text-slate-700"><span className="font-extrabold text-aims-navy">① Waste pillar procurement</span> is pacing 15% above quarterly phasing. Recommend review of the Q4 spending plan to maintain budget alignment.</p>
+            </div>
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
+              <p className="text-xs text-slate-700"><span className="font-extrabold text-aims-navy">② HR & Admin</span> trending toward 95% budget utilization by year-end — current pace suggests a $180K overage. Recommend review of the contingency staffing plan by month-end.</p>
+            </div>
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
+              <p className="text-xs text-slate-700"><span className="font-extrabold text-aims-navy">③ 3 requisitions returned from ED</span> for revision in the past week. Consider reviewing feedback patterns to improve first-pass approval rate.</p>
+            </div>
+            <button onClick={() => navigate('/finance')} className="text-[11px] font-bold text-aims-navy hover:underline flex items-center gap-0.5">Open cash flow analytics <span className="material-symbols-outlined text-[12px]">arrow_forward</span></button>
+          </div>
+        </Section>
+      </div>
+
+      {/* Quick actions */}
       <Section title="Quick Actions" subtitle="Start a workflow">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <button onClick={() => setShowNewReq(true)} className="p-4 bg-aims-navy/5 hover:bg-aims-navy/10 rounded-xl border border-aims-navy/20 transition-colors text-left"><span className="material-symbols-outlined text-aims-navy text-[24px] mb-2">request_quote</span><p className="text-sm font-bold text-slate-900">New Requisition</p><p className="text-[10px] text-slate-500 mt-0.5">Draft & push to ED</p></button>
-          <button onClick={() => setShowPayroll(true)} className="p-4 bg-aims-green/5 hover:bg-aims-green/10 rounded-xl border border-aims-green/20 transition-colors text-left"><span className="material-symbols-outlined text-aims-green text-[24px] mb-2">payments</span><p className="text-sm font-bold text-slate-900">Prepare Payroll</p><p className="text-[10px] text-slate-500 mt-0.5">Generate batch → ED</p></button>
-          <button onClick={() => navigate('/finance')} className="p-4 bg-aims-orange/5 hover:bg-aims-orange/10 rounded-xl border border-aims-orange/20 transition-colors text-left"><span className="material-symbols-outlined text-aims-orange text-[24px] mb-2">analytics</span><p className="text-sm font-bold text-slate-900">Cash Flow & Reports</p><p className="text-[10px] text-slate-500 mt-0.5">Analytics + CSV/PDF</p></button>
-          <button onClick={() => navigate('/procurement')} className="p-4 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 transition-colors text-left"><span className="material-symbols-outlined text-slate-600 text-[24px] mb-2">local_shipping</span><p className="text-sm font-bold text-slate-900">Vendors & POs</p><p className="text-[10px] text-slate-500 mt-0.5">Manage suppliers</p></button>
+          <button onClick={() => navigate('/approvals', { state: { new: true } })} className="p-4 bg-aims-navy/5 hover:bg-aims-navy/10 rounded-xl border border-aims-navy/20 transition-colors text-left">
+            <span className="material-symbols-outlined text-aims-navy text-[24px] mb-2">request_quote</span>
+            <p className="text-sm font-bold text-slate-900">New Requisition</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">Draft & push to ED</p>
+          </button>
+          <button onClick={() => showToast({ title: 'Template Loaded', message: 'Standard requisition template loaded from Shared Reference Library.', type: 'success' })} className="p-4 bg-aims-green/5 hover:bg-aims-green/10 rounded-xl border border-aims-green/20 transition-colors text-left">
+            <span className="material-symbols-outlined text-aims-green text-[24px] mb-2">description</span>
+            <p className="text-sm font-bold text-slate-900">Use Template</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">Requisition form template</p>
+          </button>
+          <button onClick={() => navigate('/finance')} className="p-4 bg-aims-orange/5 hover:bg-aims-orange/10 rounded-xl border border-aims-orange/20 transition-colors text-left">
+            <span className="material-symbols-outlined text-aims-orange text-[24px] mb-2">analytics</span>
+            <p className="text-sm font-bold text-slate-900">Cash Flow & Reports</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">Analytics + CSV/PDF export</p>
+          </button>
+          <button onClick={() => navigate('/approvals')} className="p-4 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 transition-colors text-left">
+            <span className="material-symbols-outlined text-slate-600 text-[24px] mb-2">fact_check</span>
+            <p className="text-sm font-bold text-slate-900">Approvals Queue</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">Track ED decisions</p>
+          </button>
         </div>
       </Section>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Section title="At a Glance" subtitle="Items needing your attention">
-          <div className="space-y-3">
-            <div className="p-3 bg-aims-navy/5 rounded-lg border border-aims-navy/20">
-              <div className="flex items-center justify-between mb-1.5"><p className="text-xs font-bold text-slate-900 flex items-center gap-1.5"><span className="material-symbols-outlined text-aims-navy text-[16px]">hourglass_top</span>Awaiting ED decision</p><span className="text-[10px] font-extrabold text-aims-navy">{awaitingED.length}</span></div>
-              {awaitingED.map((r) => (<div key={r.id} className="flex items-center justify-between text-[11px] py-0.5"><span className="text-slate-600 truncate max-w-[180px]">{r.title}</span><span className={cn('px-1.5 py-0.5 rounded text-[9px] font-bold', getAging(r.days))}>{r.days}d</span></div>))}
-            </div>
-            <div className="p-3 bg-red-50 rounded-lg border border-red-200">
-              <div className="flex items-center justify-between mb-1.5"><p className="text-xs font-bold text-slate-900 flex items-center gap-1.5"><span className="material-symbols-outlined text-red-500 text-[16px]">assignment_return</span>Returned — needs revision</p><span className="text-[10px] font-extrabold text-red-600">{returnedToMe.length}</span></div>
-              {returnedToMe.map((r) => (<div key={r.id} className="flex items-center justify-between text-[11px] py-0.5"><span className="text-slate-600 truncate max-w-[180px]">{r.title}</span><span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-red-100 text-red-600">{r.days}d</span></div>))}
-              <button onClick={() => navigate('/approvals')} className="mt-2 text-[11px] font-bold text-red-600 hover:underline flex items-center gap-0.5">Revise now <span className="material-symbols-outlined text-[12px]">arrow_forward</span></button>
-            </div>
-          </div>
-        </Section>
-        <Section title="Budget Alerts" subtitle="Utilization trending over threshold">
-          <div className="space-y-3">
-            {budgetAlerts.map((b) => (
-              <div key={b.dept}>
-                <div className="flex items-center justify-between mb-1"><span className="text-xs font-bold text-slate-900">{b.dept}</span><span className={cn('text-[10px] font-bold px-2 py-0.5 rounded border', getBudgetBadge(b.pct))}>{b.pct}%</span></div>
-                <div className="w-full bg-slate-100 rounded-full h-2"><div className={cn('h-2 rounded-full', getBudgetColor(b.pct))} style={{ width: `${Math.min(100, b.pct)}%` }} /></div>
-              </div>
-            ))}
-            <button onClick={() => navigate('/finance')} className="w-full mt-1 text-[11px] font-bold text-aims-navy border border-aims-navy/20 rounded-lg py-1.5 hover:bg-aims-navy/5 flex items-center justify-center gap-0.5">Open Cash Flow Analytics <span className="material-symbols-outlined text-[12px]">arrow_forward</span></button>
-          </div>
-        </Section>
-      </div>
-      {showNewReq && <NewRequisitionModal onClose={() => setShowNewReq(false)} onSubmit={() => { setShowNewReq(false); showToast({ title: 'Requisition submitted', message: 'Pushed to ED for approval.', type: 'success' }); }} />}
-      {showPayroll && <PreparePayrollModal onClose={() => setShowPayroll(false)} onSubmit={() => { setShowPayroll(false); showToast({ title: 'Payroll batch submitted', message: 'Routed to ED for authorization.', type: 'success' }); }} />}
     </div>
   );
 }

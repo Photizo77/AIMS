@@ -57,7 +57,6 @@ const FINANCE_NAV_ITEMS: NavItem[] = [
   { title: 'Dashboard', href: '/dashboard', icon: 'dashboard', roles: ['FINANCE'] },
   { title: 'Requisition Queue', href: '/approvals', icon: 'request_quote', roles: ['FINANCE'] },
   { title: 'Cash Flow Analytics', href: '/finance', icon: 'account_balance', roles: ['FINANCE'] },
-  { title: 'Procurement & Vendors', href: '/procurement', icon: 'local_shipping', roles: ['FINANCE'] },
   { title: 'My Attendance', href: '/attendance', icon: 'schedule', roles: ['FINANCE'] },
   { title: 'Feed', href: '/feed', icon: 'feed', roles: ['FINANCE'] },
   { title: 'Email', href: '/email', icon: 'mail', roles: ['FINANCE'] },
