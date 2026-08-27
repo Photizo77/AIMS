@@ -1,0 +1,37 @@
+name: Deploy to Vercel (Production)
+
+# Explicit CI/CD pipeline for AIMS:
+#   - every push to main triggers a production build + deploy to Vercel
+#   - can also be triggered manually (Actions -> "Deploy to Vercel" -> Run workflow)
+#
+# One-time setup (GitHub -> Settings -> Secrets and variables -> Actions):
+#   VERCEL_TOKEN      - Vercel account token (Vercel dashboard -> Settings -> Tokens)
+#   VERCEL_ORG_ID     - your Vercel team/org id (run `vercel teams ls` locally)
+#   VERCEL_PROJECT_ID - project id (run `vercel projects ls` locally, or the
+#                       `id` in your project's .vercel/project.json after `vercel link`)
+#
+# Note: Vercel's native Git integration also auto-deploys on push to main.
+# This workflow is the explicit pipeline on top of that gate (CI + deploy in
+# one place); if you prefer, you can remove this file and rely on the native
+# integration alone.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Build & deploy production
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'

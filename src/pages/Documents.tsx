@@ -41,6 +41,60 @@ const ACCESS_BADGE: Record<AccessLevel, { label: string; cls: string }> = {
   none: { label: 'None', cls: 'bg-slate-100 text-slate-400' },
 };
 
+// ── Persona-tailored document hub ──
+// Each role gets a tailored "For You" panel: focus categories plus the
+// documents most relevant to that persona, so the hub reads as their own.
+const PERSONA_PROFILE: Record<string, { label: string; blurb: string; focus: DocCategory[]; pinned: string[] }> = {
+  CD: {
+    label: 'Country Director',
+    blurb: 'Governance, board minutes, institutional policy and compliance oversight — view everything, flag for the ED, approve nothing.',
+    focus: ['governance', 'shared_reference'],
+    pinned: ['d1', 'd2', 'd3'],
+  },
+  ED: {
+    label: 'Executive Director',
+    blurb: 'Full institutional picture — governance, finance, HR, grants and operations, with authority over every document.',
+    focus: ['governance', 'finance_procurement', 'hr_contracts', 'grants'],
+    pinned: ['d3', 'd6', 'd9'],
+  },
+  COMPANY_ADMIN: {
+    label: 'Company Administrator',
+    blurb: 'HR contracts, appraisals, employment records, operational policy and the shared reference library.',
+    focus: ['hr_contracts', 'shared_reference', 'inventory_policy'],
+    pinned: ['d4', 'd5', 'd20'],
+  },
+  SYS_ADMIN: {
+    label: 'System Administrator',
+    blurb: 'Audit logs, access logs and system security records — platform governance.',
+    focus: ['system_security'],
+    pinned: ['d17'],
+  },
+  FINANCE: {
+    label: 'Finance Officer',
+    blurb: 'Requisitions, receipts, budgets, payroll and procurement records — plus shared templates.',
+    focus: ['finance_procurement', 'shared_reference'],
+    pinned: ['d6', 'd7', 'd8'],
+  },
+  GRANT_WRITER: {
+    label: 'Grant Writer',
+    blurb: 'Proposals, budgets, funder correspondence and the grants resource library for drafting.',
+    focus: ['grants', 'grants_resource'],
+    pinned: ['d9', 'd10', 'd11'],
+  },
+  GRANTS_MANAGER: {
+    label: 'Grants Manager',
+    blurb: 'The full proposal pipeline — drafts, budgets, award letters and funder guidelines.',
+    focus: ['grants', 'grants_resource'],
+    pinned: ['d9', 'd12', 'd13'],
+  },
+  INNOVATOR: {
+    label: 'Innovator',
+    blurb: 'Feasibility studies, technical specifications, prototypes and research outputs.',
+    focus: ['innovations'],
+    pinned: ['d14', 'd15'],
+  },
+};
+
 interface DocumentVersion { version: number; uploadedBy: string; uploadedAt: string; size: string; }
 interface DocRecord {
   id: string; title: string; fileType: string; fileSize: string; category: DocCategory;
@@ -107,6 +161,10 @@ export function Documents() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const userRole = user?.role ?? '';
+
+  // Persona profile for the tailored panel
+  const persona = PERSONA_PROFILE[userRole];
+  const pinnedDocs = useMemo(() => (persona ? MOCK_DOCUMENTS.filter((d) => persona.pinned.includes(d.id)) : []), [persona]);
 
   // Categories the user can access (any level other than none)
   const accessibleCategories = useMemo(() =>
@@ -201,6 +259,43 @@ export function Documents() {
         <div className="bg-aims-green/10 border border-aims-green/30 rounded-xl px-4 py-3 flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
           <span className="material-symbols-outlined text-aims-green text-[20px] mt-0.5">campaign</span>
           <p className="text-sm text-slate-800 font-medium">{notification}</p>
+        </div>
+      )}
+
+      {/* Tailored for you — persona-specific quick access */}
+      {persona && (
+        <div className="bg-grad-navy rounded-2xl p-6 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="material-symbols-outlined text-aims-mint text-[18px]">person_pin</span>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-aims-mint">Tailored for you</p>
+          </div>
+          <h2 className="text-lg font-extrabold text-white mb-1">{persona.label} Documents</h2>
+          <p className="text-sm text-white/90 mb-4">{persona.blurb}</p>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {persona.focus.map((key) => {
+              const cat = CATEGORIES.find((c) => c.key === key);
+              if (!cat) return null;
+              return (
+                <button key={key} onClick={() => { setActiveCategory(key); setSelectedIds(new Set()); setVersionDocId(null); }} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 border border-white/20 rounded-lg text-xs font-bold transition-colors">
+                  <span className="material-symbols-outlined text-[14px]">{cat.icon}</span>{cat.label}
+                </button>
+              );
+            })}
+          </div>
+          {pinnedDocs.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              {pinnedDocs.map((doc) => (
+                <button key={doc.id} onClick={() => { setActiveCategory(doc.category); setSelectedIds(new Set()); setVersionDocId(null); }} className="flex items-center gap-2 p-2.5 bg-white/10 hover:bg-white/20 rounded-lg border border-white/15 text-left transition-colors group">
+                  <span className={cn('material-symbols-outlined text-[18px] shrink-0', getFileColor(doc.fileType))}>{getFileIcon(doc.fileType)}</span>
+                  <span className="min-w-0">
+                    <span className="block text-xs font-bold text-white truncate">{doc.title}</span>
+                    <span className="block text-[10px] text-white/70">{doc.fileType} • {doc.fileSize}</span>
+                  </span>
+                  <span className="material-symbols-outlined text-[14px] text-white/60 ml-auto group-hover:text-white transition-colors">arrow_forward</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

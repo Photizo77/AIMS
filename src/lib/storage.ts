@@ -32,6 +32,19 @@ export function saveJSON(key: string, value: unknown): void {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch { /* ignore */ }
+  notifyDataChanged(key);
+}
+
+// ── Live update bus ──
+// Every save dispatches a window event so any component using useLiveData()
+// re-reads the store and refreshes automatically (same tab, or other tabs
+// via the native 'storage' event).
+export const DATA_CHANGED_EVENT = 'aims:data-changed';
+
+export function notifyDataChanged(key?: string): void {
+  try {
+    window.dispatchEvent(new CustomEvent(DATA_CHANGED_EVENT, { detail: { key } }));
+  } catch { /* ignore */ }
 }
 
 // ── Data Vault: export & import the whole dataset ──

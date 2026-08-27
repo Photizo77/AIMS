@@ -1,8 +1,9 @@
 // src/pages/Dashboard.tsx
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
+import { useLiveData } from '@/lib/useLiveData';
 import { CHIP, ACCENT, FILL, type ColorKey } from '@/lib/uiTheme';
 import { ExecutiveBrief } from '@/components/ai/ExecutiveBrief';
 import { useNotifications } from '@/context/NotificationContext';
@@ -126,6 +127,9 @@ function ApprovalActionPanel({ itemName, itemType, onViewFull, onApprove, onReje
 export function Dashboard() {
   const { user } = useAuth();
   const location = useLocation(); 
+  // Live auto-update: any data write (same tab or another tab) re-renders
+  // the active dashboard so every card reflects the freshest values.
+  useLiveData();
   
   if (!user) return null;
   const role = user.role;
@@ -400,6 +404,31 @@ function EDDashboard() {
               ))}
             </tbody>
           </table>
+        </div>
+      </Section>
+
+      <Section title="HR & People Management" subtitle="Full workforce administration — the same module available to Company Administration">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          {[
+            { tab: 'directory', label: 'People Directory', icon: 'people' },
+            { tab: 'payslips', label: 'Payslips', icon: 'payments' },
+            { tab: 'leave', label: 'Leave', icon: 'event_available' },
+            { tab: 'contracts', label: 'Contracts', icon: 'description' },
+            { tab: 'appraisals', label: 'Appraisals', icon: 'assessment' },
+            { tab: 'offboarding', label: 'Offboarding', icon: 'person_remove' },
+          ].map((item) => (
+            <button key={item.tab} onClick={() => navigate('/hr', { state: { tab: item.tab } })} className="p-4 bg-aims-navy/5 hover:bg-aims-navy/10 rounded-xl border border-aims-navy/20 transition-colors text-left group">
+              <span className="material-symbols-outlined text-aims-navy text-[22px] group-hover:scale-110 transition-transform">{item.icon}</span>
+              <p className="text-xs font-bold text-slate-900 mt-2">{item.label}</p>
+              <p className="text-[10px] text-aims-navy font-bold mt-0.5 group-hover:underline">Open module</p>
+            </button>
+          ))}
+        </div>
+        <div className="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center flex-wrap gap-2">
+          <p className="text-xs text-slate-500">Workforce administration, contracts, leave, appraisals &amp; offboarding — same access as Company Administration.</p>
+          <button onClick={() => navigate('/hr')} className="text-xs font-bold text-aims-navy hover:underline flex items-center gap-1 shrink-0">
+            Open full HR module <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+          </button>
         </div>
       </Section>
 
@@ -842,6 +871,22 @@ function InnovatorDashboard() {
     return 'bg-aims-green';
   };
 
+  // Per-persona workload (used by strategic roles for oversight)
+  const byLead = useMemo(() => {
+    const map = new Map<string, typeof projects[number][]>();
+    projects.forEach((p) => {
+      const list = map.get(p.leadName) ?? [];
+      list.push(p);
+      map.set(p.leadName, list);
+    });
+    return Array.from(map.entries()).map(([lead, ps]) => ({
+      lead,
+      count: ps.length,
+      avg: Math.round(ps.reduce((s, p) => s + p.progressPercent, 0) / ps.length),
+      stages: Array.from(new Set(ps.map((p) => p.stage))),
+    }));
+  }, [projects]);
+
   return (
     <div className="space-y-6">
       <DashHeader gradient="bg-grad-navy" title="Innovation Pipeline" subtitle="Research execution, prototyping & production tracking" />
@@ -855,6 +900,24 @@ function InnovatorDashboard() {
           return (<div key={s.key} className={cn('bg-white rounded-xl border border-slate-200 border-t-4 p-4 shadow-sm text-center', ACCENT[s.color])}><p className="text-2xl font-extrabold text-slate-900">{count}</p><p className="text-xs font-semibold text-slate-500 mt-1">{s.label}</p></div>);
         })}
       </div>
+
+      {user && (user.role === 'CD' || user.role === 'ED') && (
+        <Section title="Oversight by Persona" subtitle="Strategic view — workload and stage distribution across every innovation team">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {byLead.map(({ lead, count, avg, stages }) => (
+              <div key={lead} className="p-4 bg-slate-50 rounded-lg border border-slate-100">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-bold text-slate-900">{lead}</p>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-aims-navy/10 text-aims-navy">{count} project{count !== 1 ? 's' : ''}</span>
+                </div>
+                <div className="mb-2"><div className="w-full bg-slate-100 rounded-full h-1.5"><div className="h-1.5 rounded-full bg-aims-green" style={{ width: `${avg}%` }} /></div></div>
+                <p className="text-[10px] text-slate-500 mb-2">Avg progress {avg}%</p>
+                <div className="flex flex-wrap gap-1">{stages.map((s) => <span key={s} className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-white border border-slate-200 text-slate-600 capitalize">{s}</span>)}</div>
+              </div>
+            ))}
+          </div>
+        </Section>
+      )}
 
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center bg-slate-100 rounded-lg p-1">

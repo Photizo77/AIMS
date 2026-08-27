@@ -7,6 +7,8 @@
 // with the CD's name and timestamp. The ED resolves them.
 // ============================================================
 
+import { notifyDataChanged } from '@/lib/storage';
+
 export interface CdFlag {
   id: string;
   /** What the flag is attached to, e.g. "Grant g1 — Community Land Rights" */
@@ -48,6 +50,7 @@ export function subscribeFlags(fn: () => void): () => void {
 }
 function emit(): void {
   listeners.forEach((l) => l());
+  notifyDataChanged('flags');
 }
 
 export const flagService = {

@@ -25,7 +25,7 @@ const ED_NAV_ITEMS: NavItem[] = [
   { title: 'Finance & Procurement', href: '/dashboard?view=finance', icon: 'account_balance', roles: ['ED'] },
   { title: 'Attendance', href: '/attendance', icon: 'schedule', roles: ['ED'] },
   { title: 'HR & People Management', href: '/hr', icon: 'people', roles: ['ED'] },
-  { title: 'Innovations & Tasks', href: '/tasks', icon: 'lightbulb', roles: ['ED'] },
+  { title: 'Innovations & Tasks', href: '/dashboard?view=innovations', icon: 'lightbulb', roles: ['ED'] },
   { title: 'Inventory', href: '/inventory', icon: 'inventory_2', roles: ['ED'] },
   { title: 'Documents', href: '/documents', icon: 'folder', roles: ['ED'] },
   { title: 'Feed', href: '/feed', icon: 'feed', roles: ['ED'] },
