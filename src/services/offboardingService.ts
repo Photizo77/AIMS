@@ -13,6 +13,8 @@ export interface OffboardStep { id: string; label: string; done: boolean; detail
 export interface Offboardee {
   id: string; name: string; role: string; dept: string; exitDate: string;
   steps: OffboardStep[]; createdAt: string; reminders: number;
+  exitType?: string; lastWorkingDay?: string; noticeDays?: number;
+  reason?: string; handoverTo?: string; settlementNotes?: string;
 }
 export interface OffboardReminder { id: string; offboardeeId: string; sentAt: string; subject: string; }
 
@@ -54,7 +56,7 @@ export const offboardGet = {
   reminders: (): OffboardReminder[] => clone(state.reminders),
 };
 
-export function startOffboarding(input: { name: string; exitDate: string }): Offboardee {
+export function startOffboarding(input: { name: string; exitDate: string; exitType?: string; lastWorkingDay?: string; noticeDays?: number; reason?: string; handoverTo?: string; settlementNotes?: string }): Offboardee {
   const person = STAFF_ROSTER.find((s) => s.name === input.name);
   const today = new Date().toISOString();
   const c: Offboardee = {
@@ -66,6 +68,12 @@ export function startOffboarding(input: { name: string; exitDate: string }): Off
     steps: EXIT_STEPS.map((x) => ({ ...x, done: false, detail: x.detail })),
     createdAt: today,
     reminders: 0,
+    exitType: input.exitType,
+    lastWorkingDay: input.lastWorkingDay,
+    noticeDays: input.noticeDays,
+    reason: input.reason,
+    handoverTo: input.handoverTo,
+    settlementNotes: input.settlementNotes,
   };
   state = { ...state, cases: [c, ...state.cases] };
   persist();

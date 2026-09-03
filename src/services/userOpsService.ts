@@ -19,7 +19,10 @@ export interface ManagedUser {
 }
 export interface AuditEntry { id: string; ts: string; user: string; action: string; by: string; }
 export interface OnboardStep { id: string; label: string; done: boolean; detail?: string; }
-export interface Onboardee { id: string; name: string; hired: string; steps: OnboardStep[]; }
+export interface Onboardee {
+  id: string; name: string; hired: string; steps: OnboardStep[];
+  email?: string; role?: string; startDate?: string;
+}
 
 interface UserOpsState { users: ManagedUser[]; audit: AuditEntry[]; onboardees: Onboardee[]; }
 
@@ -148,11 +151,12 @@ export function advanceOnboard(id: string, stepId: string, by: string): void {
   persist();
 }
 
-export function addOnboardee(name: string): Onboardee {
+export function addOnboardee(input: { name: string; email?: string; role?: string; startDate?: string }): Onboardee {
   const hire: Onboardee = {
-    id: `ob-${Date.now()}`, name,
+    id: `ob-${Date.now()}`, name: input.name,
     hired: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
     steps: ONBOARD_STEP_TEMPLATE.map((s) => ({ ...s, done: false })),
+    email: input.email, role: input.role, startDate: input.startDate,
   };
   state = { ...state, onboardees: [hire, ...state.onboardees] };
   persist();

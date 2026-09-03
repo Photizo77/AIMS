@@ -366,35 +366,63 @@ export function InventoryHub() {
         </Modal>
       )}
 
-      {/* ── Issue / Receive Stock Modals ── */}
+      {/* ── Issue Stock Modal (structured) ── */}
       {showIssue && (
         <Modal title="Issue Stock" onClose={() => setShowIssue(false)}>
-          <form onSubmit={(e) => { e.preventDefault(); const f = new FormData(e.currentTarget); const id = f.get('item') as string; const qty = Number(f.get('qty')) || 1; const item = stock.find((s) => s.id === id); const r = adjustStock(id, -qty); setShowIssue(false); showToast({ title: 'Stock Issued', message: `${qty} × ${item?.name ?? 'item'} issued (remaining: ${r?.qty}).`, type: 'success' }); }} className="space-y-3">
-            <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Item</label><select name="item" required className={INPUT}>{stock.map((s) => <option key={s.id} value={s.id}>{s.name} ({s.qty} {s.unit})</option>)}</select></div>
-            <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Quantity</label><input name="qty" type="number" min="1" defaultValue="1" className={INPUT} /></div>
+          <form onSubmit={(e) => { e.preventDefault(); const f = new FormData(e.currentTarget); const id = f.get('item') as string; const qty = Number(f.get('qty')) || 1; const item = stock.find((s) => s.id === id); const recipient = (f.get('recipient') as string) || '—'; const r = adjustStock(id, -qty); setShowIssue(false); showToast({ title: 'Stock Issued', message: `${qty} × ${item?.name ?? 'item'} issued to ${recipient} (remaining: ${r?.qty} ${item?.unit}).`, type: 'success' }); }} className="space-y-4">
+            <div className="rounded-xl border border-slate-200 overflow-hidden">
+              <div className="bg-aims-navy px-4 py-2"><p className="text-[10px] font-bold text-white uppercase tracking-wider">Item & Quantity</p></div>
+              <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="sm:col-span-2"><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Item *</label><select name="item" required className={INPUT}>{stock.map((s) => <option key={s.id} value={s.id}>{s.name} — on hand {s.qty} {s.unit}</option>)}</select></div>
+                <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Quantity *</label><input name="qty" type="number" min="1" defaultValue="1" className={INPUT} /></div>
+              </div>
+            </div>
+            <div className="rounded-xl border border-slate-200 overflow-hidden">
+              <div className="bg-aims-navy px-4 py-2"><p className="text-[10px] font-bold text-white uppercase tracking-wider">Issue Details</p></div>
+              <div className="p-4 space-y-3">
+                <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Issued To (employee/dept) *</label><input name="recipient" required placeholder="e.g. Sarah Aciro — Grants" className={INPUT} /></div>
+                <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Purpose</label><textarea name="purpose" rows={2} placeholder="e.g. Field documentation printing" className={INPUT} /></div>
+              </div>
+            </div>
             <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
               <button type="button" onClick={() => setShowIssue(false)} className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
-              <button type="submit" className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg">Issue</button>
+              <button type="submit" className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg">Confirm Issue</button>
             </div>
           </form>
         </Modal>
       )}
+
+      {/* ── Receive / Register Stock Modal (structured) ── */}
       {showReceive && (
-        <Modal title="Receive Stock" onClose={() => setShowReceive(false)}>
+        <Modal title="Receive / Register Stock" onClose={() => setShowReceive(false)}>
           <form onSubmit={(e) => { e.preventDefault(); const f = new FormData(e.currentTarget); const mode = f.get('mode') as string; const qty = Number(f.get('qty')) || 1;
-            if (mode === 'existing') { const id = f.get('item') as string; const item = stock.find((s) => s.id === id); adjustStock(id, +qty); showToast({ title: 'Stock Received', message: `${qty} × ${item?.name} added (now ${item ? item.qty + qty : qty}).`, type: 'success' }); }
-            else { addStockItem({ name: f.get('name') as string, qty, threshold: Number(f.get('threshold')) || 0, unit: (f.get('unit') as string) || 'units' }); showToast({ title: 'New Stock Item Added', message: `${f.get('name')} (${qty} units) added to inventory.`, type: 'success' }); }
-            setShowReceive(false); }} className="space-y-3">
-            <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Receive into</label><select name="mode" className={INPUT}><option value="existing">Existing item</option><option value="new">New stock item</option></select></div>
-            <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Item</label><select name="item" className={INPUT}>{stock.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</select></div>
-            <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">New item name (if new)</label><input name="name" placeholder="e.g. Staplers" className={INPUT} /></div>
-            <div className="grid grid-cols-2 gap-3">
-              <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Quantity</label><input name="qty" type="number" min="1" defaultValue="1" className={INPUT} /></div>
-              <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Unit</label><input name="unit" placeholder="units / reams / boxes" className={INPUT} /></div>
+            if (mode === 'existing') { const id = f.get('item') as string; const item = stock.find((s) => s.id === id); adjustStock(id, +qty); showToast({ title: 'Stock Received', message: `${qty} × ${item?.name} added (now ${item ? item.qty + qty : qty} ${item?.unit}).`, type: 'success' }); }
+            else { const created = addStockItem({ name: f.get('name') as string, qty, threshold: Number(f.get('threshold')) || 0, reorderQty: Number(f.get('reorderQty')) || undefined, unit: (f.get('unit') as string) || 'units', category: (f.get('category') as string) || undefined, location: (f.get('location') as string) || undefined, supplier: (f.get('supplier') as string) || undefined }); showToast({ title: 'Stock Item Registered', message: `${created.name} added (${created.qty} ${created.unit}).`, type: 'success' }); }
+            setShowReceive(false); }} className="space-y-4">
+            <div className="rounded-xl border border-slate-200 overflow-hidden">
+              <div className="bg-aims-navy px-4 py-2"><p className="text-[10px] font-bold text-white uppercase tracking-wider">Receive Into</p></div>
+              <div className="p-4"><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Option *</label><select name="mode" className={INPUT}><option value="existing">Add to existing item</option><option value="new">Register a new stock item</option></select></div>
+            </div>
+            <div className="rounded-xl border border-slate-200 overflow-hidden">
+              <div className="bg-aims-navy px-4 py-2"><p className="text-[10px] font-bold text-white uppercase tracking-wider">Existing Item</p></div>
+              <div className="p-4"><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Item</label><select name="item" className={INPUT}>{stock.map((s) => <option key={s.id} value={s.id}>{s.name} — on hand {s.qty} {s.unit}</option>)}</select></div>
+            </div>
+            <div className="rounded-xl border border-slate-200 overflow-hidden">
+              <div className="bg-aims-navy px-4 py-2"><p className="text-[10px] font-bold text-white uppercase tracking-wider">New Item Details</p></div>
+              <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="sm:col-span-2"><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Item Name *</label><input name="name" required placeholder="e.g. A4 Printer Paper" className={INPUT} /></div>
+                <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Category</label><select name="category" className={INPUT}><option value="">—</option><option>Stationery</option><option>Consumables</option><option>IT Accessories</option><option>Cleaning</option><option>Field Supplies</option><option>Other</option></select></div>
+                <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Unit</label><input name="unit" placeholder="reams / boxes / units" className={INPUT} /></div>
+                <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Quantity Received *</label><input name="qty" type="number" min="1" defaultValue="1" className={INPUT} /></div>
+                <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Low-Stock Threshold</label><input name="threshold" type="number" min="0" placeholder="e.g. 10" className={INPUT} /></div>
+                <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Reorder Point</label><input name="reorderQty" type="number" min="0" placeholder="e.g. 20" className={INPUT} /></div>
+                <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Storage Location</label><input name="location" placeholder="e.g. Store A — Shelf 2" className={INPUT} /></div>
+                <div className="sm:col-span-2"><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Supplier</label><input name="supplier" placeholder="e.g. Gulu Office Supplies" className={INPUT} /></div>
+              </div>
             </div>
             <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
               <button type="button" onClick={() => setShowReceive(false)} className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
-              <button type="submit" className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg">Receive</button>
+              <button type="submit" className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg">Save</button>
             </div>
           </form>
         </Modal>

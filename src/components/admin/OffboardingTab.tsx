@@ -66,7 +66,8 @@ export function OffboardingTab() {
                 <div className="w-10 h-10 rounded-full bg-aims-orange text-white flex items-center justify-center font-bold text-sm">{ob.name[0]}</div>
                 <div>
                   <p className="text-base font-extrabold text-slate-900">{ob.name}</p>
-                  <p className="text-xs text-slate-500">Exit Date: {ob.exitDate} · {ob.role} ({ob.dept})</p>
+                  <p className="text-xs text-slate-500">Exit Date: {ob.exitDate} · {ob.role} ({ob.dept}){ob.exitType ? ` · ${ob.exitType}` : ''}</p>
+                  {(ob.reason || ob.handoverTo) && <p className="text-[10px] text-slate-400 mt-0.5">{ob.reason ? `Reason: ${ob.reason}` : ''}{ob.handoverTo ? ` · Handover to: ${ob.handoverTo}` : ''}</p>}
                 </div>
               </div>
               <div className="w-36"><div className="flex justify-between text-[10px] mb-0.5"><span className="font-semibold text-slate-500">Timeline</span><span className="font-bold text-slate-900">{done}/{total} ({pct}%)</span></div><div className="w-full bg-slate-100 rounded-full h-1.5"><div className="h-1.5 rounded-full bg-aims-orange" style={{ width: `${pct}%` }} /></div></div>
@@ -104,26 +105,68 @@ export function OffboardingTab() {
       {/* Start Offboarding modal */}
       {showStart && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={() => setShowStart(false)}>
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-xl" onClick={(e) => e.stopPropagation()}>
             <div className="px-5 py-4 bg-aims-navy rounded-t-xl flex items-center justify-between">
               <h3 className="text-sm font-bold text-white">Start Offboarding</h3>
               <button onClick={() => setShowStart(false)} className="text-white/80 hover:text-white"><span className="material-symbols-outlined text-[20px]">close</span></button>
             </div>
-            <form onSubmit={(e) => { e.preventDefault(); const f = new FormData(e.currentTarget); const c = startOffboarding({ name: f.get('name') as string, exitDate: f.get('exitDate') as string }); setShowStart(false); showToast({ title: 'Offboarding Started', message: `Checklist created for ${c.name}.`, type: 'success' }); }} className="p-5 space-y-3">
-              <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Employee</label>
-                <select name="name" required className={INPUT}>
-                  <option value="">Select employee…</option>
-                  {STAFF_ROSTER.filter((s) => s.status === 'active').map((s) => <option key={s.id} value={s.name}>{s.name} — {s.position}</option>)}
-                </select>
+            <form onSubmit={(e) => { e.preventDefault(); const f = new FormData(e.currentTarget); const c = startOffboarding({ name: f.get('name') as string, exitDate: f.get('exitDate') as string, exitType: f.get('exitType') as string || undefined, lastWorkingDay: f.get('lastWorkingDay') as string || undefined, noticeDays: Number(f.get('noticeDays')) || undefined, reason: f.get('reason') as string || undefined, handoverTo: f.get('handoverTo') as string || undefined, settlementNotes: f.get('settlementNotes') as string || undefined }); setShowStart(false); showToast({ title: 'Offboarding Started', message: `Exit checklist created for ${c.name}.`, type: 'success' }); }} className="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
+              {/* Section A — employee & exit */}
+              <div className="rounded-xl border border-slate-200 overflow-hidden">
+                <div className="bg-aims-navy px-4 py-2"><p className="text-[10px] font-bold text-white uppercase tracking-wider">1 · Employee & Exit Details</p></div>
+                <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="sm:col-span-2">
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Employee *</label>
+                    <select name="name" required className={INPUT}>
+                      <option value="">Select employee…</option>
+                      {STAFF_ROSTER.filter((s) => s.status === 'active').map((s) => <option key={s.id} value={s.name}>{s.name} — {s.position}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Exit Type</label>
+                    <select name="exitType" className={INPUT}><option value="">Select…</option><option>Resignation</option><option>Retirement</option><option>Contract End</option><option>Redundancy</option><option>Termination</option><option>Mutual Agreement</option></select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Notice Period (days)</label>
+                    <input name="noticeDays" type="number" min="0" className={INPUT} />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Exit Date *</label>
+                    <input name="exitDate" type="date" required className={INPUT} />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Last Working Day</label>
+                    <input name="lastWorkingDay" type="date" className={INPUT} />
+                  </div>
+                </div>
               </div>
-              <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Exit Date</label>
-                <input name="exitDate" type="date" required className={INPUT} />
+
+              {/* Section B — reason & handover */}
+              <div className="rounded-xl border border-slate-200 overflow-hidden">
+                <div className="bg-aims-navy px-4 py-2"><p className="text-[10px] font-bold text-white uppercase tracking-wider">2 · Reason & Handover</p></div>
+                <div className="p-4 space-y-3">
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Reason for Exit</label>
+                    <textarea name="reason" rows={2} placeholder="Brief, factual reason for the exit…" className={INPUT} />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Handover To (role/responsibilities)</label>
+                    <input name="handoverTo" placeholder="e.g. Janet Apio — Grants portfolio" className={INPUT} />
+                  </div>
+                </div>
               </div>
+
+              {/* Section C — settlement notes */}
+              <div className="rounded-xl border border-slate-200 overflow-hidden">
+                <div className="bg-aims-navy px-4 py-2"><p className="text-[10px] font-bold text-white uppercase tracking-wider">3 · Settlement Notes</p></div>
+                <div className="p-4">
+                  <textarea name="settlementNotes" rows={3} placeholder="Final payslip, accrued leave payout, benefits, debts…" className={INPUT} />
+                </div>
+              </div>
+
               <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
                 <button type="button" onClick={() => setShowStart(false)} className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
-                <button type="submit" className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg">Create Checklist</button>
+                <button type="submit" className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg">Create Exit Checklist</button>
               </div>
             </form>
           </div>

@@ -17,7 +17,10 @@ export interface Asset {
   acquired: string; vendor: string; status: 'active' | 'retired';
 }
 
-export interface StockItem { id: string; name: string; qty: number; threshold: number; unit: string; }
+export interface StockItem {
+  id: string; name: string; qty: number; threshold: number; unit: string;
+  category?: string; reorderQty?: number; location?: string; supplier?: string;
+}
 
 export type ReorderStatus = 'Draft' | 'ED Pending' | 'Approved' | 'Ordered' | 'Received' | 'Rejected';
 
@@ -154,7 +157,7 @@ export function adjustStock(id: string, delta: number): StockItem | undefined {
   persist();
   return { ...item, qty };
 }
-export function addStockItem(input: { name: string; qty: number; threshold: number; unit: string }): StockItem {
+export function addStockItem(input: { name: string; qty: number; threshold: number; unit: string; category?: string; reorderQty?: number; location?: string; supplier?: string; }): StockItem {
   const item: StockItem = { id: `s-${Date.now()}`, ...input };
   state = { ...state, stock: [...state.stock, item] };
   persist();
