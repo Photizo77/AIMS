@@ -2,12 +2,14 @@
 import { useRef, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
+import { cn } from '@/lib/utils';
 import { exportAllData, importAllData, downloadFile, toCSV } from '@/lib/storage';
 import { grantService } from '@/services/grantService';
 import { innovationService } from '@/services/innovationService';
 import { financeService } from '@/services/financeService';
 import { getAllRequisitions } from '@/services/requisitionService';
 import { STAFF_ROSTER } from '@/data/roster';
+import { userOpsGet } from '@/services/userOpsService';
 
 export function Settings() {
   const { user, updateAvatar } = useAuth();
@@ -15,6 +17,8 @@ export function Settings() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const importRef = useRef<HTMLInputElement>(null);
   const [imgError, setImgError] = useState(false);
+  const [showFlash, setShowFlash] = useState(false);
+  const [flashText, setFlashText] = useState('');
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -50,6 +54,19 @@ export function Settings() {
     e.target.value = '';
   };
 
+  // ── Flash / factory reset ──
+  const flashSystem = () => {
+    try {
+      const doomed: string[] = [];
+      for (let i = 0; i < localStorage.length; i += 1) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('aims_')) doomed.push(key);
+      }
+      doomed.forEach((k) => localStorage.removeItem(k));
+    } catch { /* ignore */ }
+    window.location.reload();
+  };
+
   const handleExportCSV = (domain: string) => {
     if (domain === 'grants') {
       downloadFile('grants.csv', toCSV(grantService.getAllGrants().map((g) => ({ id: g.id, title: g.title, funder: g.funder, stage: g.stage, deadline: g.deadline, requested: g.amountRequested, handler: g.handler }))), 'text/csv');
@@ -66,6 +83,7 @@ export function Settings() {
   };
 
   if (!user) return null;
+  const myAccount = userOpsGet.users().find((u) => u.id === user.id);
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -93,6 +111,7 @@ export function Settings() {
         <h2 className="text-base font-bold text-slate-900 mb-4">Profile Information</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Full Name</label><input type="text" defaultValue={user.name} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-aims-green/50" /></div>
+          <div><label className="block text-xs font-bold text-slate-500 uppercase mb-1">User ID (unique)</label><input type="text" value={myAccount?.userCode ?? '—'} disabled className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-500 font-mono" /></div>
           <div><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Email</label><input type="email" defaultValue={user.email} disabled className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-500" /></div>
           <div><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Role</label><input type="text" defaultValue={user.role.replace('_', ' ')} disabled className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-500" /></div>
           <div><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Department</label><input type="text" defaultValue={user.department} disabled className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-500" /></div>
@@ -136,7 +155,32 @@ export function Settings() {
             <button key={d} onClick={() => handleExportCSV(d)} className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold text-slate-600 hover:bg-slate-100 capitalize">{d}.csv</button>
           ))}
         </div>
+
+        {/* Flash the system — factory reset */}
+        <div className="mt-6 pt-5 border-t-2 border-red-100">
+          <h3 className="text-sm font-extrabold text-red-600 flex items-center gap-1.5"><span className="material-symbols-outlined text-[16px]">restart_alt</span>Flash System (Factory Reset)</h3>
+          <p className="text-xs text-slate-500 mt-1 mb-3">Wipes <strong>all</strong> AIMS data in this browser (demo records, modules, preferences) and restarts with a fresh, seeded system. Export a backup first if you need the data.</p>
+          <button onClick={() => setShowFlash(true)} className="px-4 py-2 bg-red-500 text-white text-xs font-bold rounded-lg hover:bg-red-600 flex items-center gap-1.5">
+            <span className="material-symbols-outlined text-[15px]">bolt</span>Flash / Reset to Factory
+          </button>
+        </div>
       </div>
+
+      {/* Flash confirmation modal */}
+      {showFlash && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={() => setShowFlash(false)}>
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-extrabold text-red-600 mb-1">Flash the System?</h3>
+            <p className="text-sm text-slate-600 mb-4">This permanently clears every AIMS record stored in this browser and reloads the seeded factory data. This cannot be undone — export a backup first if you might need it.</p>
+            <label className="block text-xs font-bold text-slate-600 mb-1">Type <span className="text-red-600">RESET</span> to confirm</label>
+            <input value={flashText} onChange={(e) => setFlashText(e.target.value)} placeholder="RESET" className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-red-400" />
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setShowFlash(false)} className="px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
+              <button onClick={flashSystem} disabled={flashText.trim() !== 'RESET'} className={cn('px-4 py-2 rounded-lg text-sm font-bold', flashText.trim() === 'RESET' ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-slate-100 text-slate-400 cursor-not-allowed')}>Flash System</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

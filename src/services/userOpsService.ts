@@ -16,6 +16,9 @@ export interface ManagedUser {
   id: string; name: string; email: string; role: Role; department: string;
   status: 'active' | 'inactive'; provisioned: boolean; position: string;
   credentialVersion: number; lastResetAt?: string; apiKey?: string; mfaEnabled: boolean;
+  /** Unique, human-readable account ID (ARD-EMP-0001…). Unique per user,
+   *  even when several users share the same role/persona. */
+  userCode: string;
 }
 export interface AuditEntry { id: string; ts: string; user: string; action: string; by: string; }
 export interface OnboardStep { id: string; label: string; done: boolean; detail?: string; }
@@ -34,12 +37,13 @@ const ONBOARD_STEP_TEMPLATE: { id: string; label: string }[] = [
 ];
 
 function seedUsers(): ManagedUser[] {
-  return STAFF_ROSTER.map((s) => {
+  return STAFF_ROSTER.map((s, i) => {
     const trial = s.position.toLowerCase().includes('trial');
     return {
       id: s.id, name: s.name, email: s.email, role: s.role, department: s.department,
       status: s.status, provisioned: !trial, position: s.position,
       credentialVersion: 0, mfaEnabled: false,
+      userCode: `ARD-EMP-${String(i + 1).padStart(4, '0')}`,
     };
   });
 }
@@ -70,6 +74,34 @@ function seedState(): UserOpsState {
 
 const persisted = loadJSON<UserOpsState | null>(STORAGE_KEYS.userOps, null);
 let state: UserOpsState = persisted && persisted.users ? persisted : seedState();
+
+// Backfill unique user codes for records created before codes existed.
+(function ensureUserCodes(): void {
+  let changed = false;
+  let seq = state.users.reduce((m, u) => {
+    const n = Number.parseInt((u.userCode ?? '').split('-').pop() ?? '0', 10);
+    return Number.isFinite(n) && n > m ? n : m;
+  }, 0);
+  const used = new Set<string>();
+  state = {
+    ...state,
+    users: state.users.map((u) => {
+      if (u.userCode && !used.has(u.userCode)) {
+        used.add(u.userCode);
+        return u;
+      }
+      let code = '';
+      do {
+        seq += 1;
+        code = `ARD-EMP-${String(seq).padStart(4, '0')}`;
+      } while (used.has(code));
+      used.add(code);
+      changed = true;
+      return { ...u, userCode: code };
+    }),
+  };
+  if (changed) persist();
+})();
 
 function persist(): void { saveJSON(STORAGE_KEYS.userOps, state); }
 const clone = <T,>(v: T): T => JSON.parse(JSON.stringify(v)) as T;

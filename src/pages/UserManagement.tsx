@@ -148,10 +148,11 @@ export function UserManagement() {
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
-                <thead><tr className="border-b border-slate-200"><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Name</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Email</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Role</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Department</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Status</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider text-right">Actions</th></tr></thead>
+                <thead><tr className="border-b border-slate-200"><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">User ID</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Name</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Email</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Role</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Department</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Status</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider text-right">Actions</th></tr></thead>
                 <tbody className="divide-y divide-slate-100">
                   {filteredUsers.map((u) => (
                     <tr key={u.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="py-2.5 text-slate-500 text-xs font-mono whitespace-nowrap">{u.userCode}</td>
                       <td className="py-2.5">
                         <div className="flex items-center gap-2.5">
                           <div className="w-8 h-8 rounded-full bg-aims-navy text-white flex items-center justify-center text-[10px] font-bold">{u.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}</div>
@@ -254,7 +255,7 @@ export function UserManagement() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-bold text-slate-900">{roleTarget.name}</p>
-                  <p className="text-xs text-slate-500">Current role: <span className="font-bold text-aims-navy">{ROLE_LABELS[roleTarget.role]}</span>{roleTarget.apiKey && ' · API key set'}{roleTarget.mfaEnabled && ' · MFA on'}</p>
+                  <p className="text-xs text-slate-500">Current role: <span className="font-bold text-aims-navy">{ROLE_LABELS[roleTarget.role]}</span> · <span className="font-mono text-slate-400">{roleTarget.userCode}</span>{roleTarget.apiKey && ' · API key set'}{roleTarget.mfaEnabled && ' · MFA on'}</p>
                 </div>
               </div>
               <div>
@@ -310,7 +311,7 @@ export function UserManagement() {
             <div className="px-5 py-4 bg-aims-navy text-white flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-bold">{selectedUser.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}</div>
-                <div><h3 className="text-sm font-bold">{selectedUser.name}</h3><p className="text-[11px] text-white/70">{selectedUser.position}</p></div>
+                <div><h3 className="text-sm font-bold">{selectedUser.name}</h3><p className="text-[11px] text-white/70">{selectedUser.userCode} · {selectedUser.position}</p></div>
               </div>
               <button onClick={() => setSelectedUser(null)} className="text-white/80 hover:text-white"><span className="material-symbols-outlined text-[20px]">close</span></button>
             </div>
