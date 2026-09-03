@@ -23,6 +23,8 @@ export const STORAGE_KEYS = {
   docsLibrary: 'aims_docs_library',
   inventory: 'aims_inventory',
   attendanceRegister: 'aims_attendance_register',
+  leave: 'aims_leave',
+  offboarding: 'aims_offboarding',
 } as const;
 
 export function loadJSON<T>(key: string, fallback: T): T {
