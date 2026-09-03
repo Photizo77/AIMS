@@ -21,6 +21,7 @@ export const STORAGE_KEYS = {
   employees: 'aims_employees_onboarding',
   hrDocs: 'aims_hr_employee_docs',
   docsLibrary: 'aims_docs_library',
+  inventory: 'aims_inventory',
 } as const;
 
 export function loadJSON<T>(key: string, fallback: T): T {
