@@ -26,6 +26,7 @@ export function ContractsTab() {
   const [showAddForm, setShowAddForm] = useState(false);
   const isED = user?.role === 'ED';
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
+  const [contracts, setContracts] = useState<Contract[]>(MOCK_CONTRACTS);
 
   // Contracts awaiting ED employer signature
   const [signQueue, setSignQueue] = useState([
@@ -38,7 +39,12 @@ export function ContractsTab() {
     showToast({ title: 'Contract Signed & Filed', message: `${employee} contract signed (employer signature) and auto-filed to Documents > HR & Contracts.`, type: 'success' });
   };
 
-  const filtered = MOCK_CONTRACTS.filter((c) =>
+  const deferContract = (id: string, employee: string) => {
+    setSignQueue((prev) => prev.filter((c) => c.id !== id));
+    showToast({ title: 'Signature Deferred', message: `Signature on ${employee}'s contract deferred — kept on the queue.`, type: 'info' });
+  };
+
+  const filtered = contracts.filter((c) =>
     c.employeeName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -46,11 +52,25 @@ export function ContractsTab() {
     setShowAddForm(true);
   };
 
-  const handleSaveContract = () => {
+  const handleSaveContract = (input: { employeeName: string; type: Contract['type']; startDate: string; endDate?: string; salary: number }) => {
+    const now = new Date().toISOString().slice(0, 10);
+    const created: Contract = {
+      id: `con-${Date.now()}`,
+      employeeId: `user-emp-${Date.now()}`,
+      employeeName: input.employeeName,
+      type: input.type,
+      startDate: input.startDate,
+      endDate: input.endDate,
+      salary: input.salary,
+      status: 'active',
+      createdAt: now,
+      updatedAt: now,
+    };
+    setContracts((prev) => [created, ...prev]);
     setShowAddForm(false);
     showToast({
       title: 'Contract Created',
-      message: 'New contract has been added successfully.',
+      message: `${created.employeeName}'s ${created.type} contract has been added (${created.id}).`,
       type: 'success',
     });
   };
@@ -83,7 +103,7 @@ export function ContractsTab() {
                   <p className="text-[10px] text-slate-500 mt-0.5">{c.type} · Effective: {c.effective} · Salary: {c.salary}</p>
                 </div>
                 <div className="flex gap-2 shrink-0">
-                  <button onClick={() => showToast({ title: 'Deferred', message: `Signature on ${c.employee}'s contract deferred.`, type: 'info' })} className="px-3 py-1.5 bg-white border border-slate-200 text-slate-600 text-[10px] font-bold rounded-lg hover:bg-slate-50">Defer</button>
+                  <button onClick={() => deferContract(c.id, c.employee)} className="px-3 py-1.5 bg-white border border-slate-200 text-slate-600 text-[10px] font-bold rounded-lg hover:bg-slate-50">Defer</button>
                   <button onClick={() => signContract(c.id, c.employee)} className="px-3 py-1.5 bg-aims-green text-white text-[10px] font-bold rounded-lg hover:bg-aims-green/90 flex items-center gap-1"><span className="material-symbols-outlined text-[13px]">edit_note</span>Sign Contract & File</button>
                 </div>
               </div>
@@ -125,7 +145,7 @@ export function ContractsTab() {
                   </span>
                 </td>
                 <td className="px-4 py-3">
-                  <button className="text-xs text-aims-mint hover:underline mr-3">Edit</button>
+                  <button onClick={() => setSelectedContract(contract)} className="text-xs text-aims-mint hover:underline mr-3">Edit</button>
                   <button onClick={() => setSelectedContract(contract)} className="text-xs text-gray-500 hover:underline">View Full Details</button>
                 </td>
               </tr>
@@ -146,7 +166,20 @@ export function ContractsTab() {
   );
 }
 
-function AddContractModal({ onSave, onClose }: { onSave: () => void; onClose: () => void }) {
+function AddContractModal({ onSave, onClose }: { onSave: (input: { employeeName: string; type: Contract['type']; startDate: string; endDate?: string; salary: number }) => void; onClose: () => void }) {
+  const [employeeName, setEmployeeName] = useState('');
+  const [type, setType] = useState<Contract['type']>('permanent');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [salary, setSalary] = useState('');
+
+  const submit = () => {
+    if (!employeeName.trim() || !startDate.trim() || !salary) {
+      return;
+    }
+    onSave({ employeeName: employeeName.trim(), type, startDate, endDate: endDate || undefined, salary: Number(salary) });
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
@@ -156,35 +189,30 @@ function AddContractModal({ onSave, onClose }: { onSave: () => void; onClose: ()
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Employee</label>
-            <select className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
-              <option>Select employee...</option>
-              <option>Lucy Wanjiku</option>
-              <option>James Odhiambo</option>
-              <option>Fatima Hassan</option>
-            </select>
+            <input value={employeeName} onChange={(e) => setEmployeeName(e.target.value)} placeholder="Employee full name" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Contract Type</label>
-            <select className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
-              <option>Permanent</option>
-              <option>Contract</option>
-              <option>Intern</option>
-              <option>Consultant</option>
+            <select value={type} onChange={(e) => setType(e.target.value as Contract['type'])} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+              <option value="permanent">Permanent</option>
+              <option value="contract">Contract</option>
+              <option value="intern">Intern</option>
+              <option value="consultant">Consultant</option>
             </select>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-              <input type="date" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
+              <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-              <input type="date" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
+              <label className="block text-sm font-medium text-gray-700 mb-1">End Date (optional)</label>
+              <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Salary (KES)</label>
-            <input type="number" placeholder="e.g. 50000" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Monthly Salary (UGX)</label>
+            <input type="number" value={salary} onChange={(e) => setSalary(e.target.value)} placeholder="e.g. 2500000" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
           </div>
         </div>
 
@@ -192,7 +220,7 @@ function AddContractModal({ onSave, onClose }: { onSave: () => void; onClose: ()
           <button onClick={onClose} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">
             Cancel
           </button>
-          <button onClick={onSave} className="px-4 py-2 text-sm bg-aims-mint text-white rounded-lg hover:opacity-90">
+          <button onClick={submit} disabled={!employeeName.trim() || !startDate || !salary} className="px-4 py-2 text-sm bg-aims-mint text-white rounded-lg hover:opacity-90 disabled:opacity-40">
             Save Contract
           </button>
         </div>

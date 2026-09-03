@@ -2,9 +2,11 @@
 // ============================================================
 // AIMS — HR & PEOPLE MANAGEMENT (Consolidated hub)
 // Directory · Payslips · Leave · Contracts · Appraisals · Offboarding
+// The active tab's panel renders immediately beneath the tab bar so
+// switching is always visible, and each panel is error-contained.
 // ============================================================
 
-import { useState } from 'react';
+import { Component, useState, type ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
@@ -22,7 +24,7 @@ import { sentimentSummary, contractRenewalAdvice, type AiInsight } from '@/lib/a
 type AdminTab = 'directory' | 'payslips' | 'leave' | 'contracts' | 'appraisals' | 'offboarding';
 
 const TABS: { id: AdminTab; label: string; icon: string }[] = [
-  { id: 'directory', label: 'Directory', icon: 'people' },
+  { id: 'directory', label: 'People Directory', icon: 'people' },
   { id: 'payslips', label: 'Payslips', icon: 'payments' },
   { id: 'leave', label: 'Leave', icon: 'event_available' },
   { id: 'contracts', label: 'Contracts', icon: 'description' },
@@ -43,6 +45,31 @@ function initialTab(stateTab?: string): AdminTab {
     offboarding: 'offboarding',
   };
   return (stateTab && map[stateTab]) || 'directory';
+}
+
+/** Contain per-tab failures so one bad panel never blanks the whole HR page */
+class TabBoundary extends Component<{ name: string; children: ReactNode }, { error: string | null }> {
+  state: { error: string | null } = { error: null };
+  static getDerivedStateFromError(err: unknown) {
+    return { error: err instanceof Error ? err.message : 'Unknown rendering error' };
+  }
+  componentDidCatch(err: unknown) {
+    console.error(`[HR:${this.props.name}]`, err);
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-sm text-red-700">
+          <p className="font-bold mb-1">This section hit an error</p>
+          <p className="text-xs">{this.state.error}</p>
+          <button onClick={() => this.setState({ error: null })} className="mt-3 px-3 py-1.5 bg-aims-navy text-white text-xs font-bold rounded-lg">
+            Try again
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
 }
 
 export function HR() {
@@ -70,20 +97,36 @@ export function HR() {
         <p className="text-base font-medium text-white">Consolidated directory, payslips, leave, contracts, appraisals and offboarding</p>
       </div>
 
-      <div className="flex gap-1 bg-slate-100 p-1 rounded-xl overflow-x-auto">
+      {/* Tab bar */}
+      <div className="flex gap-1 bg-slate-100 p-1 rounded-xl overflow-x-auto sticky top-16 z-30">
         {TABS.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => {
+              setActiveTab(tab.id);
+              document.getElementById('hr-tab-content')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }}
             className={cn(
               'flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors',
-              activeTab === tab.id ? 'bg-white text-aims-navy shadow-sm' : 'text-slate-500 hover:text-slate-700'
+              activeTab === tab.id ? 'bg-white text-aims-navy shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-white/60'
             )}
           >
             <span className="material-symbols-outlined text-[18px]">{tab.icon}</span>
             {tab.label}
           </button>
         ))}
+      </div>
+
+      {/* Active panel — directly under the tabs so switching is always visible */}
+      <div id="hr-tab-content" className="scroll-mt-20 bg-slate-50 rounded-xl p-5">
+        <TabBoundary key={activeTab} name={activeTab}>
+          {activeTab === 'directory' && <PeopleTab />}
+          {activeTab === 'payslips' && <PayslipsTab />}
+          {activeTab === 'leave' && <LeaveTab />}
+          {activeTab === 'contracts' && <ContractsTab />}
+          {activeTab === 'appraisals' && <PerformanceTab />}
+          {activeTab === 'offboarding' && <OffboardingTab />}
+        </TabBoundary>
       </div>
 
       <FormsShortcut module={['hr', 'attendance']} title="HR Forms — Employment Contract · Employee Info · Appraisal · Leave · Offboarding" />
@@ -102,15 +145,6 @@ export function HR() {
         insights.push(...contractRenewalAdvice());
         return <AIPanel title="AI Insights — Workforce Intelligence" insights={insights} />;
       })()}
-
-      <div className="bg-slate-50 rounded-xl p-5">
-        {activeTab === 'directory' && <PeopleTab />}
-        {activeTab === 'payslips' && <PayslipsTab />}
-        {activeTab === 'leave' && <LeaveTab />}
-        {activeTab === 'contracts' && <ContractsTab />}
-        {activeTab === 'appraisals' && <PerformanceTab />}
-        {activeTab === 'offboarding' && <OffboardingTab />}
-      </div>
     </div>
   );
 }
