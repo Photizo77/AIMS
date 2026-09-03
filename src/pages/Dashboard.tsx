@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
 import { useLiveData } from '@/lib/useLiveData';
-import { loadJSON, saveJSON, STORAGE_KEYS } from '@/lib/storage';
+import { loadJSON, saveJSON, STORAGE_KEYS, demoMode } from '@/lib/storage';
 import { exportCsv, exportTableAsPdf } from '@/lib/export';
 import { useRequisitions, mutateRequisitions } from '@/services/requisitionService';
 import { CHIP, ACCENT, FILL, type ColorKey } from '@/lib/uiTheme';
@@ -29,8 +29,10 @@ import { GRANT_STAGES } from '@/data/grants';
 interface FeedPost { id: string; author: string; content: string; time: string; }
 
 function readFeedPosts(): FeedPost[] {
+  // No dummy feed content by default — only real posts.
   const stored = loadJSON<FeedPost[] | null>(STORAGE_KEYS.feed, null);
   if (stored && stored.length > 0) return stored;
+  if (!demoMode()) return [];
   return [
     { id: 'f1', author: 'Executive Director', content: 'Reminder: All department Q3 budget revisions due by Friday COB.', time: new Date(Date.now() - 3600000).toISOString() },
     { id: 'f2', author: 'HR Admin', content: 'New leave policy updated in the Documents hub. Please review.', time: new Date(Date.now() - 10800000).toISOString() },

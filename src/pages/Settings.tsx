@@ -10,6 +10,7 @@ import { financeService } from '@/services/financeService';
 import { getAllRequisitions } from '@/services/requisitionService';
 import { STAFF_ROSTER } from '@/data/roster';
 import { userOpsGet } from '@/services/userOpsService';
+import { loadDemoDataset } from '@/services/demoData';
 
 export function Settings() {
   const { user, updateAvatar } = useAuth();
@@ -159,10 +160,15 @@ export function Settings() {
         {/* Flash the system — factory reset */}
         <div className="mt-6 pt-5 border-t-2 border-red-100">
           <h3 className="text-sm font-extrabold text-red-600 flex items-center gap-1.5"><span className="material-symbols-outlined text-[16px]">restart_alt</span>Flash System (Factory Reset)</h3>
-          <p className="text-xs text-slate-500 mt-1 mb-3">Wipes <strong>all</strong> AIMS data in this browser (demo records, modules, preferences) and restarts with a fresh, seeded system. Export a backup first if you need the data.</p>
-          <button onClick={() => setShowFlash(true)} className="px-4 py-2 bg-red-500 text-white text-xs font-bold rounded-lg hover:bg-red-600 flex items-center gap-1.5">
-            <span className="material-symbols-outlined text-[15px]">bolt</span>Flash / Reset to Factory
-          </button>
+          <p className="text-xs text-slate-500 mt-1 mb-3">AIMS starts <strong>clean</strong> — no dummy records. Use the buttons below: flash wipes every record in this browser and restarts empty; load the demo dataset only when you want to preview features.</p>
+          <div className="flex flex-wrap gap-2">
+            <button onClick={() => setShowFlash(true)} className="px-4 py-2 bg-red-500 text-white text-xs font-bold rounded-lg hover:bg-red-600 flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-[15px]">bolt</span>Flash / Reset to Clean
+            </button>
+            <button onClick={() => { loadDemoDataset(); showToast({ title: 'Demo Dataset Loaded', message: 'Sample records added to modules so you can preview features.', type: 'info' }); }} className="px-4 py-2 bg-aims-green text-white text-xs font-bold rounded-lg hover:bg-aims-green/90 flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-[15px]">science</span>Load Demo Dataset
+            </button>
+          </div>
         </div>
       </div>
 
@@ -171,7 +177,7 @@ export function Settings() {
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={() => setShowFlash(false)}>
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-extrabold text-red-600 mb-1">Flash the System?</h3>
-            <p className="text-sm text-slate-600 mb-4">This permanently clears every AIMS record stored in this browser and reloads the seeded factory data. This cannot be undone — export a backup first if you might need it.</p>
+            <p className="text-sm text-slate-600 mb-4">This permanently clears every AIMS record stored in this browser (including any demo dataset) and reloads a <strong>completely clean system</strong> — only data you enter afterwards will appear. Export a backup first if you might need the data.</p>
             <label className="block text-xs font-bold text-slate-600 mb-1">Type <span className="text-red-600">RESET</span> to confirm</label>
             <input value={flashText} onChange={(e) => setFlashText(e.target.value)} placeholder="RESET" className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-red-400" />
             <div className="flex justify-end gap-2">

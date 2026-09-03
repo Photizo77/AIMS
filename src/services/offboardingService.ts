@@ -6,7 +6,7 @@
 // archiving and reminder comms — all real, persisted mutations.
 // ============================================================
 
-import { loadJSON, saveJSON, STORAGE_KEYS } from '@/lib/storage';
+import { loadJSON, saveJSON, STORAGE_KEYS, demoMode } from '@/lib/storage';
 import { STAFF_ROSTER } from '@/data/roster';
 
 export interface OffboardStep { id: string; label: string; done: boolean; detail?: string; blockedBy?: string; completedAt?: string; completedBy?: string; }
@@ -46,7 +46,13 @@ function seedState(): OffboardState {
 }
 
 const persisted = loadJSON<OffboardState | null>(STORAGE_KEYS.offboarding, null);
-let state: OffboardState = persisted && persisted.cases ? persisted : seedState();
+let state: OffboardState = persisted && persisted.cases ? persisted : demoMode() ? seedState() : { cases: [], reminders: [] };
+
+/** Reload the demo offboarding cases (Settings → Load demo dataset) */
+export function loadDemoOffboarding(): void {
+  state = seedState();
+  persist();
+}
 
 function persist(): void { saveJSON(STORAGE_KEYS.offboarding, state); }
 const clone = <T,>(v: T): T => JSON.parse(JSON.stringify(v)) as T;

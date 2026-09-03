@@ -56,6 +56,22 @@ export function notifyDataChanged(key?: string): void {
   } catch { /* ignore */ }
 }
 
+// ── Demo dataset mode ──
+// Clean by default: AIMS ships with NO dummy records. Demo content is
+// loaded only when the demo marker is set (Settings → "Load demo dataset").
+export const DEMO_KEY = 'aims_demo_loaded';
+
+export function demoMode(): boolean {
+  try { return localStorage.getItem(DEMO_KEY) === '1'; } catch { return false; }
+}
+
+export function setDemoMode(on: boolean): void {
+  try {
+    if (on) localStorage.setItem(DEMO_KEY, '1');
+    else localStorage.removeItem(DEMO_KEY);
+  } catch { /* ignore */ }
+}
+
 // ── Data Vault: export & import the whole dataset ──
 export function exportAllData(): Record<string, unknown> {
   const data: Record<string, unknown> = { exportedAt: new Date().toISOString(), app: 'aims', version: 1 };

@@ -7,7 +7,7 @@
 // UI auto-updates via useLiveData and data survives page reloads.
 // ============================================================
 
-import { loadJSON, saveJSON, STORAGE_KEYS } from '@/lib/storage';
+import { loadJSON, saveJSON, STORAGE_KEYS, demoMode } from '@/lib/storage';
 
 export type AssetCondition = 'Excellent' | 'Good' | 'Fair' | 'Needs Repair';
 
@@ -98,7 +98,17 @@ function seedState(): InventoryState {
 }
 
 const persisted = loadJSON<InventoryState | null>(STORAGE_KEYS.inventory, null);
-let state: InventoryState = persisted && persisted.assets ? persisted : seedState();
+let state: InventoryState = persisted && persisted.assets
+  ? persisted
+  : demoMode()
+    ? seedState()
+    : { assets: [], stock: [], reorders: [], assignments: [], maintenance: [], stockTakes: [] };
+
+/** Reload the demo inventory (Settings → Load demo dataset) */
+export function loadDemoInventory(): void {
+  state = seedState();
+  persist();
+}
 
 function persist(): void {
   saveJSON(STORAGE_KEYS.inventory, state);

@@ -7,7 +7,7 @@
 // screen auto-updates and data survives reloads.
 // ============================================================
 
-import { loadJSON, saveJSON, STORAGE_KEYS } from '@/lib/storage';
+import { loadJSON, saveJSON, STORAGE_KEYS, demoMode } from '@/lib/storage';
 import type { CRMContact } from '@/types';
 
 const SEED: CRMContact[] = [
@@ -19,7 +19,13 @@ const SEED: CRMContact[] = [
 ];
 
 const persisted = loadJSON<CRMContact[] | null>(STORAGE_KEYS.crm, null);
-let contacts: CRMContact[] = (persisted && persisted.length > 0 ? persisted : SEED).map((c) => ({ ...c }));
+let contacts: CRMContact[] = (persisted && persisted.length > 0 ? persisted : demoMode() ? SEED : []).map((c) => ({ ...c }));
+
+/** Reload demo contacts (Settings → Load demo dataset) */
+export function loadDemoCrm(): void {
+  contacts = SEED.map((c) => ({ ...c }));
+  persist();
+}
 
 function persist(): void { saveJSON(STORAGE_KEYS.crm, contacts); }
 const clone = <T,>(v: T): T => JSON.parse(JSON.stringify(v)) as T;

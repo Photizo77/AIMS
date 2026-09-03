@@ -6,7 +6,7 @@
 // balances update after approvals, and data survives reloads.
 // ============================================================
 
-import { loadJSON, saveJSON, STORAGE_KEYS } from '@/lib/storage';
+import { loadJSON, saveJSON, STORAGE_KEYS, demoMode } from '@/lib/storage';
 import { ACTIVE_STAFF } from '@/data/roster';
 
 export interface LeaveRequest {
@@ -51,7 +51,20 @@ function seedState(): LeaveState {
 }
 
 const persisted = loadJSON<LeaveState | null>(STORAGE_KEYS.leave, null);
-let state: LeaveState = persisted && persisted.requests ? persisted : seedState();
+let state: LeaveState = persisted && persisted.requests
+  ? persisted
+  : demoMode()
+    ? seedState()
+    : { requests: [], balances: ACTIVE_STAFF.map((s, i) => {
+        const pick = i % 3;
+        return { name: s.name, annual: pick === 0 ? 12 : pick === 1 ? 8 : 6, sick: pick === 0 ? 7 : pick === 1 ? 5 : 4, study: pick === 0 ? 3 : pick === 1 ? 2 : 1 };
+      }) };
+
+/** Reload the demo leave dataset (Settings → Load demo dataset) */
+export function loadDemoLeave(): void {
+  state = seedState();
+  persist();
+}
 
 function persist(): void { saveJSON(STORAGE_KEYS.leave, state); }
 const clone = <T,>(v: T): T => JSON.parse(JSON.stringify(v)) as T;

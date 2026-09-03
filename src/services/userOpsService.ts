@@ -7,7 +7,7 @@
 // persisted, with every operation recorded to the audit trail.
 // ============================================================
 
-import { loadJSON, saveJSON, STORAGE_KEYS } from '@/lib/storage';
+import { loadJSON, saveJSON, STORAGE_KEYS, demoMode } from '@/lib/storage';
 import { STAFF_ROSTER } from '@/data/roster';
 import type { Role } from '@/types';
 import { ROLE_LABELS } from '@/config/roles';
@@ -68,12 +68,10 @@ function seedAudit(): AuditEntry[] {
   ];
 }
 
-function seedState(): UserOpsState {
-  return { users: seedUsers(), audit: seedAudit(), onboardees: seedOnboardees() };
-}
-
 const persisted = loadJSON<UserOpsState | null>(STORAGE_KEYS.userOps, null);
-let state: UserOpsState = persisted && persisted.users ? persisted : seedState();
+let state: UserOpsState = persisted && persisted.users
+  ? persisted
+  : { users: seedUsers(), audit: demoMode() ? seedAudit() : [], onboardees: demoMode() ? seedOnboardees() : [] };
 
 // Backfill unique user codes for records created before codes existed.
 (function ensureUserCodes(): void {

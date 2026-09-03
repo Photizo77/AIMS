@@ -8,7 +8,7 @@
 // Components re-render automatically via the live data bus.
 // ============================================================
 
-import { loadJSON, saveJSON, STORAGE_KEYS } from '@/lib/storage';
+import { loadJSON, saveJSON, STORAGE_KEYS, demoMode } from '@/lib/storage';
 
 export type DocCategory =
   | 'governance' | 'hr_contracts' | 'hr_confidential' | 'finance_procurement'
@@ -56,8 +56,16 @@ export const SEED_DOCUMENTS: DocRecord[] = [
 const persisted = loadJSON<DocRecord[] | null>(STORAGE_KEYS.docsLibrary, null);
 let docs: DocRecord[] = (persisted && persisted.length > 0
   ? persisted
-  : SEED_DOCUMENTS
+  : demoMode()
+    ? SEED_DOCUMENTS
+    : []
 ).map((d) => ({ ...d, versions: d.versions.map((v) => ({ ...v })) }));
+
+/** Reload the demo document library (Settings → Load demo dataset) */
+export function loadDemoDocs(): void {
+  docs = SEED_DOCUMENTS.map((d) => ({ ...d, versions: d.versions.map((v) => ({ ...v })) }));
+  persist();
+}
 
 function persist(): void {
   saveJSON(STORAGE_KEYS.docsLibrary, docs);

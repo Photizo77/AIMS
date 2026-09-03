@@ -8,7 +8,7 @@
 // screens auto-update via useLiveData and data survives reloads.
 // ============================================================
 
-import { loadJSON, saveJSON, STORAGE_KEYS } from '@/lib/storage';
+import { loadJSON, saveJSON, STORAGE_KEYS, demoMode } from '@/lib/storage';
 import { ACTIVE_STAFF } from '@/data/roster';
 
 export type PresenceMode = 'physical' | 'remote' | 'absent' | 'leave';
@@ -86,7 +86,20 @@ function seedState(): AttState {
 }
 
 const persisted = loadJSON<AttState | null>(STORAGE_KEYS.attendanceRegister, null);
-let state: AttState = persisted && persisted.presence ? persisted : seedState();
+let state: AttState = persisted && persisted.presence
+  ? persisted
+  : demoMode()
+    ? seedState()
+    : {
+        presence: ACTIVE_STAFF.map((p) => ({ id: p.id, name: p.name, dept: p.department, checkIn: '—', mode: 'absent' as PresenceMode, location: '—', note: 'Not checked in today' })),
+        history: [], violations: [], anomalies: [], reminders: [],
+      };
+
+/** Reload the demo attendance register (Settings → Load demo dataset) */
+export function loadDemoAttendance(): void {
+  state = seedState();
+  persist();
+}
 
 function persist(): void { saveJSON(STORAGE_KEYS.attendanceRegister, state); }
 const clone = <T,>(v: T): T => JSON.parse(JSON.stringify(v)) as T;
