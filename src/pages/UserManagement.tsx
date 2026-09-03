@@ -3,14 +3,25 @@
 // AIMS — USER MANAGEMENT & PROVISIONING (Company Admin)
 // Directory · Onboarding Pipeline · Offboarding Pipeline ·
 // Role & Permissions · Audit Trail
+// All records and actions live in the persisted user-ops store
+// (userOpsService) — role changes, status toggles, credential
+// resets, API keys, MFA resets and exports are real, and every
+// operation lands in the audit log.
 // ============================================================
 
 import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
+import { useLiveData } from '@/lib/useLiveData';
+import { exportCsv, exportRecordSheet } from '@/lib/export';
 import type { Role } from '@/types';
 import { ROLE_LABELS } from '@/config/roles';
+import {
+  userOpsGet, setUserRole, toggleUserStatus, resetCredential, reissueApiKey, resetMfa,
+  advanceOnboard, addOnboardee, type ManagedUser,
+} from '@/services/userOpsService';
 import { OffboardingTab } from '@/components/admin/OffboardingTab';
 import { openEmployeeOnboarding } from '@/components/hr/EmployeeOnboardingForm';
 
@@ -22,75 +33,6 @@ const TABS: { id: TabKey; label: string; icon: string }[] = [
   { id: 'offboarding', label: 'Offboarding Pipeline', icon: 'person_remove' },
   { id: 'roles', label: 'Role & Permissions', icon: 'admin_panel_settings' },
   { id: 'audit', label: 'Audit Trail', icon: 'history' },
-];
-
-interface DirectoryUser {
-  id: string;
-  name: string;
-  email: string;
-  role: Role;
-  department: string;
-  status: 'active' | 'inactive';
-  provisioned: boolean;
-  position: string;
-}
-
-const MOCK_USERS: DirectoryUser[] = [
-  { id: 'u1', name: 'Sarah Aciro', email: 'sarah.aciro@ardhi.org', role: 'GRANTS_MANAGER', department: 'Development', status: 'active', provisioned: true, position: 'Grants Manager' },
-  { id: 'u2', name: 'Janet Apio', email: 'janet.apio@ardhi.org', role: 'GRANT_WRITER', department: 'Operations', status: 'active', provisioned: true, position: 'Grant Writer' },
-  { id: 'u3', name: 'Florence Adong', email: 'florence.adong@ardhi.org', role: 'GRANT_WRITER', department: 'Research', status: 'active', provisioned: true, position: 'Research Officer' },
-  { id: 'u4', name: 'Pius Odong', email: 'pius.odong@ardhi.org', role: 'INNOVATOR', department: 'Innovation', status: 'active', provisioned: true, position: 'Lead Innovator' },
-  { id: 'u5', name: 'Grace Nakamya', email: 'grace.nakamya@ardhi.org', role: 'COMPANY_ADMIN', department: 'Administration', status: 'active', provisioned: true, position: 'HR & Admin Officer' },
-  { id: 'u6', name: 'Isaac Tumusiime', email: 'isaac.tumusiime@ardhi.org', role: 'FINANCE', department: 'Finance', status: 'active', provisioned: true, position: 'Finance Officer' },
-  { id: 'u7', name: 'Amos Ojok', email: 'amos.ojok@ardhi.org', role: 'FINANCE', department: 'Finance', status: 'active', provisioned: true, position: 'Finance Officer' },
-  { id: 'u8', name: 'Okello Komakech', email: 'okello.komakech@ardhi.org', role: 'SYS_ADMIN', department: 'IT', status: 'inactive', provisioned: true, position: 'System Administrator' },
-  { id: 'u9', name: 'David Okello', email: 'david.okello@ardhi.org', role: 'GRANT_WRITER', department: 'Operations', status: 'active', provisioned: false, position: 'Grant Writer (trial)' },
-  { id: 'u10', name: 'Mary Atim', email: 'mary.atim@ardhi.org', role: 'GRANT_WRITER', department: 'Development', status: 'inactive', provisioned: true, position: 'Grant Writer (left)' },
-];
-
-interface OnboardStep { id: string; label: string; done: boolean; detail?: string }
-interface Onboardee { id: string; name: string; hired: string; steps: OnboardStep[] }
-
-const MOCK_ONBOARDING: Onboardee[] = [
-  {
-    id: 'ob1', name: 'Pius Odong', hired: 'Aug 20',
-    steps: [
-      { id: 's1', label: 'Provision Account', done: true, detail: 'pius.odong@ardhi.org · temp password set' },
-      { id: 's2', label: 'Assign Role', done: true, detail: 'Innovator · Innovations, CRM modules' },
-      { id: 's3', label: 'Issue Credentials', done: true, detail: 'MFA enabled · API key generated' },
-      { id: 's4', label: 'Asset Issuance', done: false, detail: 'Laptop, phone, access card → Inventory' },
-    ],
-  },
-  {
-    id: 'ob2', name: 'Florence Adong', hired: 'Aug 25',
-    steps: [
-      { id: 's1', label: 'Provision Account', done: true, detail: 'florence.adong@ardhi.org' },
-      { id: 's2', label: 'Assign Role', done: false, detail: 'Grant Writer · Grants module' },
-      { id: 's3', label: 'Issue Credentials', done: false },
-      { id: 's4', label: 'Asset Issuance', done: false },
-    ],
-  },
-  {
-    id: 'ob3', name: 'David Okello', hired: 'Aug 28',
-    steps: [
-      { id: 's1', label: 'Provision Account', done: false },
-      { id: 's2', label: 'Assign Role', done: false },
-      { id: 's3', label: 'Issue Credentials', done: false },
-      { id: 's4', label: 'Asset Issuance', done: false },
-    ],
-  },
-];
-
-interface AuditEntry { id: string; ts: string; user: string; action: string; by: string }
-
-const MOCK_AUDIT: AuditEntry[] = [
-  { id: 'a1', ts: 'Aug 20, 09:15', user: 'Sarah Aciro', action: 'Account provisioned', by: 'Grace Aceng' },
-  { id: 'a2', ts: 'Aug 20, 10:30', user: 'Sarah Aciro', action: 'Role changed to "Grants Manager"', by: 'Grace Aceng' },
-  { id: 'a3', ts: 'Aug 21, 08:00', user: 'Sarah Aciro', action: 'MFA enabled', by: 'Grace Aceng' },
-  { id: 'a4', ts: 'Aug 25, 14:20', user: 'Florence Adong', action: 'Account provisioned', by: 'Grace Aceng' },
-  { id: 'a5', ts: 'Aug 28, 11:05', user: 'David Okello', action: 'Account created (pending provisioning)', by: 'Grace Aceng' },
-  { id: 'a6', ts: 'Sep 28, 16:45', user: 'Okello Komakech', action: 'Deactivation initiated (offboarding)', by: 'Grace Aceng' },
-  { id: 'a7', ts: 'Sep 29, 09:00', user: 'Janet Apio', action: 'Password reset', by: 'Grace Aceng' },
 ];
 
 const ROLE_OPTIONS: { role: Role; note: string }[] = [
@@ -108,36 +50,34 @@ function stepCount(steps: { done: boolean }[]): { done: number; total: number; p
 }
 
 export function UserManagement() {
+  const { user } = useAuth();
   const location = useLocation();
   const { showToast } = useNotifications();
+  const actor = user?.name ?? 'HR Admin';
   const initialTab = (location.state as { tab?: TabKey } | null)?.tab ?? 'directory';
   const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
+  useLiveData();
 
-  // Directory state
-  const [users, setUsers] = useState(MOCK_USERS);
+  // Directory filters
   const [search, setSearch] = useState('');
   const [filterRole, setFilterRole] = useState('all');
   const [filterDept, setFilterDept] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
-  const [selectedUser, setSelectedUser] = useState<DirectoryUser | null>(null);
+  const [selectedUser, setSelectedUser] = useState<ManagedUser | null>(null);
 
-  // Onboarding state
-  const [onboardees, setOnboardees] = useState(MOCK_ONBOARDING);
   const [showAddHire, setShowAddHire] = useState(false);
   const [newHireName, setNewHireName] = useState('');
-
-  // Roles state
   const [roleSearch, setRoleSearch] = useState('');
-  const [roleTarget, setRoleTarget] = useState<DirectoryUser | null>(null);
+  const [roleTarget, setRoleTarget] = useState<ManagedUser | null>(null);
   const [newRole, setNewRole] = useState<Role>('GRANT_WRITER');
-
-  // Audit state
   const [auditFilter, setAuditFilter] = useState('');
+  const [showTemplate, setShowTemplate] = useState(false);
 
-  const notify = (title: string, message: string, type: 'success' | 'info' | 'warning' | 'error' = 'success') =>
-    showToast({ title, message, type });
+  const users = userOpsGet.users();
+  const audit = userOpsGet.audit();
+  const onboardees = userOpsGet.onboardees();
+  const depts = Array.from(new Set(users.map((u) => u.department)));
 
-  // ── Directory helpers ──
   const filteredUsers = users.filter((u) => {
     const q = search.toLowerCase();
     if (q && !u.name.toLowerCase().includes(q) && !u.email.toLowerCase().includes(q)) return false;
@@ -149,49 +89,34 @@ export function UserManagement() {
   const activeCount = users.filter((u) => u.status === 'active').length;
   const inactiveCount = users.filter((u) => u.status === 'inactive').length;
 
-  const toggleStatus = (u: DirectoryUser) => {
-    setUsers((prev) => prev.map((x) => (x.id === u.id ? { ...x, status: x.status === 'active' ? 'inactive' : 'active' } : x)));
-    notify(u.status === 'active' ? 'Account Deactivated' : 'Account Reactivated', `${u.name} ${u.status === 'active' ? 'deactivated' : 'reactivated'}.`, 'info');
-  };
-
-  // ── Onboarding helpers ──
-  const advanceOnboardStep = (obId: string, stepId: string) => {
-    setOnboardees((prev) => prev.map((ob) => (ob.id === obId ? { ...ob, steps: ob.steps.map((s) => (s.id === stepId && !s.done ? { ...s, done: true } : s)) } : ob)));
-    notify('Step Completed', 'Onboarding checklist updated.', 'success');
-  };
-
-  const addNewHire = () => {
-    if (!newHireName.trim()) return;
-    const hire: Onboardee = { id: `ob-${Date.now()}`, name: newHireName.trim(), hired: new Date().toLocaleDateString('en-GB', { month: 'short', day: 'numeric' }), steps: MOCK_ONBOARDING[0].steps.map((s) => ({ id: s.id, label: s.label, done: false })) };
-    setOnboardees((prev) => [...prev, hire]);
-    setNewHireName('');
-    setShowAddHire(false);
-    notify('New Hire Added', `${hire.name} added to the onboarding pipeline.`);
-  };
-
-  // ── Role helpers ──
-  const applyRoleChange = () => {
-    if (!roleTarget) return;
-    setUsers((prev) => prev.map((u) => (u.id === roleTarget.id ? { ...u, role: newRole } : u)));
-    notify('Role Updated', `${roleTarget.name} is now ${ROLE_LABELS[newRole]}.`, 'success');
-    setRoleTarget(null);
-  };
-
-  const filteredAudit = MOCK_AUDIT.filter((a) => {
+  const filteredAudit = audit.filter((a) => {
     const q = auditFilter.toLowerCase();
     if (!q) return true;
     return a.user.toLowerCase().includes(q) || a.action.toLowerCase().includes(q) || a.by.toLowerCase().includes(q);
   });
 
+  const exportAudit = () => {
+    if (filteredAudit.length === 0) { showToast({ title: 'Nothing to Export', message: 'No audit rows match your filter.', type: 'error' }); return; }
+    exportCsv('aims-user-audit-log', filteredAudit.map((a) => ({ time: a.ts, user: a.user, action: a.action, by: a.by })));
+    showToast({ title: 'CSV Exported', message: `${filteredAudit.length} audit row(s).`, type: 'success' });
+  };
+
+  const downloadProfile = (u: ManagedUser) => {
+    exportRecordSheet(`${u.name} profile`, 'User Account Profile', [
+      ['Name', u.name], ['Email', u.email], ['Role', ROLE_LABELS[u.role]], ['Department', u.department],
+      ['Position', u.position], ['Status', u.status], ['Provisioned', u.provisioned ? 'Yes' : 'No'],
+      ['MFA', u.mfaEnabled ? 'Enabled' : 'Not enrolled'], ['API Key', u.apiKey ?? '—'], ['Credential version', String(u.credentialVersion)],
+    ]);
+    showToast({ title: 'Profile Downloaded', message: `${u.name} — account record sheet.`, type: 'success' });
+  };
+
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
         <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">User Management & Provisioning</h1>
         <p className="text-base font-medium text-white">Directory, onboarding, offboarding, roles and account audit</p>
       </div>
 
-      {/* Tab bar */}
       <div className="flex gap-1 bg-slate-100 p-1 rounded-xl overflow-x-auto">
         {TABS.map((tab) => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={cn('flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors', activeTab === tab.id ? 'bg-white text-aims-navy shadow-sm' : 'text-slate-500 hover:text-slate-700')}>
@@ -200,7 +125,7 @@ export function UserManagement() {
         ))}
       </div>
 
-      {/* ══════════ TAB 1: DIRECTORY ══════════ */}
+      {/* ── DIRECTORY ── */}
       {activeTab === 'directory' && (
         <div className="space-y-4">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -214,7 +139,7 @@ export function UserManagement() {
             <div className="flex flex-wrap gap-2">
               <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name or email…" className="flex-1 min-w-[180px] text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-aims-navy/30" />
               <select value={filterRole} onChange={(e) => setFilterRole(e.target.value)} className="text-xs border border-slate-200 rounded-lg px-3 py-2"><option value="all">All roles</option>{Object.entries(ROLE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
-              <select value={filterDept} onChange={(e) => setFilterDept(e.target.value)} className="text-xs border border-slate-200 rounded-lg px-3 py-2"><option value="all">All departments</option>{['Development', 'Operations', 'Research', 'Innovation', 'Finance', 'Administration', 'IT'].map((d) => <option key={d}>{d}</option>)}</select>
+              <select value={filterDept} onChange={(e) => setFilterDept(e.target.value)} className="text-xs border border-slate-200 rounded-lg px-3 py-2"><option value="all">All departments</option>{depts.map((d) => <option key={d}>{d}</option>)}</select>
               <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="text-xs border border-slate-200 rounded-lg px-3 py-2"><option value="all">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option></select>
             </div>
 
@@ -235,14 +160,14 @@ export function UserManagement() {
                       <td className="py-2.5 text-slate-600 text-xs">{u.department}</td>
                       <td className="py-2.5">
                         <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded uppercase', u.status === 'active' ? 'bg-aims-green/15 text-aims-green' : 'bg-slate-100 text-slate-500')}>{u.status}</span>
-                        {u.provisioned && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded ml-1 bg-aims-mint/40 text-aims-green">Prov: yes</span>}
+                        {u.mfaEnabled && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded ml-1 bg-aims-navy/10 text-aims-navy">MFA</span>}
                       </td>
                       <td className="py-2.5 text-right">
                         <div className="flex items-center justify-end gap-1.5 flex-wrap">
                           <button onClick={() => setSelectedUser(u)} className="text-[10px] font-bold text-aims-navy hover:underline">View Profile</button>
                           <button onClick={() => { setRoleTarget(u); setNewRole(u.role); }} className="text-[10px] font-bold text-aims-navy hover:underline">Edit Role</button>
-                          <button onClick={() => notify('Credential Reset', `Temporary credential issued to ${u.email}.`, 'info')} className="text-[10px] font-bold text-aims-navy hover:underline">Reset Credential</button>
-                          <button onClick={() => toggleStatus(u)} className="text-[10px] font-bold text-red-500 hover:underline">{u.status === 'active' ? 'Deactivate' : 'Reactivate'}</button>
+                          <button onClick={() => { const r = resetCredential(u.id, actor); if (r) showToast({ title: 'Credential Reset', message: `Temporary code for ${r.user.email}: ${r.code}`, type: 'info' }); }} className="text-[10px] font-bold text-aims-navy hover:underline">Reset Credential</button>
+                          <button onClick={() => { const r = toggleUserStatus(u.id, actor); if (r) showToast({ title: r.status === 'inactive' ? 'Account Deactivated' : 'Account Reactivated', message: `${r.name} ${r.status}.`, type: 'info' }); }} className="text-[10px] font-bold text-red-500 hover:underline">{u.status === 'active' ? 'Deactivate' : 'Reactivate'}</button>
                         </div>
                       </td>
                     </tr>
@@ -254,18 +179,14 @@ export function UserManagement() {
         </div>
       )}
 
-      {/* ══════════ TAB 2: ONBOARDING PIPELINE ══════════ */}
+      {/* ── ONBOARDING ── */}
       {activeTab === 'onboarding' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <p className="text-sm font-bold text-slate-700">New Hires In Pipeline: <span className="text-aims-navy">{onboardees.length}</span></p>
             <div className="flex items-center gap-2 flex-wrap">
-              <button onClick={openEmployeeOnboarding} className="px-4 py-2 border border-aims-navy/30 text-aims-navy text-xs font-bold rounded-lg hover:bg-aims-navy/5 flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-[16px]">description</span>Employee Information Form
-              </button>
-              <button onClick={() => setShowAddHire(true)} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90 flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-[16px]">person_add</span>Add New Hire
-              </button>
+              <button onClick={openEmployeeOnboarding} className="px-4 py-2 border border-aims-navy/30 text-aims-navy text-xs font-bold rounded-lg hover:bg-aims-navy/5 flex items-center gap-1.5"><span className="material-symbols-outlined text-[16px]">description</span>Employee Information Form</button>
+              <button onClick={() => setShowAddHire(true)} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90 flex items-center gap-1.5"><span className="material-symbols-outlined text-[16px]">person_add</span>Add New Hire</button>
             </div>
           </div>
           {onboardees.map((ob) => {
@@ -277,9 +198,7 @@ export function UserManagement() {
                     <div className="w-10 h-10 rounded-full bg-aims-green text-white flex items-center justify-center font-bold text-sm">{ob.name[0]}</div>
                     <div><p className="text-base font-extrabold text-slate-900">{ob.name}</p><p className="text-xs text-slate-500">Hired: {ob.hired}</p></div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-32"><div className="flex justify-between text-[10px] mb-0.5"><span className="font-semibold text-slate-500">Timeline</span><span className="font-bold text-slate-900">{done}/{total} steps ({pct}%)</span></div><div className="w-full bg-slate-100 rounded-full h-1.5"><div className="h-1.5 rounded-full bg-aims-green" style={{ width: `${pct}%` }} /></div></div>
-                  </div>
+                  <div className="w-32"><div className="flex justify-between text-[10px] mb-0.5"><span className="font-semibold text-slate-500">Timeline</span><span className="font-bold text-slate-900">{done}/{total} ({pct}%)</span></div><div className="w-full bg-slate-100 rounded-full h-1.5"><div className="h-1.5 rounded-full bg-aims-green" style={{ width: `${pct}%` }} /></div></div>
                 </div>
                 <div className="space-y-2">
                   {ob.steps.map((s, i) => (
@@ -292,7 +211,7 @@ export function UserManagement() {
                         {s.detail && <p className="text-[10px] text-slate-500 mt-0.5">{s.detail}</p>}
                       </div>
                       {!s.done && (
-                        <button onClick={() => advanceOnboardStep(ob.id, s.id)} className="text-[10px] font-bold text-aims-green hover:underline shrink-0">Mark Complete</button>
+                        <button onClick={() => { advanceOnboard(ob.id, s.id, actor); showToast({ title: 'Step Completed', message: `${s.label} recorded for ${ob.name}.`, type: 'success' }); }} className="text-[10px] font-bold text-aims-green hover:underline shrink-0">Mark Complete</button>
                       )}
                     </div>
                   ))}
@@ -301,20 +220,20 @@ export function UserManagement() {
             );
           })}
           <div className="flex gap-2 flex-wrap">
-            <button onClick={() => onboardees.forEach((ob) => ob.steps.forEach((s) => { if (!s.done) advanceOnboardStep(ob.id, s.id); }))} className="px-4 py-2 bg-aims-green text-white text-xs font-bold rounded-lg hover:bg-aims-green/90">Complete All Steps</button>
-            <button onClick={() => notify('Checklist Template', 'Standard onboarding checklist loaded.', 'info')} className="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50">View Checklist Template</button>
+            <button onClick={() => { onboardees.forEach((ob) => ob.steps.forEach((s) => { if (!s.done) advanceOnboard(ob.id, s.id, actor); })); showToast({ title: 'Checklist Complete', message: 'All onboarding steps completed.', type: 'success' }); }} className="px-4 py-2 bg-aims-green text-white text-xs font-bold rounded-lg hover:bg-aims-green/90">Complete All Steps</button>
+            <button onClick={() => setShowTemplate(true)} className="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50">View Checklist Template</button>
           </div>
         </div>
       )}
 
-      {/* ══════════ TAB 3: OFFBOARDING PIPELINE ══════════ */}
+      {/* ── OFFBOARDING ── */}
       {activeTab === 'offboarding' && <OffboardingTab />}
 
-      {/* ══════════ TAB 4: ROLE & PERMISSIONS ══════════ */}
+      {/* ── ROLE & PERMISSIONS ── */}
       {activeTab === 'roles' && (
         <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm max-w-2xl">
           <h3 className="text-base font-bold text-slate-900 mb-1">Role & Permission Management</h3>
-          <p className="text-xs text-slate-500 mb-4">Assign or change roles for any user. Permission deltas are listed per role.</p>
+          <p className="text-xs text-slate-500 mb-4">Assign or change roles for any user. Changes are recorded in the audit trail.</p>
           <input type="text" value={roleSearch} onChange={(e) => setRoleSearch(e.target.value)} placeholder="Search user…" className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 mb-3 focus:outline-none focus:ring-2 focus:ring-aims-navy/30" />
           <div className="space-y-2 mb-4 max-h-56 overflow-y-auto">
             {users.filter((u) => !roleSearch || u.name.toLowerCase().includes(roleSearch.toLowerCase())).map((u) => (
@@ -330,7 +249,10 @@ export function UserManagement() {
           {roleTarget ? (
             <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
               <div className="flex items-center justify-between">
-                <div><p className="text-sm font-bold text-slate-900">{roleTarget.name}</p><p className="text-xs text-slate-500">Current role: <span className="font-bold text-aims-navy">{ROLE_LABELS[roleTarget.role]}</span></p></div>
+                <div>
+                  <p className="text-sm font-bold text-slate-900">{roleTarget.name}</p>
+                  <p className="text-xs text-slate-500">Current role: <span className="font-bold text-aims-navy">{ROLE_LABELS[roleTarget.role]}</span>{roleTarget.apiKey && ' · API key set'}{roleTarget.mfaEnabled && ' · MFA on'}</p>
+                </div>
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Change Role To</label>
@@ -339,11 +261,11 @@ export function UserManagement() {
                 </select>
               </div>
               <div className="flex gap-2 flex-wrap">
-                <button onClick={applyRoleChange} className="px-4 py-2 bg-aims-green text-white text-xs font-bold rounded-lg hover:bg-aims-green/90">Save Changes</button>
-                <button onClick={() => notify('Password Reset', `Reset link sent for ${roleTarget.email}.`, 'info')} className="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50">Reset Password</button>
-                <button onClick={() => notify('API Key Reissued', `New API key generated for ${roleTarget.name}.`, 'info')} className="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50">Reissue API Key</button>
-                <button onClick={() => notify('MFA Reset', `MFA reset for ${roleTarget.name}.`, 'info')} className="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50">Reset MFA</button>
-                <button onClick={() => toggleStatus(roleTarget)} className="px-4 py-2 bg-red-50 text-red-600 text-xs font-bold rounded-lg hover:bg-red-100">{roleTarget.status === 'active' ? 'Disable Account' : 'Enable Account'}</button>
+                <button onClick={() => { const u = setUserRole(roleTarget.id, newRole, actor); if (u) { showToast({ title: 'Role Updated', message: `${u.name} is now ${ROLE_LABELS[u.role]}.`, type: 'success' }); setRoleTarget(null); } }} className="px-4 py-2 bg-aims-green text-white text-xs font-bold rounded-lg hover:bg-aims-green/90">Save Changes</button>
+                <button onClick={() => { const r = resetCredential(roleTarget.id, actor); if (r) showToast({ title: 'Password Reset', message: `Temporary code for ${r.user.email}: ${r.code}`, type: 'info' }); }} className="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50">Reset Password</button>
+                <button onClick={() => { const r = reissueApiKey(roleTarget.id, actor); if (r) showToast({ title: 'API Key Reissued', message: `New key for ${r.user.name}: ${r.key}`, type: 'info' }); }} className="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50">Reissue API Key</button>
+                <button onClick={() => { const r = resetMfa(roleTarget.id, actor); if (r) showToast({ title: 'MFA Reset', message: `${r.name} must re-enroll for MFA.`, type: 'info' }); }} className="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50">Reset MFA</button>
+                <button onClick={() => { const r = toggleUserStatus(roleTarget.id, actor); if (r) showToast({ title: 'Status Changed', message: `${r.name} is now ${r.status}.`, type: 'info' }); }} className="px-4 py-2 bg-red-50 text-red-600 text-xs font-bold rounded-lg hover:bg-red-100">{roleTarget.status === 'active' ? 'Disable Account' : 'Enable Account'}</button>
               </div>
             </div>
           ) : (
@@ -352,14 +274,14 @@ export function UserManagement() {
         </div>
       )}
 
-      {/* ══════════ TAB 5: AUDIT TRAIL ══════════ */}
+      {/* ── AUDIT ── */}
       {activeTab === 'audit' && (
         <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
           <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
             <h3 className="text-base font-bold text-slate-900">User Account Action Log</h3>
             <div className="flex gap-2">
               <input type="text" value={auditFilter} onChange={(e) => setAuditFilter(e.target.value)} placeholder="Filter by user, action…" className="text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-aims-navy/30" />
-              <button onClick={() => notify('Audit Log Exported', 'Audit log exported (CSV).', 'info')} className="px-3 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90 flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">download</span>Export</button>
+              <button onClick={exportAudit} className="px-3 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90 flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">download</span>Export CSV</button>
             </div>
           </div>
           <div className="space-y-0 relative">
@@ -373,6 +295,7 @@ export function UserManagement() {
                 </div>
               </div>
             ))}
+            {filteredAudit.length === 0 && <p className="text-xs text-slate-400 italic py-6 text-center">No audit rows match.</p>}
           </div>
         </div>
       )}
@@ -396,8 +319,8 @@ export function UserManagement() {
                 <div className="p-3 bg-slate-50 rounded-lg border border-slate-100"><p className="text-[10px] font-bold text-slate-500 uppercase">Status</p><p className="text-xs font-bold text-slate-900 mt-0.5 capitalize">{selectedUser.status}</p></div>
               </div>
               <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
-                <button onClick={() => notify('Profile Downloaded', 'Employee profile exported (PDF).', 'info')} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg">Download Profile</button>
-                <button onClick={() => { setRoleTarget(selectedUser); setSelectedUser(null); setActiveTab('roles'); }} className="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg">Edit Role</button>
+                <button onClick={() => downloadProfile(selectedUser)} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg">Download Profile</button>
+                <button onClick={() => { setRoleTarget(selectedUser); setNewRole(selectedUser.role); setSelectedUser(null); setActiveTab('roles'); }} className="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg">Edit Role</button>
               </div>
             </div>
           </div>
@@ -414,8 +337,26 @@ export function UserManagement() {
             <input type="text" value={newHireName} onChange={(e) => setNewHireName(e.target.value)} placeholder="e.g. Rita Auma" className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-aims-navy/30" />
             <div className="flex justify-end gap-2">
               <button onClick={() => setShowAddHire(false)} className="px-4 py-2 text-sm font-bold text-slate-500">Cancel</button>
-              <button onClick={addNewHire} disabled={!newHireName.trim()} className={cn('px-4 py-2 rounded-lg text-sm font-bold', newHireName.trim() ? 'bg-aims-green text-white' : 'bg-slate-100 text-slate-400 cursor-not-allowed')}>Add to Pipeline</button>
+              <button onClick={() => { if (!newHireName.trim()) return; addOnboardee(newHireName.trim()); setNewHireName(''); setShowAddHire(false); showToast({ title: 'New Hire Added', message: `${newHireName.trim()} added to the onboarding pipeline.`, type: 'success' }); }} disabled={!newHireName.trim()} className={cn('px-4 py-2 rounded-lg text-sm font-bold', newHireName.trim() ? 'bg-aims-green text-white' : 'bg-slate-100 text-slate-400 cursor-not-allowed')}>Add to Pipeline</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Checklist template modal */}
+      {showTemplate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={() => setShowTemplate(false)}>
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-slate-900 mb-3">Standard Onboarding Checklist</h3>
+            <div className="space-y-2">
+              {[['1', 'Provision Account', 'Create the login, set a temporary password, send welcome email'], ['2', 'Assign Role', 'Grant the correct persona role and module access'], ['3', 'Issue Credentials', 'Enable MFA and issue an API key where required'], ['4', 'Asset Issuance', 'Hand over laptop, phone and access card via Inventory']].map(([n, t, d]) => (
+                <div key={n} className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
+                  <span className="w-6 h-6 rounded-full bg-aims-navy text-white flex items-center justify-center text-[11px] font-bold shrink-0">{n}</span>
+                  <div><p className="text-sm font-bold text-slate-900">{t}</p><p className="text-[10px] text-slate-500">{d}</p></div>
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-end pt-4"><button onClick={() => setShowTemplate(false)} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg">Close</button></div>
           </div>
         </div>
       )}

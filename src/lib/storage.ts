@@ -25,6 +25,7 @@ export const STORAGE_KEYS = {
   attendanceRegister: 'aims_attendance_register',
   leave: 'aims_leave',
   offboarding: 'aims_offboarding',
+  userOps: 'aims_user_ops',
 } as const;
 
 export function loadJSON<T>(key: string, fallback: T): T {
