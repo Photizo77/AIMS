@@ -20,6 +20,7 @@ export const STORAGE_KEYS = {
   sidebar: 'sidebar-collapsed',
   employees: 'aims_employees_onboarding',
   hrDocs: 'aims_hr_employee_docs',
+  docsLibrary: 'aims_docs_library',
 } as const;
 
 export function loadJSON<T>(key: string, fallback: T): T {

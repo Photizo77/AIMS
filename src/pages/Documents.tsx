@@ -1,12 +1,23 @@
 // src/pages/Documents.tsx
-import { useState, useRef, useMemo } from 'react';
+// ============================================================
+// AIMS — Document Management Hub.
+// All records live in the persisted library (docService), so
+// uploads, deletes, versions and HR-confidential CVs are REAL and
+// auto-update. Exports (CSV/PDF) produce real files; "Download"
+// downloads a record sheet of the document; Share copies a link.
+// ============================================================
+
+import { useRef, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
 import { useLiveData } from '@/lib/useLiveData';
-import { listHrDocs } from '@/services/employeeDocsService';
+import { downloadFile } from '@/lib/storage';
+import { exportCsv, exportTableAsPdf } from '@/lib/export';
+import { listDocs, addDoc, removeDoc, docRecordSheet, type DocCategory, type DocRecord } from '@/services/docService';
+import { formatBytes } from '@/services/employeeDocsService';
+import { openFlagForED } from '@/components/grants/FlagForEDModal';
 
-type DocCategory = 'governance' | 'hr_contracts' | 'hr_confidential' | 'finance_procurement' | 'grants' | 'grants_resource' | 'innovations' | 'inventory_policy' | 'system_security' | 'shared_reference';
 type AccessLevel = 'full' | 'view' | 'flag' | 'none';
 
 const CATEGORIES: { key: DocCategory; label: string; icon: string; description: string }[] = [
@@ -22,10 +33,8 @@ const CATEGORIES: { key: DocCategory; label: string; icon: string; description: 
   { key: 'shared_reference', label: 'Shared Reference Library', icon: 'local_library', description: 'Meeting minutes, policies, leave forms, requisition & contract templates, SOPs, brand assets' },
 ];
 
-// ── Visibility Matrix (F/V/Flag/none) ──
-// Missing categories default to 'none' — e.g. HR Confidential (employee
-// CVs) is visible ONLY to the ED and HR (COMPANY_ADMIN); everyone else
-// including the CD and SYS_ADMIN has no access.
+// ── Visibility Matrix — missing categories default to 'none' ──
+// HR Confidential (employee CVs) is visible ONLY to the ED and HR.
 function getCategoryAccess(role: string, category: DocCategory): AccessLevel {
   const matrix: Record<string, Partial<Record<DocCategory, AccessLevel>>> = {
     CD: { governance: 'full', hr_contracts: 'flag', finance_procurement: 'flag', grants: 'view', grants_resource: 'view', innovations: 'flag', inventory_policy: 'flag', system_security: 'none', shared_reference: 'full' },
@@ -48,88 +57,16 @@ const ACCESS_BADGE: Record<AccessLevel, { label: string; cls: string }> = {
 };
 
 // ── Persona-tailored document hub ──
-// Each role gets a tailored "For You" panel: focus categories plus the
-// documents most relevant to that persona, so the hub reads as their own.
 const PERSONA_PROFILE: Record<string, { label: string; blurb: string; focus: DocCategory[]; pinned: string[] }> = {
-  CD: {
-    label: 'Country Director',
-    blurb: 'Governance, board minutes, institutional policy and compliance oversight — view everything, flag for the ED, approve nothing.',
-    focus: ['governance', 'shared_reference'],
-    pinned: ['d1', 'd2', 'd3'],
-  },
-  ED: {
-    label: 'Executive Director',
-    blurb: 'Full institutional picture — governance, finance, HR, grants and operations, with authority over every document.',
-    focus: ['governance', 'finance_procurement', 'hr_contracts', 'grants'],
-    pinned: ['d3', 'd6', 'd9'],
-  },
-  COMPANY_ADMIN: {
-    label: 'Company Administrator',
-    blurb: 'HR contracts, appraisals, employment records, operational policy and the shared reference library.',
-    focus: ['hr_contracts', 'shared_reference', 'inventory_policy'],
-    pinned: ['d4', 'd5', 'd20'],
-  },
-  SYS_ADMIN: {
-    label: 'System Administrator',
-    blurb: 'Audit logs, access logs and system security records — platform governance.',
-    focus: ['system_security'],
-    pinned: ['d17'],
-  },
-  FINANCE: {
-    label: 'Finance Officer',
-    blurb: 'Requisitions, receipts, budgets, payroll and procurement records — plus shared templates.',
-    focus: ['finance_procurement', 'shared_reference'],
-    pinned: ['d6', 'd7', 'd8'],
-  },
-  GRANT_WRITER: {
-    label: 'Grant Writer',
-    blurb: 'Proposals, budgets, funder correspondence and the grants resource library for drafting.',
-    focus: ['grants', 'grants_resource'],
-    pinned: ['d9', 'd10', 'd11'],
-  },
-  GRANTS_MANAGER: {
-    label: 'Grants Manager',
-    blurb: 'The full proposal pipeline — drafts, budgets, award letters and funder guidelines.',
-    focus: ['grants', 'grants_resource'],
-    pinned: ['d9', 'd12', 'd13'],
-  },
-  INNOVATOR: {
-    label: 'Innovator',
-    blurb: 'Feasibility studies, technical specifications, prototypes and research outputs.',
-    focus: ['innovations'],
-    pinned: ['d14', 'd15'],
-  },
+  CD: { label: 'Country Director', blurb: 'Governance, board minutes, institutional policy and compliance oversight — view everything, flag for the ED, approve nothing.', focus: ['governance', 'shared_reference'], pinned: ['d1', 'd2', 'd3'] },
+  ED: { label: 'Executive Director', blurb: 'Full institutional picture — governance, finance, HR, grants and operations, with authority over every document.', focus: ['governance', 'finance_procurement', 'hr_contracts', 'grants'], pinned: ['d3', 'd6', 'd9'] },
+  COMPANY_ADMIN: { label: 'Company Administrator', blurb: 'HR contracts, appraisals, employment records, operational policy and the shared reference library.', focus: ['hr_contracts', 'shared_reference', 'inventory_policy'], pinned: ['d4', 'd5', 'd20'] },
+  SYS_ADMIN: { label: 'System Administrator', blurb: 'Audit logs, access logs and system security records — platform governance.', focus: ['system_security'], pinned: ['d17'] },
+  FINANCE: { label: 'Finance Officer', blurb: 'Requisitions, receipts, budgets, payroll and procurement records — plus shared templates.', focus: ['finance_procurement', 'shared_reference'], pinned: ['d6', 'd7', 'd8'] },
+  GRANT_WRITER: { label: 'Grant Writer', blurb: 'Proposals, budgets, funder correspondence and the grants resource library for drafting.', focus: ['grants', 'grants_resource'], pinned: ['d9', 'd10', 'd11'] },
+  GRANTS_MANAGER: { label: 'Grants Manager', blurb: 'The full proposal pipeline — drafts, budgets, award letters and funder guidelines.', focus: ['grants', 'grants_resource'], pinned: ['d9', 'd12', 'd13'] },
+  INNOVATOR: { label: 'Innovator', blurb: 'Feasibility studies, technical specifications, prototypes and research outputs.', focus: ['innovations'], pinned: ['d14', 'd15'] },
 };
-
-interface DocumentVersion { version: number; uploadedBy: string; uploadedAt: string; size: string; }
-interface DocRecord {
-  id: string; title: string; fileType: string; fileSize: string; category: DocCategory;
-  uploadedBy: string; uploadedAt: string; versions: DocumentVersion[]; tags: string[];
-}
-
-const MOCK_DOCUMENTS: DocRecord[] = [
-  { id: 'd1', title: 'Q2 Board Meeting Minutes.pdf', fileType: 'PDF', fileSize: '520 KB', category: 'governance', uploadedBy: 'Dr. Sarah Namukasa', uploadedAt: '2026-08-21T11:00:00Z', versions: [{ version: 1, uploadedBy: 'Dr. Sarah Namukasa', uploadedAt: '2026-08-21T11:00:00Z', size: '520 KB' }], tags: ['board', 'minutes', 'q2'] },
-  { id: 'd2', title: 'Compliance Policy v2.1.docx', fileType: 'DOCX', fileSize: '410 KB', category: 'governance', uploadedBy: 'Nassir Mukiibi', uploadedAt: '2026-08-10T09:00:00Z', versions: [{ version: 2, uploadedBy: 'Nassir Mukiibi', uploadedAt: '2026-08-10T09:00:00Z', size: '410 KB' }, { version: 1, uploadedBy: 'Nassir Mukiibi', uploadedAt: '2026-06-01T09:00:00Z', size: '380 KB' }], tags: ['compliance', 'policy'] },
-  { id: 'd3', title: 'Annual Report Draft 2026.docx', fileType: 'DOCX', fileSize: '2.8 MB', category: 'governance', uploadedBy: 'Nassir Mukiibi', uploadedAt: '2026-08-18T14:00:00Z', versions: [{ version: 1, uploadedBy: 'Nassir Mukiibi', uploadedAt: '2026-08-18T14:00:00Z', size: '2.8 MB' }], tags: ['annual-report', 'draft'] },
-  { id: 'd4', title: 'Sarah Aciro - Employment Contract.pdf', fileType: 'PDF', fileSize: '280 KB', category: 'hr_contracts', uploadedBy: 'Grace Nakamya', uploadedAt: '2026-07-01T10:00:00Z', versions: [{ version: 1, uploadedBy: 'Grace Nakamya', uploadedAt: '2026-07-01T10:00:00Z', size: '280 KB' }], tags: ['contract', 'grants-manager'] },
-  { id: 'd5', title: 'Q2 Appraisal Form - Template.docx', fileType: 'DOCX', fileSize: '190 KB', category: 'hr_contracts', uploadedBy: 'Grace Nakamya', uploadedAt: '2026-07-15T09:00:00Z', versions: [{ version: 1, uploadedBy: 'Grace Nakamya', uploadedAt: '2026-07-15T09:00:00Z', size: '190 KB' }], tags: ['appraisal', 'template'] },
-  { id: 'd6', title: 'August Payroll Summary.xlsx', fileType: 'XLSX', fileSize: '890 KB', category: 'finance_procurement', uploadedBy: 'David Okello', uploadedAt: '2026-08-21T16:00:00Z', versions: [{ version: 1, uploadedBy: 'David Okello', uploadedAt: '2026-08-21T16:00:00Z', size: '890 KB' }], tags: ['payroll', 'august'] },
-  { id: 'd7', title: 'REQ-041 Requisition Backup.pdf', fileType: 'PDF', fileSize: '340 KB', category: 'finance_procurement', uploadedBy: 'David Okello', uploadedAt: '2026-08-18T10:00:00Z', versions: [{ version: 1, uploadedBy: 'David Okello', uploadedAt: '2026-08-18T10:00:00Z', size: '340 KB' }], tags: ['requisition', 'req-041'] },
-  { id: 'd8', title: 'Q3 Budget Sheet.xlsx', fileType: 'XLSX', fileSize: '1.2 MB', category: 'finance_procurement', uploadedBy: 'David Okello', uploadedAt: '2026-08-20T11:00:00Z', versions: [{ version: 2, uploadedBy: 'David Okello', uploadedAt: '2026-08-20T11:00:00Z', size: '1.2 MB' }, { version: 1, uploadedBy: 'David Okello', uploadedAt: '2026-08-05T11:00:00Z', size: '1.0 MB' }], tags: ['budget', 'q3'] },
-  { id: 'd9', title: 'Land Rights - Full Proposal v3.docx', fileType: 'DOCX', fileSize: '1.8 MB', category: 'grants', uploadedBy: 'Sarah Aciro', uploadedAt: '2026-08-01T15:00:00Z', versions: [{ version: 3, uploadedBy: 'Sarah Aciro', uploadedAt: '2026-08-01T15:00:00Z', size: '1.8 MB' }, { version: 2, uploadedBy: 'Sarah Aciro', uploadedAt: '2026-07-20T15:00:00Z', size: '1.6 MB' }], tags: ['proposal', 'land-rights', 'usaid'] },
-  { id: 'd10', title: 'Land Rights - Budget v3.xlsx', fileType: 'XLSX', fileSize: '340 KB', category: 'grants', uploadedBy: 'Janet Apio', uploadedAt: '2026-08-05T09:00:00Z', versions: [{ version: 3, uploadedBy: 'Janet Apio', uploadedAt: '2026-08-05T09:00:00Z', size: '340 KB' }], tags: ['budget', 'land-rights'] },
-  { id: 'd11', title: 'USAID Proposal Template 2026.docx', fileType: 'DOCX', fileSize: '520 KB', category: 'grants_resource', uploadedBy: 'Sarah Aciro', uploadedAt: '2026-06-15T09:00:00Z', versions: [{ version: 1, uploadedBy: 'Sarah Aciro', uploadedAt: '2026-06-15T09:00:00Z', size: '520 KB' }], tags: ['template', 'usaid'] },
-  { id: 'd12', title: 'ARDHI Standard Budget Template.xlsx', fileType: 'XLSX', fileSize: '280 KB', category: 'grants_resource', uploadedBy: 'Sarah Aciro', uploadedAt: '2026-06-15T09:30:00Z', versions: [{ version: 1, uploadedBy: 'Sarah Aciro', uploadedAt: '2026-06-15T09:30:00Z', size: '280 KB' }], tags: ['template', 'budget'] },
-  { id: 'd13', title: 'Org Profile & Theory of Change.pdf', fileType: 'PDF', fileSize: '1.2 MB', category: 'grants_resource', uploadedBy: 'Sarah Aciro', uploadedAt: '2026-06-20T10:00:00Z', versions: [{ version: 1, uploadedBy: 'Sarah Aciro', uploadedAt: '2026-06-20T10:00:00Z', size: '1.2 MB' }], tags: ['boilerplate', 'theory-of-change'] },
-  { id: 'd14', title: 'Solar Grain Dryer - Feasibility Study.pdf', fileType: 'PDF', fileSize: '2.1 MB', category: 'innovations', uploadedBy: 'Pius Odong', uploadedAt: '2026-08-12T14:00:00Z', versions: [{ version: 1, uploadedBy: 'Pius Odong', uploadedAt: '2026-08-12T14:00:00Z', size: '2.1 MB' }], tags: ['feasibility', 'solar'] },
-  { id: 'd15', title: 'Land Mapping Drone - Technical Spec.pdf', fileType: 'PDF', fileSize: '1.5 MB', category: 'innovations', uploadedBy: 'Florence Adong', uploadedAt: '2026-08-15T11:00:00Z', versions: [{ version: 2, uploadedBy: 'Florence Adong', uploadedAt: '2026-08-15T11:00:00Z', size: '1.5 MB' }, { version: 1, uploadedBy: 'Florence Adong', uploadedAt: '2026-08-01T11:00:00Z', size: '1.3 MB' }], tags: ['drone', 'specs'] },
-  { id: 'd16', title: 'Inventory Low-Stock Report - Aug.xlsx', fileType: 'XLSX', fileSize: '410 KB', category: 'inventory_policy', uploadedBy: 'Isaac Tumusiime', uploadedAt: '2026-08-20T09:00:00Z', versions: [{ version: 1, uploadedBy: 'Isaac Tumusiime', uploadedAt: '2026-08-20T09:00:00Z', size: '410 KB' }], tags: ['inventory', 'low-stock'] },
-  { id: 'd17', title: 'Access Log - August 2026.pdf', fileType: 'PDF', fileSize: '780 KB', category: 'system_security', uploadedBy: 'System', uploadedAt: '2026-08-22T00:00:00Z', versions: [{ version: 1, uploadedBy: 'System', uploadedAt: '2026-08-22T00:00:00Z', size: '780 KB' }], tags: ['audit', 'access-log'] },
-  { id: 'd18', title: 'Leave Request Form.pdf', fileType: 'PDF', fileSize: '120 KB', category: 'shared_reference', uploadedBy: 'Grace Nakamya', uploadedAt: '2026-08-18T11:00:00Z', versions: [{ version: 2, uploadedBy: 'Grace Nakamya', uploadedAt: '2026-08-18T11:00:00Z', size: '120 KB' }, { version: 1, uploadedBy: 'Grace Nakamya', uploadedAt: '2026-05-01T11:00:00Z', size: '110 KB' }], tags: ['form', 'leave'] },
-  { id: 'd19', title: 'Requisition Form Template.docx', fileType: 'DOCX', fileSize: '95 KB', category: 'shared_reference', uploadedBy: 'Grace Nakamya', uploadedAt: '2026-08-19T10:00:00Z', versions: [{ version: 1, uploadedBy: 'Grace Nakamya', uploadedAt: '2026-08-19T10:00:00Z', size: '95 KB' }], tags: ['form', 'requisition', 'template'] },
-  { id: 'd20', title: 'Employee Handbook SOP.pdf', fileType: 'PDF', fileSize: '3.4 MB', category: 'shared_reference', uploadedBy: 'Grace Nakamya', uploadedAt: '2026-07-01T09:00:00Z', versions: [{ version: 1, uploadedBy: 'Grace Nakamya', uploadedAt: '2026-07-01T09:00:00Z', size: '3.4 MB' }], tags: ['sop', 'handbook'] },
-  { id: 'd21', title: 'ARDHI Brand Assets.zip', fileType: 'ZIP', fileSize: '18 MB', category: 'shared_reference', uploadedBy: 'Nassir Mukiibi', uploadedAt: '2026-06-01T09:00:00Z', versions: [{ version: 1, uploadedBy: 'Nassir Mukiibi', uploadedAt: '2026-06-01T09:00:00Z', size: '18 MB' }], tags: ['brand', 'assets'] },
-];
 
 const ALLOWED_EXTENSIONS = ['.pdf', '.docx', '.xlsx', '.png', '.jpg', '.jpeg', '.zip'];
 const MAX_FILE_SIZE = 25 * 1024 * 1024;
@@ -162,42 +99,41 @@ export function Documents() {
   const [filterType, setFilterType] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [versionDocId, setVersionDocId] = useState<string | null>(null);
+  const [previewDoc, setPreviewDoc] = useState<DocRecord | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  useLiveData();
 
   const userRole = user?.role ?? '';
-
-  // Live updates: re-reads when any data writes (incl. HR CV uploads, other tabs)
-  const live = useLiveData();
-
-  // Persona profile for the tailored panel
   const persona = PERSONA_PROFILE[userRole];
-  const pinnedDocs = useMemo(() => (persona ? MOCK_DOCUMENTS.filter((d) => persona.pinned.includes(d.id)) : []), [persona]);
 
-  // Categories the user can access (any level other than none)
-  const accessibleCategories = useMemo(() =>
-    CATEGORIES.filter((c) => getCategoryAccess(userRole, c.key) !== 'none'),
-  [userRole]);
-
+  const accessibleCategories = CATEGORIES.filter((c) => getCategoryAccess(userRole, c.key) !== 'none');
   const [activeCategory, setActiveCategory] = useState<DocCategory>(accessibleCategories[0]?.key ?? 'shared_reference');
 
   const activeAccess = getCategoryAccess(userRole, activeCategory);
   const canUpload = activeAccess === 'full';
   const activeCategoryMeta = CATEGORIES.find((c) => c.key === activeCategory);
 
-  // Repository = seeded documents + HR-confidential files (e.g. uploaded CVs)
-  const allDocs = useMemo(() => [...MOCK_DOCUMENTS, ...listHrDocs()], [live]);
+  const allDocs = listDocs();
+  const pinnedDocs = persona ? allDocs.filter((d) => persona.pinned.includes(d.id)) : [];
 
-  const filteredDocs = useMemo(() => {
-    return allDocs.filter((doc) => {
+  const filteredDocs = allDocs
+    .filter((doc) => {
       if (doc.category !== activeCategory) return false;
       if (filterType && doc.fileType !== filterType) return false;
       if (!searchQuery.trim()) return true;
       const q = searchQuery.toLowerCase();
       return doc.title.toLowerCase().includes(q) || doc.tags.some((t) => t.toLowerCase().includes(q)) || doc.uploadedBy.toLowerCase().includes(q);
-    }).sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
-  }, [allDocs, activeCategory, searchQuery, filterType]);
+    })
+    .sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
+
+  const goCategory = (key: DocCategory) => {
+    setActiveCategory(key);
+    setSelectedIds(new Set());
+    setVersionDocId(null);
+    setPreviewDoc(null);
+  };
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
@@ -209,6 +145,59 @@ export function Documents() {
 
   const toggleSelectAll = () => {
     setSelectedIds(selectedIds.size === filteredDocs.length ? new Set() : new Set(filteredDocs.map((d) => d.id)));
+  };
+
+  // ── REAL ACTIONS ──
+
+  const downloadRecord = (doc: DocRecord) => {
+    const safe = doc.title.replace(/\.[^.]+$/, '').replace(/[\\/:*?"<>|]/g, '-');
+    downloadFile(`${safe}.txt`, docRecordSheet(doc), 'text/plain;charset=utf-8');
+    showToast({ title: 'Download Started', message: `${safe}.txt (record sheet)`, type: 'success' });
+  };
+
+  const downloadSelected = () => {
+    const docs = allDocs.filter((d) => selectedIds.has(d.id));
+    if (docs.length === 0) return;
+    docs.forEach((d) => downloadRecord(d));
+    showToast({ title: 'Downloads Started', message: `${docs.length} record sheet(s) downloading.`, type: 'success' });
+    setSelectedIds(new Set());
+  };
+
+  const deleteSelected = () => {
+    const docs = allDocs.filter((d) => selectedIds.has(d.id));
+    docs.forEach((d) => removeDoc(d.id));
+    showToast({ title: 'Deleted', message: `${docs.length} document(s) removed from the library.`, type: 'success' });
+    setSelectedIds(new Set());
+    setVersionDocId(null);
+  };
+
+  const exportRows = filteredDocs.map((d) => ({
+    title: d.title, type: d.fileType, size: d.fileSize, category: d.category.replace(/_/g, ' '),
+    uploadedBy: d.uploadedBy, uploadedOn: formatDate(d.uploadedAt), tags: d.tags.join(', '),
+  }));
+
+  const runExport = (fmt: 'csv' | 'pdf') => {
+    if (exportRows.length === 0) {
+      showToast({ title: 'Nothing to Export', message: 'No documents in this category match your filters.', type: 'error' });
+      return;
+    }
+    if (fmt === 'csv') {
+      exportCsv(`aims-documents-${activeCategory}`, exportRows);
+      showToast({ title: 'CSV Exported', message: `${exportRows.length} document(s) exported.`, type: 'success' });
+    } else {
+      const cols = ['title', 'type', 'size', 'category', 'uploadedBy', 'uploadedOn', 'tags'];
+      const head = ['Title', 'Type', 'Size', 'Category', 'Uploaded By', 'Uploaded On', 'Tags'];
+      exportTableAsPdf(`${activeCategoryMeta?.label ?? 'Documents'} — Library Export`, head, exportRows.map((r) => cols.map((c) => String(r[c as keyof typeof r] ?? ''))));
+      showToast({ title: 'Print Layout Ready', message: 'Choose "Save as PDF" in the print dialog.', type: 'success' });
+    }
+  };
+
+  const shareDoc = (doc: DocRecord) => {
+    const link = `${window.location.origin}${window.location.pathname}?doc=${encodeURIComponent(doc.id)}`;
+    const done = () => showToast({ title: 'Link Copied', message: `Share link for "${doc.title}" copied to clipboard.`, type: 'success' });
+    const fail = () => showToast({ title: 'Copy Failed', message: link, type: 'info' });
+    if (navigator.clipboard?.writeText) navigator.clipboard.writeText(link).then(done).catch(fail);
+    else fail();
   };
 
   const handleFileUpload = (files: FileList | null) => {
@@ -227,9 +216,15 @@ export function Documents() {
         showToast({ title: 'File Too Large', message: `${file.name}: Maximum size is 25MB`, type: 'error' });
         return;
       }
+      addDoc({
+        title: file.name,
+        fileType: (file.name.split('.').pop() ?? 'FILE').toUpperCase(),
+        fileSize: formatBytes(file.size),
+        category: activeCategory,
+        uploadedBy: user?.name ?? 'Unknown',
+        tags: [activeCategory.replace(/_/g, '-')],
+      });
       showToast({ title: 'File Uploaded', message: `${file.name} → ${activeCategoryMeta?.label}`, type: 'success' });
-
-      // Shared Reference Library notification rule
       if (activeCategory === 'shared_reference') {
         setNotification(`📢 Notification sent to all users: "${file.name}" is now the current version in the Shared Reference Library. Uploaded by ${user?.name}. Old versions remain in version history.`);
         setTimeout(() => setNotification(null), 8000);
@@ -243,38 +238,28 @@ export function Documents() {
     handleFileUpload(e.dataTransfer.files);
   };
 
-  const handleDownloadZip = () => {
-    if (selectedIds.size === 0) {
-      showToast({ title: 'No Files Selected', message: 'Select files to download as ZIP.', type: 'error' });
-      return;
-    }
-    showToast({ title: 'Downloading ZIP', message: `${selectedIds.size} file(s) being packaged…`, type: 'success' });
-    setSelectedIds(new Set());
-  };
-
   const handleFlag = (doc: DocRecord) => {
-    showToast({ title: 'Flag Submitted', message: `Your flag on "${doc.title}" was routed to the ED.`, type: 'success' });
+    openFlagForED({ recordLabel: doc.title, sourceModule: 'documents' });
+    showToast({ title: 'Flag Window Opened', message: `Raise a flag on "${doc.title}" for the ED.`, type: 'success' });
   };
 
   if (!user) return <div className="p-8 text-center text-slate-500">Loading documents…</div>;
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
         <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">Document Management Hub</h1>
         <p className="text-base font-medium text-white">Central repository across all modules — access governed by role permissions</p>
       </div>
 
-      {/* Shared Reference notification banner */}
       {notification && (
-        <div className="bg-aims-green/10 border border-aims-green/30 rounded-xl px-4 py-3 flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+        <div className="bg-aims-green/10 border border-aims-green/30 rounded-xl px-4 py-3 flex items-start gap-3">
           <span className="material-symbols-outlined text-aims-green text-[20px] mt-0.5">campaign</span>
           <p className="text-sm text-slate-800 font-medium">{notification}</p>
         </div>
       )}
 
-      {/* Tailored for you — persona-specific quick access */}
+      {/* Tailored for you */}
       {persona && (
         <div className="bg-grad-navy rounded-2xl p-6 text-white shadow-lg">
           <div className="flex items-center gap-2 mb-1">
@@ -286,9 +271,9 @@ export function Documents() {
           <div className="flex flex-wrap gap-2 mb-4">
             {persona.focus.map((key) => {
               const cat = CATEGORIES.find((c) => c.key === key);
-              if (!cat) return null;
+              if (!cat || getCategoryAccess(userRole, key) === 'none') return null;
               return (
-                <button key={key} onClick={() => { setActiveCategory(key); setSelectedIds(new Set()); setVersionDocId(null); }} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 border border-white/20 rounded-lg text-xs font-bold transition-colors">
+                <button key={key} onClick={() => goCategory(key)} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 border border-white/20 rounded-lg text-xs font-bold transition-colors">
                   <span className="material-symbols-outlined text-[14px]">{cat.icon}</span>{cat.label}
                 </button>
               );
@@ -297,7 +282,7 @@ export function Documents() {
           {pinnedDocs.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {pinnedDocs.map((doc) => (
-                <button key={doc.id} onClick={() => { setActiveCategory(doc.category); setSelectedIds(new Set()); setVersionDocId(null); }} className="flex items-center gap-2 p-2.5 bg-white/10 hover:bg-white/20 rounded-lg border border-white/15 text-left transition-colors group">
+                <button key={doc.id} onClick={() => goCategory(doc.category)} className="flex items-center gap-2 p-2.5 bg-white/10 hover:bg-white/20 rounded-lg border border-white/15 text-left transition-colors group">
                   <span className={cn('material-symbols-outlined text-[18px] shrink-0', getFileColor(doc.fileType))}>{getFileIcon(doc.fileType)}</span>
                   <span className="min-w-0">
                     <span className="block text-xs font-bold text-white truncate">{doc.title}</span>
@@ -311,8 +296,8 @@ export function Documents() {
         </div>
       )}
 
-      {/* Category Tabs */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        {/* Category tabs */}
         <div className="flex overflow-x-auto border-b border-slate-200">
           {accessibleCategories.map((cat) => {
             const access = getCategoryAccess(userRole, cat.key);
@@ -321,11 +306,8 @@ export function Documents() {
             return (
               <button
                 key={cat.key}
-                onClick={() => { setActiveCategory(cat.key); setSelectedIds(new Set()); setVersionDocId(null); }}
-                className={cn(
-                  'flex items-center gap-2 px-4 py-3 text-xs font-bold whitespace-nowrap border-b-2 transition-colors',
-                  isActive ? 'border-aims-green text-aims-green bg-aims-green/5' : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
-                )}
+                onClick={() => goCategory(cat.key)}
+                className={cn('flex items-center gap-2 px-4 py-3 text-xs font-bold whitespace-nowrap border-b-2 transition-colors', isActive ? 'border-aims-green text-aims-green bg-aims-green/5' : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50')}
               >
                 <span className="material-symbols-outlined text-[16px]">{cat.icon}</span>
                 {cat.label}
@@ -336,23 +318,21 @@ export function Documents() {
           })}
         </div>
 
-        {/* Active category description + permission note */}
+        {/* Category header */}
         <div className="px-5 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between flex-wrap gap-2">
           <div>
             <p className="text-sm font-bold text-slate-900">{activeCategoryMeta?.label}</p>
             <p className="text-xs text-slate-500">{activeCategoryMeta?.description}</p>
           </div>
           <div className="text-right">
-            <span className={cn('text-[10px] font-bold px-2 py-1 rounded uppercase', ACCESS_BADGE[activeAccess].cls)}>
-              Your access: {ACCESS_BADGE[activeAccess].label}
-            </span>
+            <span className={cn('text-[10px] font-bold px-2 py-1 rounded uppercase', ACCESS_BADGE[activeAccess].cls)}>Your access: {ACCESS_BADGE[activeAccess].label}</span>
             <p className="text-[10px] text-slate-400 mt-1">
-              {activeAccess === 'full' ? 'Upload, edit, delete' : activeAccess === 'view' ? 'View + download only' : activeAccess === 'flag' ? 'View, download, comment/flag — no edit' : 'No access'}
+              {activeAccess === 'full' ? 'Upload, delete, download' : activeAccess === 'view' ? 'View + download only' : activeAccess === 'flag' ? 'View, download, comment/flag — no edit' : 'No access'}
             </p>
           </div>
         </div>
 
-        {/* Upload zone — only for full access */}
+        {/* Upload zone */}
         {canUpload && (
           <div className="p-5 border-b border-slate-200">
             <div
@@ -363,14 +343,14 @@ export function Documents() {
               className={cn('border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all', isDragOver ? 'border-aims-green bg-aims-green/5' : 'border-slate-300 hover:border-aims-green/50 hover:bg-slate-50')}
             >
               <span className={cn('material-symbols-outlined text-[40px] mb-2', isDragOver ? 'text-aims-green' : 'text-slate-400')}>cloud_upload</span>
-              <p className="text-sm font-bold text-slate-900 mb-0.5">Drag & drop files here, or click to browse</p>
+              <p className="text-sm font-bold text-slate-900 mb-0.5">Drag &amp; drop files here, or click to browse</p>
               <p className="text-xs text-slate-500">Accepted: PDF, DOCX, XLSX, PNG, JPG, ZIP • Max 25MB • Uploading to {activeCategoryMeta?.label}</p>
               <input ref={fileInputRef} type="file" multiple accept=".pdf,.docx,.xlsx,.png,.jpg,.jpeg,.zip" onChange={(e) => handleFileUpload(e.target.files)} className="hidden" />
             </div>
           </div>
         )}
 
-        {/* Filters + Actions */}
+        {/* Filters + actions */}
         <div className="p-4 border-b border-slate-200 space-y-3">
           <div className="flex flex-wrap gap-2 items-end">
             <div className="flex-1 min-w-[200px]">
@@ -385,28 +365,35 @@ export function Documents() {
               </select>
             </div>
           </div>
-          <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+          <div className="flex items-center justify-between pt-2 border-t border-slate-100 flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <span className="text-xs text-slate-500">{filteredDocs.length} document{filteredDocs.length !== 1 ? 's' : ''}</span>
               {selectedIds.size > 0 && <span className="text-xs font-bold text-aims-navy">• {selectedIds.size} selected</span>}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               {selectedIds.size > 0 && (
-                <button onClick={handleDownloadZip} className="px-3 py-1.5 bg-aims-navy text-white text-[10px] font-bold rounded-lg hover:bg-aims-navy/90 transition-colors flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[14px]">folder_zip</span>Download ZIP ({selectedIds.size})
-                </button>
+                <>
+                  <button onClick={downloadSelected} className="px-3 py-1.5 bg-aims-navy text-white text-[10px] font-bold rounded-lg hover:bg-aims-navy/90 transition-colors flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[14px]">download</span>Download ({selectedIds.size})
+                  </button>
+                  {canUpload && (
+                    <button onClick={deleteSelected} className="px-3 py-1.5 bg-red-500 text-white text-[10px] font-bold rounded-lg hover:bg-red-600 transition-colors flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[14px]">delete</span>Delete ({selectedIds.size})
+                    </button>
+                  )}
+                </>
               )}
-              <button onClick={() => showToast({ title: 'Exporting CSV', message: `${filteredDocs.length} documents exported.`, type: 'success' })} className="px-3 py-1.5 border border-slate-200 text-slate-600 text-[10px] font-bold rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-1">
+              <button onClick={() => runExport('csv')} className="px-3 py-1.5 border border-slate-200 text-slate-600 text-[10px] font-bold rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-1">
                 <span className="material-symbols-outlined text-[14px]">download</span>CSV
               </button>
-              <button onClick={() => showToast({ title: 'Exporting PDF', message: `${filteredDocs.length} documents exported.`, type: 'success' })} className="px-3 py-1.5 border border-slate-200 text-slate-600 text-[10px] font-bold rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-1">
+              <button onClick={() => runExport('pdf')} className="px-3 py-1.5 border border-slate-200 text-slate-600 text-[10px] font-bold rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-1">
                 <span className="material-symbols-outlined text-[14px]">picture_as_pdf</span>PDF
               </button>
             </div>
           </div>
         </div>
 
-        {/* Document Table */}
+        {/* Document table */}
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
@@ -444,23 +431,19 @@ export function Documents() {
                       <button onClick={() => setVersionDocId(versionDocId === doc.id ? null : doc.id)} className="text-xs font-bold text-aims-navy hover:underline flex items-center gap-1">
                         v{doc.versions[0].version} ({doc.versions.length})<span className="material-symbols-outlined text-[14px]">{versionDocId === doc.id ? 'expand_less' : 'expand_more'}</span>
                       </button>
-                    ) : (
-                      <span className="text-xs text-slate-400">v1</span>
-                    )}
+                    ) : (<span className="text-xs text-slate-400">v1</span>)}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-1">
-                      <button onClick={() => showToast({ title: 'Downloading', message: doc.title, type: 'success' })} className="p-1.5 rounded hover:bg-slate-100 text-slate-500" title="Download"><span className="material-symbols-outlined text-[18px]">download</span></button>
-                      <button onClick={() => showToast({ title: 'Preview', message: doc.title, type: 'info' })} className="p-1.5 rounded hover:bg-slate-100 text-slate-500" title="Preview"><span className="material-symbols-outlined text-[18px]">visibility</span></button>
-                      {/* Flag/comment for 'flag' access */}
+                      <button onClick={() => downloadRecord(doc)} className="p-1.5 rounded hover:bg-slate-100 text-slate-500" title="Download"><span className="material-symbols-outlined text-[18px]">download</span></button>
+                      <button onClick={() => setPreviewDoc(doc)} className="p-1.5 rounded hover:bg-slate-100 text-slate-500" title="Preview"><span className="material-symbols-outlined text-[18px]">visibility</span></button>
                       {activeAccess === 'flag' && (
                         <button onClick={() => handleFlag(doc)} className="p-1.5 rounded hover:bg-slate-100 text-aims-orange" title="Comment / Flag"><span className="material-symbols-outlined text-[18px]">flag</span></button>
                       )}
-                      {/* Edit/delete only for 'full' access */}
                       {activeAccess === 'full' && (
                         <>
-                          <button onClick={() => showToast({ title: 'Share Link Copied', message: doc.title, type: 'success' })} className="p-1.5 rounded hover:bg-slate-100 text-slate-500" title="Share"><span className="material-symbols-outlined text-[18px]">share</span></button>
-                          <button onClick={() => showToast({ title: 'Deleted', message: doc.title, type: 'success' })} className="p-1.5 rounded hover:bg-slate-100 text-red-500" title="Delete"><span className="material-symbols-outlined text-[18px]">delete</span></button>
+                          <button onClick={() => shareDoc(doc)} className="p-1.5 rounded hover:bg-slate-100 text-slate-500" title="Share"><span className="material-symbols-outlined text-[18px]">share</span></button>
+                          <button onClick={() => { removeDoc(doc.id); setSelectedIds(new Set()); setVersionDocId(null); showToast({ title: 'Deleted', message: doc.title, type: 'success' }); }} className="p-1.5 rounded hover:bg-slate-100 text-red-500" title="Delete"><span className="material-symbols-outlined text-[18px]">delete</span></button>
                         </>
                       )}
                     </div>
@@ -471,7 +454,7 @@ export function Documents() {
           </table>
         </div>
 
-        {/* Version History */}
+        {/* Version history */}
         {versionDocId && (() => {
           const doc = allDocs.find((d) => d.id === versionDocId);
           if (!doc) return null;
@@ -487,7 +470,7 @@ export function Documents() {
                       <td className="py-1.5 text-slate-600">{v.uploadedBy}</td>
                       <td className="py-1.5 text-slate-600">{formatDate(v.uploadedAt)}</td>
                       <td className="py-1.5 text-slate-600">{v.size}</td>
-                      <td className="py-1.5 text-right"><button onClick={() => showToast({ title: 'Downloading v' + v.version, message: doc.title, type: 'success' })} className="text-aims-navy font-bold hover:underline">Download</button></td>
+                      <td className="py-1.5 text-right"><button onClick={() => downloadRecord({ ...doc, versions: [v], title: `${doc.title.replace(/\.[^.]+$/, '')} v${v.version}${doc.title.match(/\.[^.]+$/)?.[0] ?? ''}` })} className="text-aims-navy font-bold hover:underline">Download</button></td>
                     </tr>
                   ))}
                 </tbody>
@@ -496,6 +479,35 @@ export function Documents() {
           );
         })()}
       </div>
+
+      {/* Preview modal */}
+      {previewDoc && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setPreviewDoc(null)} />
+          <div className="relative bg-white rounded-2xl shadow-xl max-w-lg w-full p-6">
+            <button onClick={() => setPreviewDoc(null)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><span className="material-symbols-outlined">close</span></button>
+            <div className="flex items-start gap-3 mb-5">
+              <span className={cn('material-symbols-outlined text-[38px]', getFileColor(previewDoc.fileType))}>{getFileIcon(previewDoc.fileType)}</span>
+              <div className="min-w-0">
+                <h3 className="text-lg font-bold text-slate-900 break-words">{previewDoc.title}</h3>
+                <p className="text-xs text-slate-500 mt-0.5">{previewDoc.fileType} • {previewDoc.fileSize} • {formatDate(previewDoc.uploadedAt)}</p>
+              </div>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-slate-500">Category</span><span className="font-medium text-slate-800 capitalize">{previewDoc.category.replace(/_/g, ' ')}</span></div>
+              <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-slate-500">Uploaded By</span><span className="font-medium text-slate-800">{previewDoc.uploadedBy}</span></div>
+              <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-slate-500">Versions</span><span className="font-medium text-slate-800">{previewDoc.versions.length}</span></div>
+              <div className="py-1.5 border-b border-slate-100"><span className="text-slate-500 block">Tags</span><div className="flex gap-1 mt-1 flex-wrap">{previewDoc.tags.map((t) => <span key={t} className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 uppercase">{t}</span>)}</div></div>
+            </div>
+            <div className="mt-5 pt-4 border-t border-slate-100 flex justify-end gap-2">
+              <button onClick={() => setPreviewDoc(null)} className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg">Close</button>
+              <button onClick={() => downloadRecord(previewDoc)} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90 flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[15px]">download</span>Download
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
