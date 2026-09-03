@@ -48,6 +48,14 @@ export function Procurement() {
   const [showVendorForm, setShowVendorForm] = useState(false);
   const [showPOForm, setShowPOForm] = useState(false);
   const [tab, setTab] = useState<'vendors' | 'pos'>('vendors');
+  const [editingVendor, setEditingVendor] = useState<Vendor | null>(null);
+  const [viewingPo, setViewingPo] = useState<PurchaseOrder | null>(null);
+
+  const advancePo = (id: string, status: PurchaseOrder['status']) => {
+    setPOs((prev) => prev.map((p) => (p.id === id ? { ...p, status } : p)));
+    setViewingPo((v) => (v && v.id === id ? { ...v, status } : v));
+    showToast({ title: 'PO Updated', message: `${id} marked as ${status}.`, type: 'success' });
+  };
 
   const [vendors, setVendors] = useState<Vendor[]>([
     { id: 'v1', name: 'AgroTech Solutions Ltd', category: 'Agricultural Equipment', contact: 'John Mwangi', email: 'john@agrotech.ug', status: 'active', rating: 4.8 },
@@ -62,8 +70,6 @@ export function Procurement() {
     { id: 'PO-2026-043', vendor: 'Gulu Office Supplies', amount: 2100000, date: '2026-08-18', status: 'paid', items: 'Workshop Printing & Stationery' },
     { id: 'PO-2026-042', vendor: 'Field Gear Uganda', amount: 4100000, date: '2026-08-15', status: 'draft', items: 'Garmin GPSMAP 67i (5x)' },
   ]);
-
-  const handleAction = (msg: string) => showToast({ title: 'Action Logged', message: msg, type: 'success' });
 
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
@@ -165,7 +171,7 @@ export function Procurement() {
                         </span>
                       </td>
                       <td className="py-2.5 text-right">
-                        <button onClick={() => handleAction(`Editing ${v.name}`)} className="text-xs font-bold text-aims-navy hover:underline">Edit</button>
+                        <button onClick={() => setEditingVendor(v)} className="text-xs font-bold text-aims-navy hover:underline">Edit</button>
                       </td>
                     </tr>
                   ))}
@@ -200,7 +206,7 @@ export function Procurement() {
                         </span>
                       </td>
                       <td className="py-2.5 text-right">
-                        <button onClick={() => handleAction(`Viewing ${po.id}`)} className="text-xs font-bold text-aims-navy hover:underline">View</button>
+                        <button onClick={() => setViewingPo(po)} className="text-xs font-bold text-aims-navy hover:underline">View</button>
                       </td>
                     </tr>
                   ))}
@@ -346,6 +352,74 @@ export function Procurement() {
               </button>
             </div>
           </form>
+        </Modal>
+      )}
+
+      {/* Edit Vendor Modal */}
+      {editingVendor && (
+        <Modal title={`Edit Vendor — ${editingVendor.name}`} onClose={() => setEditingVendor(null)}>
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            const formData = new FormData(e.currentTarget);
+            const updated: Vendor = {
+              ...editingVendor,
+              name: formData.get('name') as string,
+              category: formData.get('category') as string,
+              contact: formData.get('contact') as string,
+              email: formData.get('email') as string,
+            };
+            setVendors((prev) => prev.map((v) => (v.id === editingVendor.id ? updated : v)));
+            setEditingVendor(null);
+            showToast({ title: 'Vendor Updated', message: `${updated.name} saved.`, type: 'success' });
+          }} className="space-y-3">
+            <div>
+              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Vendor Name</label>
+              <input name="name" type="text" required defaultValue={editingVendor.name} className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-aims-navy/30" />
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Category</label>
+              <select name="category" required defaultValue={editingVendor.category} className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-aims-navy/30">
+                <option>Agricultural Equipment</option><option>IT Equipment</option><option>Office Supplies</option><option>Field Equipment</option><option>Consulting Services</option><option>Construction</option>
+              </select>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Contact Person</label>
+                <input name="contact" type="text" required defaultValue={editingVendor.contact} className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-aims-navy/30" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Email</label>
+                <input name="email" type="email" required defaultValue={editingVendor.email} className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-aims-navy/30" />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+              <button type="button" onClick={() => setEditingVendor(null)} className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
+              <button type="submit" className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90">Save Changes</button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* View PO Modal */}
+      {viewingPo && (
+        <Modal title={`Purchase Order ${viewingPo.id}`} onClose={() => setViewingPo(null)}>
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="p-3 bg-slate-50 rounded-lg"><p className="text-[10px] font-bold text-slate-500 uppercase">Vendor</p><p className="font-bold text-slate-900 mt-0.5">{viewingPo.vendor}</p></div>
+              <div className="p-3 bg-slate-50 rounded-lg"><p className="text-[10px] font-bold text-slate-500 uppercase">Amount</p><p className="font-extrabold text-aims-navy mt-0.5">{fmtMoney(viewingPo.amount)}</p></div>
+              <div className="p-3 bg-slate-50 rounded-lg"><p className="text-[10px] font-bold text-slate-500 uppercase">Date</p><p className="font-bold text-slate-900 mt-0.5">{viewingPo.date}</p></div>
+              <div className="p-3 bg-slate-50 rounded-lg"><p className="text-[10px] font-bold text-slate-500 uppercase">Status</p><span className={cn('text-[10px] font-bold px-2 py-0.5 rounded uppercase mt-1 inline-block', getStatusBadge(viewingPo.status))}>{viewingPo.status}</span></div>
+            </div>
+            <div className="p-3 bg-slate-50 rounded-lg text-xs"><p className="text-[10px] font-bold text-slate-500 uppercase mb-1">Items</p><p className="text-slate-700">{viewingPo.items}</p></div>
+            <div className="flex items-center justify-between flex-wrap gap-2 pt-3 border-t border-slate-100">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {(['draft', 'sent', 'received', 'paid'] as PurchaseOrder['status'][]).map((s) => (
+                  <button key={s} disabled={viewingPo.status === s} onClick={() => advancePo(viewingPo.id, s)} className={cn('px-3 py-1.5 text-[10px] font-bold rounded-lg capitalize transition-colors', viewingPo.status === s ? 'bg-aims-green text-white cursor-default' : 'bg-slate-100 text-slate-600 hover:bg-aims-navy hover:text-white')}>{s}</button>
+                ))}
+              </div>
+              <button onClick={() => setViewingPo(null)} className="px-3 py-1.5 text-[10px] font-bold text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50">Close</button>
+            </div>
+          </div>
         </Modal>
       )}
     </div>
