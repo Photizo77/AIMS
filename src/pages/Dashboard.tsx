@@ -4,6 +4,9 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
 import { useLiveData } from '@/lib/useLiveData';
+import { loadJSON, saveJSON, STORAGE_KEYS } from '@/lib/storage';
+import { exportCsv, exportTableAsPdf } from '@/lib/export';
+import { useRequisitions, mutateRequisitions } from '@/services/requisitionService';
 import { CHIP, ACCENT, FILL, type ColorKey } from '@/lib/uiTheme';
 import { ExecutiveBrief } from '@/components/ai/ExecutiveBrief';
 import { useNotifications } from '@/context/NotificationContext';
@@ -21,6 +24,19 @@ import { grantService } from '@/services/grantService';
 import { financeService } from '@/services/financeService';
 import { GRANT_STAGES } from '@/data/grants';
 
+
+// ── Company feed (persisted) ──
+interface FeedPost { id: string; author: string; content: string; time: string; }
+
+function readFeedPosts(): FeedPost[] {
+  const stored = loadJSON<FeedPost[] | null>(STORAGE_KEYS.feed, null);
+  if (stored && stored.length > 0) return stored;
+  return [
+    { id: 'f1', author: 'Executive Director', content: 'Reminder: All department Q3 budget revisions due by Friday COB.', time: new Date(Date.now() - 3600000).toISOString() },
+    { id: 'f2', author: 'HR Admin', content: 'New leave policy updated in the Documents hub. Please review.', time: new Date(Date.now() - 10800000).toISOString() },
+    { id: 'f3', author: 'Grants Manager', content: 'USAID submission confirmed. Tracking number: AID-2026-UG-0441.', time: new Date(Date.now() - 21600000).toISOString() },
+  ];
+}
 
 function DashHeader({ gradient, title, subtitle }: { gradient: string; title: string; subtitle: string }) {
   return (<div className={cn('rounded-2xl p-7 text-white shadow-lg', gradient)}><h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">{title}</h1><p className="text-base font-medium text-white">{subtitle}</p></div>);
@@ -50,13 +66,34 @@ function Bar({ label, value, max, display, color }: { label: string; value: numb
   );
 }
 
-interface FilterPreset { id: string; name: string }
-interface AdvancedFilterBarProps { dateLabel?: string; statusOptions: string[]; ownerOptions: string[]; showAmountRange?: boolean; presets?: FilterPreset[]; onFilterChange?: (filters: Record<string, string>) => void; onExport?: (format: 'csv' | 'pdf') => void; onSavePreset?: (name: string) => void; }
+interface SavedPreset { id: string; name: string; filters: Record<string, string>; }
 
-function AdvancedFilterBar({ dateLabel = 'Date', statusOptions, ownerOptions, showAmountRange = false, presets = [], onFilterChange, onExport, onSavePreset }: AdvancedFilterBarProps) {
+const PRESETS_KEY = 'aims_filter_presets';
+
+function loadSavedPresets(): SavedPreset[] {
+  try {
+    const raw = localStorage.getItem(PRESETS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as SavedPreset[];
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch { /* ignore */ }
+  return [];
+}
+
+interface AdvancedFilterBarProps {
+  dateLabel?: string; statusOptions: string[]; ownerOptions: string[];
+  showAmountRange?: boolean;
+  onFilterChange?: (filters: Record<string, string>) => void;
+  exportRows?: Record<string, unknown>[];
+  exportFileName?: string;
+}
+
+function AdvancedFilterBar({ dateLabel = 'Date', statusOptions, ownerOptions, showAmountRange = false, onFilterChange, exportRows, exportFileName = 'aims-export' }: AdvancedFilterBarProps) {
   const { showToast } = useNotifications();
   const [showPresets, setShowPresets] = useState(false);
   const [presetName, setPresetName] = useState('');
+  const [savedPresets, setSavedPresets] = useState<SavedPreset[]>(() => loadSavedPresets());
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [activeCount, setActiveCount] = useState(0);
 
@@ -73,6 +110,54 @@ function AdvancedFilterBar({ dateLabel = 'Date', statusOptions, ownerOptions, sh
     onFilterChange?.({});
   };
 
+  const runExport = (format: 'csv' | 'pdf') => {
+    const rows = exportRows ?? [];
+    if (rows.length === 0) {
+      showToast({ title: 'Nothing to Export', message: 'There are no records in this view to export.', type: 'error' });
+      return;
+    }
+    const cols = Object.keys(rows[0] ?? {});
+    const head = cols.map((c) => c.replace(/([A-Z])/g, ' $1').replace(/^./, (m) => m.toUpperCase()));
+    const body = rows.map((r) => cols.map((c) => {
+      const v = r[c];
+      if (v === null || v === undefined) return '';
+      return typeof v === 'object' ? JSON.stringify(v) : String(v);
+    }));
+    if (format === 'csv') {
+      exportCsv(exportFileName, rows);
+      showToast({ title: 'CSV Exported', message: `${rows.length} record(s) exported to ${exportFileName}.csv`, type: 'success' });
+    } else {
+      exportTableAsPdf(exportFileName.replace(/-/g, ' ').replace(/\b\w/g, (m) => m.toUpperCase()), head, body);
+      showToast({ title: 'Print Layout Ready', message: 'Choose "Save as PDF" in the print dialog.', type: 'success' });
+    }
+  };
+
+  const savePreset = () => {
+    const name = presetName.trim();
+    if (!name) { showToast({ title: 'Name Required', message: 'Enter a name for this preset.', type: 'error' }); return; }
+    if (activeCount === 0) { showToast({ title: 'No Filters Set', message: 'Set at least one filter before saving.', type: 'error' }); return; }
+    const preset: SavedPreset = { id: `p-${Date.now()}`, name, filters: { ...filters } };
+    const next = [...savedPresets, preset];
+    setSavedPresets(next);
+    try { localStorage.setItem(PRESETS_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+    setPresetName('');
+    showToast({ title: 'Preset Saved', message: `"${name}" will re-apply your filters anytime.`, type: 'success' });
+  };
+
+  const applyPreset = (p: SavedPreset) => {
+    setFilters({ ...p.filters });
+    setActiveCount(Object.values(p.filters).filter(Boolean).length);
+    onFilterChange?.({ ...p.filters });
+    setShowPresets(false);
+    showToast({ title: 'Preset Applied', message: p.name, type: 'success' });
+  };
+
+  const deletePreset = (id: string) => {
+    const next = savedPresets.filter((p) => p.id !== id);
+    setSavedPresets(next);
+    try { localStorage.setItem(PRESETS_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+  };
+
   const inputCls = 'w-full text-xs border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-aims-navy/30';
 
   return (
@@ -86,9 +171,29 @@ function AdvancedFilterBar({ dateLabel = 'Date', statusOptions, ownerOptions, sh
       </div>
       <div className="flex items-center gap-2 flex-wrap">
         {activeCount > 0 && <button onClick={clearAll} className="text-[10px] font-bold text-red-500 hover:underline flex items-center gap-0.5"><span className="material-symbols-outlined text-[12px]">filter_alt_off</span>Clear ({activeCount})</button>}
-        {presets.length > 0 && (<div className="relative"><button onClick={() => setShowPresets(!showPresets)} className="text-[10px] font-bold text-aims-navy hover:underline flex items-center gap-1"><span className="material-symbols-outlined text-[12px]">bookmark</span>Presets ({presets.length})</button>{showPresets && (<div className="absolute top-full left-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg p-2 z-10 min-w-[180px]">{presets.map((p) => <button key={p.id} onClick={() => showToast({ title: 'Preset Applied', message: p.name, type: 'info' })} className="block w-full text-left text-xs px-2 py-1.5 hover:bg-slate-50 rounded text-slate-700">{p.name}</button>)}</div>)}</div>)}
-        <div className="flex items-center gap-1"><input type="text" placeholder="Save filter as…" value={presetName} onChange={(e) => setPresetName(e.target.value)} className="text-[10px] border border-slate-200 rounded px-2 py-1 w-32 focus:outline-none focus:ring-1 focus:ring-aims-navy/30" /><button onClick={() => { if (presetName.trim()) { onSavePreset?.(presetName); setPresetName(''); } }} className="text-[10px] font-bold text-aims-green hover:underline">Save</button></div>
-        <div className="ml-auto flex items-center gap-2"><span className="text-[10px] text-slate-400 italic">Filters combine with AND</span><button onClick={() => onExport?.('csv')} className="text-[10px] font-bold text-aims-navy hover:underline flex items-center gap-0.5"><span className="material-symbols-outlined text-[12px]">download</span>CSV</button><button onClick={() => onExport?.('pdf')} className="text-[10px] font-bold text-aims-navy hover:underline flex items-center gap-0.5"><span className="material-symbols-outlined text-[12px]">picture_as_pdf</span>PDF</button></div>
+        <div className="relative">
+          <button onClick={() => setShowPresets(!showPresets)} className="text-[10px] font-bold text-aims-navy hover:underline flex items-center gap-1"><span className="material-symbols-outlined text-[12px]">bookmark</span>Presets ({savedPresets.length})</button>
+          {showPresets && (
+            <div className="absolute top-full left-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg p-2 z-10 min-w-[220px] max-h-64 overflow-y-auto">
+              {savedPresets.length === 0 && <p className="text-[10px] text-slate-400 px-2 py-1 italic">No saved presets — set filters, then press Save.</p>}
+              {savedPresets.map((p) => (
+                <div key={p.id} className="flex items-center gap-1">
+                  <button onClick={() => applyPreset(p)} className="flex-1 text-left text-xs px-2 py-1.5 hover:bg-slate-50 rounded text-slate-700">{p.name}</button>
+                  <button onClick={() => deletePreset(p.id)} className="text-slate-300 hover:text-red-500 p-1" title="Delete preset"><span className="material-symbols-outlined text-[13px]">close</span></button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="flex items-center gap-1">
+          <input type="text" placeholder="Save filter as…" value={presetName} onChange={(e) => setPresetName(e.target.value)} className="text-[10px] border border-slate-200 rounded px-2 py-1 w-32 focus:outline-none focus:ring-1 focus:ring-aims-navy/30" />
+          <button onClick={savePreset} className="text-[10px] font-bold text-aims-green hover:underline">Save</button>
+        </div>
+        <div className="ml-auto flex items-center gap-2">
+          <span className="text-[10px] text-slate-400 italic">Filters combine with AND</span>
+          <button onClick={() => runExport('csv')} className="text-[10px] font-bold text-aims-navy hover:underline flex items-center gap-0.5"><span className="material-symbols-outlined text-[12px]">download</span>CSV</button>
+          <button onClick={() => runExport('pdf')} className="text-[10px] font-bold text-aims-navy hover:underline flex items-center gap-0.5"><span className="material-symbols-outlined text-[12px]">picture_as_pdf</span>PDF</button>
+        </div>
       </div>
     </div>
   );
@@ -157,9 +262,7 @@ export function Dashboard() {
 }
 
 function CDDashboard() {
-  const { showToast } = useNotifications();
   const navigate = useNavigate();
-  const handleAction = (msg: string) => showToast({ title: 'Action Logged', message: msg, type: 'success' });
   const [approvalFilters, setApprovalFilters] = useState<Record<string, string>>({});
   const cdApprovals = [
     { id: 'req-041', title: 'Q3 Field Equipment Procurement', type: 'Requisition', amount: 'UGX 12.4M', status: 'ED Review', daysInQueue: 2 },
@@ -211,7 +314,7 @@ function CDDashboard() {
       <ExecutiveBrief />
 
       <Section title="Approvals in Progress" subtitle="Visibility into ED's review pipeline — read only">
-        <AdvancedFilterBar dateLabel="Submitted" statusOptions={['ED Review', 'Awaiting Finance', 'Awaiting HR', 'Disbursed']} onFilterChange={setApprovalFilters} ownerOptions={['Finance Dept', 'HR Admin', 'Grants Team', 'Procurement']} showAmountRange presets={[{ id: 'p1', name: 'Over 3 days' }, { id: 'p2', name: 'High value (>10M)' }]} onExport={(fmt) => handleAction(`Exporting approvals ${fmt.toUpperCase()}`)} onSavePreset={(name) => handleAction(`Saved preset: ${name}`)} />
+        <AdvancedFilterBar dateLabel="Submitted" statusOptions={['ED Review', 'Awaiting Finance', 'Awaiting HR', 'Disbursed']} onFilterChange={setApprovalFilters} ownerOptions={['Finance Dept', 'HR Admin', 'Grants Team', 'Procurement']} showAmountRange exportRows={filteredCdApprovals} exportFileName="cd-approvals-in-progress" />
         <div className="space-y-2">
           {filteredCdApprovals.map((item) => (
             <div key={item.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
@@ -286,8 +389,49 @@ function EDDashboard() {
   const { user } = useAuth();
   const { showToast } = useNotifications();
   const navigate = useNavigate();
-  const handleAction = (msg: string) => showToast({ title: 'Action Logged', message: msg, type: 'success' });
   const [expandedApproval, setExpandedApproval] = useState<string | null>(null);
+
+  // Live requisition queue — decisions below really update the store.
+  const liveReqs = useRequisitions();
+  const edQueue = liveReqs.filter((r) => r.status === 'pushed' || r.status === 'returned');
+
+  const decide = (id: string, action: 'approved' | 'rejected', comment: string) => {
+    mutateRequisitions((list) => {
+      const target = list.find((x) => x.id === id);
+      if (!target) return;
+      target.status = action;
+      target.updatedAt = new Date().toISOString();
+      target.daysInStatus = 0;
+      target.edDecision = { action, comment, date: new Date().toISOString() };
+    });
+    setExpandedApproval(null);
+    showToast({ title: action === 'approved' ? 'Requisition Approved' : 'Requisition Rejected', message: `${id} ${action} with your comment recorded.`, type: action === 'approved' ? 'success' : 'info' });
+  };
+
+  const attendanceToday = [
+    { name: 'Sarah Aciro', dept: 'Grants', checkIn: '07:58', checkOut: '—', status: 'present' as const, location: 'Onsite' },
+    { name: 'Janet Apio', dept: 'Grants', checkIn: '08:32', checkOut: '—', status: 'late' as const, location: 'Onsite' },
+    { name: 'Pius Odong', dept: 'Innovation', checkIn: '07:45', checkOut: '—', status: 'present' as const, location: 'Remote' },
+    { name: 'David Okello', dept: 'Finance', checkIn: '—', checkOut: '—', status: 'absent' as const, location: '—' },
+    { name: 'Grace Nakamya', dept: 'HR', checkIn: '07:50', checkOut: '—', status: 'present' as const, location: 'Onsite' },
+    { name: 'Isaac Tumusiime', dept: 'Procurement', checkIn: '08:15', checkOut: '—', status: 'late' as const, location: 'Onsite' },
+    { name: 'Florence Adong', dept: 'Research', checkIn: '07:55', checkOut: '—', status: 'present' as const, location: 'Onsite' },
+  ];
+
+  // Company feed — persisted, real posts
+  const [feedPosts, setFeedPosts] = useState<FeedPost[]>(() => readFeedPosts());
+  const [feedDraft, setFeedDraft] = useState('');
+  const postFeed = () => {
+    const content = feedDraft.trim();
+    if (!content) { showToast({ title: 'Empty Post', message: 'Write an update before posting.', type: 'error' }); return; }
+    const post: FeedPost = { id: `fp-${Date.now()}`, author: user?.name ?? 'ED', content, time: new Date().toISOString() };
+    const next = [post, ...feedPosts];
+    setFeedPosts(next);
+    setFeedDraft('');
+    saveJSON(STORAGE_KEYS.feed, next);
+    showToast({ title: 'Posted', message: 'Your update is now visible on the company feed.', type: 'success' });
+  };
+
   return (
     <div className="space-y-6">
       <DashHeader gradient="bg-grad-navy" title="Executive Director Dashboard" subtitle="Operational execution, team leadership & daily management — sole approval authority" />
@@ -353,29 +497,30 @@ function EDDashboard() {
         <FinanceEditApprovals />
       </Section>
 
-      <Section title="Your Pending Approvals" subtitle="Requisitions and payslips awaiting your decision — you are the sole approval authority">
-        <AdvancedFilterBar dateLabel="Submitted" statusOptions={['Awaiting Your Decision', 'Overdue', 'You Approved', 'You Rejected', 'Disbursed']} ownerOptions={['Finance Dept', 'HR Admin', 'Grants Team', 'Procurement', 'Innovation']} showAmountRange presets={[{ id: 'aq1', name: 'My overdue items' }, { id: 'aq2', name: 'Payslips only' }, { id: 'aq3', name: 'High value (>10M)' }]} onExport={(fmt) => handleAction(`Exporting approvals ${fmt.toUpperCase()}`)} onSavePreset={(name) => handleAction(`Saved preset: ${name}`)} />
+      <Section title="Your Pending Approvals" subtitle="Requisitions awaiting your decision — approve or reject straight from the live queue">
+        <AdvancedFilterBar dateLabel="Submitted" statusOptions={['Awaiting Your Decision', 'Overdue', 'You Approved', 'You Rejected', 'Disbursed']} ownerOptions={['Finance Dept', 'HR Admin', 'Grants Team', 'Procurement', 'Innovation']} showAmountRange exportRows={edQueue.map((r) => ({ id: r.id, title: r.title, department: r.dept, requester: r.requester, amount: `UGX ${r.amount.toLocaleString()}`, status: r.status, daysInStatus: r.daysInStatus }))} exportFileName="ed-pending-approvals" />
+        {edQueue.length === 0 && (
+          <div className="p-8 text-center text-sm text-slate-400 italic bg-slate-50 rounded-xl border border-slate-100">No requisitions are currently awaiting your decision.</div>
+        )}
         <div className="space-y-3">
-          {[
-            { id: 'req-041', title: 'Q3 Field Equipment Procurement', type: 'Requisition', amount: 'UGX 12.4M', submittedBy: 'Finance Dept', submittedDate: 'Aug 18', days: 4, description: 'Field tablets (10x), GPS units (5x), solar chargers (10x) for land documentation fieldwork.', lineItems: [{ item: 'Samsung Galaxy Tab A9', qty: 10, unit: 'UGX 680K', total: 'UGX 6.8M' }, { item: 'Garmin GPSMAP 67i', qty: 5, unit: 'UGX 820K', total: 'UGX 4.1M' }, { item: 'Anker Solar Charger 24W', qty: 10, unit: 'UGX 150K', total: 'UGX 1.5M' }] },
-            { id: 'pay-089', title: 'August Payroll Batch', type: 'Payslip Batch', amount: 'UGX 186M', submittedBy: 'HR Admin', submittedDate: 'Aug 19', days: 3, description: 'Monthly payroll for 142 employees.', lineItems: [{ item: 'Base Salaries', qty: 142, unit: '—', total: 'UGX 168M' }, { item: 'Transport Allowances', qty: 142, unit: '—', total: 'UGX 14.2M' }, { item: 'NSSF Contributions', qty: 142, unit: '—', total: 'UGX 3.8M' }] },
-            { id: 'req-042', title: 'Community Workshop Materials', type: 'Requisition', amount: 'UGX 4.8M', submittedBy: 'Grants Team', submittedDate: 'Aug 20', days: 2, description: 'Printing, stationery, and venue setup for 3-day workshop.', lineItems: [{ item: 'Workshop Printing', qty: 1, unit: '—', total: 'UGX 2.1M' }, { item: 'Venue Setup & Catering', qty: 3, unit: 'UGX 900K', total: 'UGX 2.7M' }] },
-            { id: 'req-038', title: 'Venue Rental — Land Rights Workshop', type: 'Requisition', amount: 'UGX 3.2M', submittedBy: 'Grants Team', submittedDate: 'Aug 15', days: 7, description: 'Gulu Conference Centre rental for 5 days.', lineItems: [{ item: 'Hall Rental (5 days)', qty: 5, unit: 'UGX 500K', total: 'UGX 2.5M' }, { item: 'AV Equipment Package', qty: 1, unit: '—', total: 'UGX 700K' }] },
-            { id: 'pay-090', title: 'Contractor Payment — Pius Odong', type: 'Payslip', amount: 'UGX 1.5M', submittedBy: 'HR Admin', submittedDate: 'Aug 21', days: 1, description: 'Monthly contractor payment for innovation prototyping.', lineItems: [{ item: 'Prototyping Services', qty: 1, unit: '—', total: 'UGX 1.5M' }] },
-          ].map((item) => (
+          {edQueue.map((item) => (
             <div key={item.id} className={cn('rounded-lg border transition-all', expandedApproval === item.id ? 'border-aims-navy shadow-md bg-white' : 'border-slate-200 bg-slate-50')}>
               <div className="flex items-center justify-between p-3 cursor-pointer" onClick={() => setExpandedApproval(expandedApproval === item.id ? null : item.id)}>
-                <div className="flex items-center gap-3"><span className="material-symbols-outlined text-slate-400 text-[18px]">{expandedApproval === item.id ? 'expand_less' : 'expand_more'}</span><div><p className="text-sm font-bold text-slate-900">{item.title}</p><p className="text-xs text-slate-500">{item.type} • {item.amount} • {item.id} • {item.submittedBy}</p></div></div>
-                <div className="text-right flex items-center gap-3"><span className={cn('inline-block px-2 py-0.5 rounded text-[10px] font-bold', item.days >= 5 ? 'bg-red-50 text-red-600' : item.days >= 3 ? 'bg-aims-orange/15 text-aims-orange' : 'bg-slate-100 text-slate-600')}>{item.days}d</span><span className="text-xs font-bold text-aims-navy">{expandedApproval === item.id ? 'Close' : 'Review'}</span></div>
+                <div className="flex items-center gap-3"><span className="material-symbols-outlined text-slate-400 text-[18px]">{expandedApproval === item.id ? 'expand_less' : 'expand_more'}</span><div><p className="text-sm font-bold text-slate-900">{item.title}</p><p className="text-xs text-slate-500">Requisition • UGX {item.amount.toLocaleString()} • {item.id} • {item.requester} • {item.dept}</p></div></div>
+                <div className="text-right flex items-center gap-3"><span className={cn('inline-block px-2 py-0.5 rounded text-[10px] font-bold', item.daysInStatus >= 5 ? 'bg-red-50 text-red-600' : item.daysInStatus >= 3 ? 'bg-aims-orange/15 text-aims-orange' : 'bg-slate-100 text-slate-600')}>{item.daysInStatus}d in {item.status}</span><span className="text-xs font-bold text-aims-navy">{expandedApproval === item.id ? 'Close' : 'Review'}</span></div>
               </div>
               {expandedApproval === item.id && (
                 <div className="px-3 pb-3 space-y-3">
-                  <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Description</p><p className="text-xs text-slate-700 mb-3">{item.description}</p>
+                  <div id={`req-detail-${item.id}`} className="bg-slate-50 rounded-lg p-3 border border-slate-100">
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Purpose</p><p className="text-xs text-slate-700 mb-3">{item.purpose}</p>
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Budget Line</p><p className="text-xs text-slate-700 mb-3">{item.budgetLine}</p>
+                    {item.edDecision && (
+                      <div className="mb-3 p-2 bg-aims-orange/10 border border-aims-orange/20 rounded-lg"><p className="text-[10px] font-bold text-aims-orange uppercase tracking-wider">Previously returned: "{item.edDecision.comment}"</p></div>
+                    )}
                     <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Line Items</p>
-                    <table className="w-full text-xs"><thead><tr className="border-b border-slate-200"><th className="pb-1 text-left text-slate-500">Item</th><th className="pb-1 text-right text-slate-500">Qty</th><th className="pb-1 text-right text-slate-500">Unit</th><th className="pb-1 text-right text-slate-500">Total</th></tr></thead><tbody className="divide-y divide-slate-100">{item.lineItems.map((li, idx) => <tr key={idx}><td className="py-1 text-slate-700">{li.item}</td><td className="py-1 text-right text-slate-600">{li.qty}</td><td className="py-1 text-right text-slate-600">{li.unit}</td><td className="py-1 text-right font-semibold text-slate-900">{li.total}</td></tr>)}</tbody></table>
+                    <table className="w-full text-xs"><thead><tr className="border-b border-slate-200"><th className="pb-1 text-left text-slate-500">Item</th><th className="pb-1 text-right text-slate-500">Qty</th><th className="pb-1 text-right text-slate-500">Unit</th><th className="pb-1 text-right text-slate-500">Total</th></tr></thead><tbody className="divide-y divide-slate-100">{item.lineItems.map((li, idx) => <tr key={idx}><td className="py-1 text-slate-700">{li.item}</td><td className="py-1 text-right text-slate-600">{li.qty}</td><td className="py-1 text-right text-slate-600">{li.unit}</td><td className="py-1 text-right font-semibold text-slate-900">UGX {li.total.toLocaleString()}</td></tr>)}</tbody></table>
                   </div>
-                  <ApprovalActionPanel itemName={item.title} itemType={item.type} onViewFull={() => handleAction(`Opened full ${item.type.toLowerCase()} record for ${item.id}`)} onApprove={(c) => handleAction(`YOU APPROVED ${item.id}: ${c}`)} onReject={(c) => handleAction(`YOU REJECTED ${item.id}: ${c}`)} />
+                  <ApprovalActionPanel itemName={item.title} itemType="Requisition" onViewFull={() => { const el = document.getElementById(`req-detail-${item.id}`); el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }} onApprove={(c) => decide(item.id, 'approved', c)} onReject={(c) => decide(item.id, 'rejected', c)} />
                 </div>
               )}
             </div>
@@ -390,7 +535,7 @@ function EDDashboard() {
       </Section>
 
       <Section title="Attendance Oversight" subtitle="Real-time presence and historical records">
-        <AdvancedFilterBar dateLabel="Date" statusOptions={['Present', 'Late', 'Absent', 'Leave', 'Remote']} ownerOptions={['Grants', 'Finance', 'HR', 'Innovation', 'Research', 'Procurement']} presets={[{ id: 'att1', name: 'Unexpected absences' }, { id: 'att2', name: 'Late arrivals this week' }]} onExport={(fmt) => handleAction(`Exporting attendance ${fmt.toUpperCase()}`)} onSavePreset={(name) => handleAction(`Saved preset: ${name}`)} />
+        <AdvancedFilterBar dateLabel="Date" statusOptions={['Present', 'Late', 'Absent', 'Leave', 'Remote']} ownerOptions={['Grants', 'Finance', 'HR', 'Innovation', 'Research', 'Procurement']} exportRows={attendanceToday} exportFileName="ed-attendance-oversight" />
         <div className="flex items-center gap-3 mb-4">
           <div className="flex items-center gap-2 px-3 py-1.5 bg-aims-green/10 rounded-lg border border-aims-green/20"><span className="material-symbols-outlined text-aims-green text-[18px]">check_circle</span><span className="text-sm font-bold text-aims-green">128 Present</span></div>
           <div className="flex items-center gap-2 px-3 py-1.5 bg-aims-orange/10 rounded-lg border border-aims-orange/20"><span className="material-symbols-outlined text-aims-orange text-[18px]">schedule</span><span className="text-sm font-bold text-aims-orange">9 Late</span></div>
@@ -399,7 +544,7 @@ function EDDashboard() {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm"><thead><tr className="border-b border-slate-200"><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Employee</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Department</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Check In</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Check Out</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Status</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Location</th></tr></thead>
             <tbody className="divide-y divide-slate-100">
-              {[{ name: 'Sarah Aciro', dept: 'Grants', checkIn: '07:58', checkOut: '—', status: 'present' as const, location: 'Onsite' },{ name: 'Janet Apio', dept: 'Grants', checkIn: '08:32', checkOut: '—', status: 'late' as const, location: 'Onsite' },{ name: 'Pius Odong', dept: 'Innovation', checkIn: '07:45', checkOut: '—', status: 'present' as const, location: 'Remote' },{ name: 'David Okello', dept: 'Finance', checkIn: '—', checkOut: '—', status: 'absent' as const, location: '—' },{ name: 'Grace Nakamya', dept: 'HR', checkIn: '07:50', checkOut: '—', status: 'present' as const, location: 'Onsite' },{ name: 'Isaac Tumusiime', dept: 'Procurement', checkIn: '08:15', checkOut: '—', status: 'late' as const, location: 'Onsite' },{ name: 'Florence Adong', dept: 'Research', checkIn: '07:55', checkOut: '—', status: 'present' as const, location: 'Onsite' }].map((emp, i) => (
+              {attendanceToday.map((emp, i) => (
                 <tr key={i} className="hover:bg-slate-50 transition-colors"><td className="py-2.5 font-bold text-slate-900">{emp.name}</td><td className="py-2.5 text-slate-600">{emp.dept}</td><td className="py-2.5 text-slate-600 font-mono text-xs">{emp.checkIn}</td><td className="py-2.5 text-slate-600 font-mono text-xs">{emp.checkOut}</td><td className="py-2.5"><span className={cn('inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide', emp.status === 'present' ? 'bg-aims-green/15 text-aims-green' : emp.status === 'late' ? 'bg-aims-orange/15 text-aims-orange' : 'bg-red-50 text-red-500')}>{emp.status}</span></td><td className="py-2.5 text-slate-500 text-xs">{emp.location}</td></tr>
               ))}
             </tbody>
@@ -472,9 +617,9 @@ function EDDashboard() {
 
       <Section title="Company Feed" subtitle="Post institutional updates across departments">
         <div className="space-y-3">
-          <div className="flex gap-2 mb-2"><input type="text" placeholder="Share an update with all departments…" className="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-aims-navy/30" /><button onClick={() => handleAction('Update posted to company feed')} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90 transition-colors">Post</button></div>
-          {[{ author: 'Executive Director', time: '1h ago', content: 'Reminder: All department Q3 budget revisions due by Friday COB.' },{ author: 'HR Admin', time: '3h ago', content: 'New leave policy updated in Documents hub. Please review.' },{ author: 'Grants Manager', time: '6h ago', content: 'USAID submission confirmed. Tracking number: AID-2026-UG-0441.' }].map((post, i) => (
-            <div key={i} className="p-3 bg-slate-50 rounded-lg border border-slate-100"><div className="flex items-center justify-between mb-1"><p className="text-sm font-bold text-slate-900">{post.author}</p><p className="text-[10px] text-slate-400">{post.time}</p></div><p className="text-sm text-slate-600">{post.content}</p></div>
+          <div className="flex gap-2 mb-2"><input type="text" placeholder="Share an update with all departments…" value={feedDraft} onChange={(e) => setFeedDraft(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') postFeed(); }} className="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-aims-navy/30" /><button onClick={postFeed} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90 transition-colors">Post</button></div>
+          {feedPosts.map((post) => (
+            <div key={post.id} className="p-3 bg-slate-50 rounded-lg border border-slate-100"><div className="flex items-center justify-between mb-1"><p className="text-sm font-bold text-slate-900">{post.author}</p><p className="text-[10px] text-slate-400">{new Date(post.time).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p></div><p className="text-sm text-slate-600">{post.content}</p></div>
           ))}
         </div>
       </Section>
@@ -981,8 +1126,12 @@ function InnovatorDashboard() {
 }
 
 function SysAdminDashboard() {
-  const { showToast } = useNotifications();
   const [showAuditLog, setShowAuditLog] = useState(false);
+  const auditEntries = [
+    { time: '2026-08-22 07:42:18', user: 'Janet Apio', role: 'GRANT_WRITER', action: 'check_in', distance: '342m', coords: '0.3034°N, 32.5897°E', ip: '41.220.138.44' },
+    { time: '2026-08-22 08:15:03', user: 'David Okello', role: 'FINANCE', action: 'check_in', distance: '1.2km', coords: '0.3112°N, 32.5845°E', ip: '102.82.91.12' },
+    { time: '2026-08-21 17:31:45', user: 'Isaac Tumusiime', role: 'COMPANY_ADMIN', action: 'check_out', distance: '890m', coords: '0.2921°N, 32.5998°E', ip: '41.220.138.67' },
+  ];
   return (
     <div className="space-y-6">
       <DashHeader gradient="bg-grad-navy" title="System Telemetry" subtitle="Platform stability, security & configuration" />
@@ -1003,12 +1152,12 @@ function SysAdminDashboard() {
       </div>
       {showAuditLog && (
         <Section title="Geofence Violation Audit Log" subtitle="Failed physical check-in attempts — blocked and logged automatically">
-          <AdvancedFilterBar dateLabel="Attempt Time" statusOptions={['Blocked', 'Flagged']} ownerOptions={['CD', 'ED', 'COMPANY_ADMIN', 'FINANCE', 'GRANTS_MANAGER', 'GRANT_WRITER', 'INNOVATOR']} presets={[{ id: 'gv1', name: 'Last 24 hours' }, { id: 'gv2', name: 'Repeat offenders' }]} onExport={(fmt) => showToast({ title: 'Exporting Audit Log', message: `CSV/PDF export of the audit log (${fmt}).`, type: 'info' })} onSavePreset={(name) => showToast({ title: 'Preset Saved', message: name, type: 'success' })} />
+          <AdvancedFilterBar dateLabel="Attempt Time" statusOptions={['Blocked', 'Flagged']} ownerOptions={['CD', 'ED', 'COMPANY_ADMIN', 'FINANCE', 'GRANTS_MANAGER', 'GRANT_WRITER', 'INNOVATOR']} exportRows={auditEntries} exportFileName="geofence-violation-audit-log" />
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead><tr className="border-b border-slate-200"><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Timestamp</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">User</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Role</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Action</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Distance</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Coordinates</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">IP Address</th></tr></thead>
               <tbody className="divide-y divide-slate-100">
-                {[{ time: '2026-08-22 07:42:18', user: 'Janet Apio', role: 'GRANT_WRITER', action: 'check_in', distance: '342m', coords: '0.3034°N, 32.5897°E', ip: '41.220.138.44' },{ time: '2026-08-22 08:15:03', user: 'David Okello', role: 'FINANCE', action: 'check_in', distance: '1.2km', coords: '0.3112°N, 32.5845°E', ip: '102.82.91.12' },{ time: '2026-08-21 17:31:45', user: 'Isaac Tumusiime', role: 'COMPANY_ADMIN', action: 'check_out', distance: '890m', coords: '0.2921°N, 32.5998°E', ip: '41.220.138.67' }].map((entry, i) => (
+                {auditEntries.map((entry, i) => (
                   <tr key={i} className="hover:bg-red-50/50 transition-colors"><td className="py-2.5 text-slate-600 font-mono text-xs">{entry.time}</td><td className="py-2.5 font-bold text-slate-900">{entry.user}</td><td className="py-2.5"><span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-slate-100 text-slate-600">{entry.role.replace('_', ' ')}</span></td><td className="py-2.5 text-slate-600 capitalize">{entry.action.replace('_', ' ')}</td><td className="py-2.5"><span className="text-xs font-bold text-red-500">{entry.distance}</span></td><td className="py-2.5 text-slate-500 font-mono text-[10px]">{entry.coords}</td><td className="py-2.5 text-slate-500 font-mono text-xs">{entry.ip}</td></tr>
                 ))}
               </tbody>
@@ -1021,9 +1170,7 @@ function SysAdminDashboard() {
 }
 
 function HRDashboard() {
-  const { showToast } = useNotifications();
   const navigate = useNavigate();
-  const handleAction = (msg: string) => showToast({ title: 'Action Logged', message: msg, type: 'success' });
   const [expandedContract, setExpandedContract] = useState<string | null>(null);
 
   return (
@@ -1071,8 +1218,8 @@ function HRDashboard() {
                     Expires {c.expiry} ({c.daysLeft}d)
                   </span>
                   <div className="flex gap-2 mt-1 justify-end">
-                    <button onClick={() => handleAction(`Renewing ${c.name}'s contract`)} className="text-[10px] font-bold text-aims-navy hover:underline">Renew</button>
-                    <button onClick={() => handleAction(`Viewing ${c.name}'s contract`)} className="text-[10px] font-bold text-slate-500 hover:underline">View</button>
+                    <button onClick={() => navigate('/hr', { state: { tab: 'contracts' } })} className="text-[10px] font-bold text-aims-navy hover:underline">Renew in HR module</button>
+                    <button onClick={() => navigate('/hr', { state: { tab: 'contracts' } })} className="text-[10px] font-bold text-slate-500 hover:underline">View</button>
                   </div>
                 </div>
               </div>
@@ -1130,13 +1277,10 @@ function HRDashboard() {
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Comment from {item.submittedBy} ({item.submittedDate})</p>
                     <p className="text-xs text-slate-700 italic">"{item.comment}"</p>
                   </div>
-                  <ApprovalActionPanel 
-                    itemName={`${item.name}'s contract`} 
-                    itemType="Contract" 
-                    onViewFull={() => handleAction(`Opened full contract record for ${item.name}`)} 
-                    onApprove={(c) => handleAction(`YOU APPROVED contract for ${item.name}: ${c}`)} 
-                    onReject={(c) => handleAction(`YOU REJECTED contract for ${item.name}: ${c}`)} 
-                  />
+                  <div className="bg-white rounded-lg p-3 border border-aims-navy/20 flex items-center justify-between gap-3 flex-wrap">
+                    <div className="flex items-center gap-2 text-xs text-slate-600"><span className="material-symbols-outlined text-aims-navy text-[18px]">description</span>Contract decisions are completed in the HR &amp; Contracts module.</div>
+                    <button onClick={() => navigate('/hr', { state: { tab: 'contracts' } })} className="px-3 py-1.5 bg-aims-navy text-white text-[10px] font-bold rounded-lg hover:bg-aims-navy/90 shrink-0">Open HR &amp; Contracts</button>
+                  </div>
                 </div>
               )}
             </div>
@@ -1169,9 +1313,7 @@ function HRDashboard() {
 }
 
 function InventoryDashboard() {
-  const { showToast } = useNotifications();
   const navigate = useNavigate();
-  const handleAction = (msg: string) => showToast({ title: 'Action Logged', message: msg, type: 'success' });
 
   return (
     <div className="space-y-6">
@@ -1205,7 +1347,7 @@ function InventoryDashboard() {
                 )}>
                   {item.status === 'healthy' ? 'Healthy' : 'Low Stock'}
                 </span>
-                <button onClick={() => handleAction(`Viewing details for ${item.item}`)} className="text-xs font-bold text-aims-navy hover:underline">View</button>
+                <button onClick={() => navigate('/inventory')} className="text-xs font-bold text-aims-navy hover:underline">View in Inventory</button>
               </div>
             </div>
           ))}
