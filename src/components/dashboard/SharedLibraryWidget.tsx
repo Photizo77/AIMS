@@ -2,6 +2,9 @@
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useNotifications } from '@/context/NotificationContext';
+import { downloadFile } from '@/lib/storage';
+import { listDocs, docRecordSheet } from '@/services/docService';
+import { exportRecordSheet } from '@/lib/export';
 
 const QUICK_DOCS = [
   { id: 'd18', title: 'Leave Request Form', fileType: 'PDF', size: '120 KB', icon: 'picture_as_pdf', color: 'text-red-500' },
@@ -37,7 +40,13 @@ export function SharedLibraryWidget() {
           <button
             key={doc.id}
             onClick={() => {
-              showToast({ title: 'Downloading', message: doc.title, type: 'success' });
+              const real = listDocs().find((d) => d.id === doc.id);
+              if (real) {
+                downloadFile(`${real.title.replace(/\.[^.]+$/, '')}.txt`, docRecordSheet(real), 'text/plain;charset=utf-8');
+              } else {
+                exportRecordSheet(doc.title, 'Shared Reference Document', [['Title', doc.title], ['Type', doc.fileType], ['Size', doc.size]]);
+              }
+              showToast({ title: 'Download Started', message: doc.title, type: 'success' });
             }}
             className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-100 hover:bg-slate-50 hover:border-[#286b25]/30 transition-colors text-left group"
           >

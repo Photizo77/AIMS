@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
+import { exportRecordSheet } from '@/lib/export';
 import { flagService, subscribeFlags } from '@/services/flagService';
 import { type Requisition, type RequisitionStatus, requisitions, useRequisitions, mutateRequisitions } from '@/services/requisitionService';
 import { openFlagForED } from '@/components/grants/FlagForEDModal';
@@ -353,7 +354,7 @@ function FinanceRequisitionWorkspace({ userName }: { userName: string }) {
                             <span className="text-xs font-semibold text-slate-900 truncate">{att.name}</span>
                             <span className="text-[10px] text-slate-400">({att.size})</span>
                           </div>
-                          <button onClick={() => showToast({ title: 'Downloading', message: att.name, type: 'success' })} className="text-aims-navy text-xs font-bold hover:underline">Download</button>
+                          <button onClick={() => exportRecordSheet(att.name.replace(/\.[^.]+$/, ''), 'Requisition Attachment', [['Attachment', att.name], ['Type', att.fileType], ['Size', att.size], ['Requisition', `${r.id} — ${r.title}`]])} className="text-aims-navy text-xs font-bold hover:underline">Download</button>
                         </div>
                       ))}
                     </div>

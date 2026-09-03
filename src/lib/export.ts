@@ -8,6 +8,19 @@
 
 import { downloadFile, toCSV } from '@/lib/storage';
 
+/** Download a real .txt record sheet describing any record (doc, contract, attachment…) */
+export function exportRecordSheet(filename: string, heading: string, fields: [string, string][]): void {
+  const lines = [
+    `ARDHI — ${heading}`,
+    '===========================',
+    ...fields.map(([k, v]) => `${k}: ${v}`),
+    '',
+    'ARDHI · Research. Advocacy. Innovation.',
+  ];
+  const safe = filename.replace(/[\\/:*?"<>|]/g, '-');
+  downloadFile(`${safe}.txt`, lines.join('\n'), 'text/plain;charset=utf-8');
+}
+
 /** Download rows as a real .csv file */
 export function exportCsv(filename: string, rows: Record<string, unknown>[], columns?: string[]): void {
   const csv = toCSV(rows, columns);

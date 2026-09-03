@@ -8,6 +8,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { exportRecordSheet } from '@/lib/export';
 import { useNotifications } from '@/context/NotificationContext';
 import { INNOVATION_STAGES, INNOVATION_STAGE_LABELS, type InnovationProject } from '@/types';
 import { cn } from '@/lib/utils';
@@ -317,7 +318,7 @@ export function ProjectDetail() {
                     <span className="material-symbols-outlined text-slate-400">description</span>
                     <div><p className="text-sm font-bold text-slate-900">{doc.title}</p><p className="text-xs text-slate-500">Uploaded by {doc.uploadedBy} • {formatDate(doc.uploadedAt)}</p></div>
                   </div>
-                  <button onClick={() => showToast({ title: 'Downloading', message: doc.title, type: 'success' })} className="text-xs font-bold text-aims-navy hover:underline">Download</button>
+                  <button onClick={() => exportRecordSheet(doc.title, 'Project Resource', [['Resource', doc.title], ['Uploaded By', doc.uploadedBy], ['Uploaded On', formatDate(doc.uploadedAt)], ['Project', `${project.id} — ${project.title}`]])} className="text-xs font-bold text-aims-navy hover:underline">Download</button>
                 </div>
               ))}
             </div>

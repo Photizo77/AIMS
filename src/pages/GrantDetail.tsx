@@ -8,6 +8,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { exportRecordSheet } from '@/lib/export';
 import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
 import { GRANT_STAGES, formatCurrency, daysUntil, grantProgress, type GrantRecord } from '@/data/grants';
@@ -376,7 +377,7 @@ export function GrantDetail() {
                     <span className={cn('material-symbols-outlined text-[20px]', doc.fileType === 'PDF' ? 'text-red-500' : doc.fileType === 'DOCX' ? 'text-blue-600' : 'text-green-600')}>{doc.fileType === 'PDF' ? 'picture_as_pdf' : doc.fileType === 'DOCX' ? 'description' : 'table_chart'}</span>
                     <div><p className="text-sm font-bold text-slate-900">{doc.title}</p><p className="text-[10px] text-slate-500">v{doc.version} • {doc.uploadedBy} • {doc.uploadedAt} • {doc.size}</p></div>
                   </div>
-                  <button onClick={() => showToast({ title: 'Downloading', message: doc.title, type: 'success' })} className="text-xs font-bold text-aims-navy hover:underline flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">download</span>Download</button>
+                  <button onClick={() => exportRecordSheet(doc.title, 'Grant Document', [['Document', doc.title], ['Type', doc.fileType], ['Version', `v${doc.version}`], ['Size', doc.size], ['Uploaded By', doc.uploadedBy], ['Uploaded On', doc.uploadedAt], ['Grant', `${grant.id} — ${grant.title}`]])} className="text-xs font-bold text-aims-navy hover:underline flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">download</span>Download</button>
                 </div>
               ))}
             </div>

@@ -4,7 +4,7 @@ import { useNotifications } from '@/context/NotificationContext';
 import { sendEmail } from '@/lib/email';
 import { cn } from '@/lib/utils';
 
-type Folder = 'inbox' | 'starred' | 'snoozed' | 'sent' | 'drafts' | 'important' | 'spam' | 'trash' | 'all';
+type Folder = 'inbox' | 'starred' | 'snoozed' | 'sent' | 'drafts' | 'important' | 'spam' | 'trash' | 'archive' | 'all';
 
 const FOLDERS: { key: Folder; label: string; icon: string }[] = [
   { key: 'inbox', label: 'Inbox', icon: 'inbox' },
@@ -118,6 +118,7 @@ export function EmailPage() {
   const { showToast } = useNotifications();
   const [activeFolder, setActiveFolder] = useState<Folder>('inbox');
   const [selectedEmail, setSelectedEmail] = useState<EmailMessage | null>(null);
+  const [emails, setEmails] = useState<EmailMessage[]>(MOCK_EMAILS);
   const [searchQuery, setSearchQuery] = useState('');
   const [showComposer, setShowComposer] = useState(false);
   const [composeTo, setComposeTo] = useState('');
@@ -136,7 +137,7 @@ export function EmailPage() {
     }
   }, [showComposer]);
 
-  const filteredEmails = MOCK_EMAILS.filter((e) => {
+  const filteredEmails = emails.filter((e) => {
     const matchesFolder = activeFolder === 'all' || e.folder === activeFolder || (activeFolder === 'starred' && e.starred) || (activeFolder === 'important' && e.labels.includes('urgent'));
     if (!matchesFolder) return false;
     if (!searchQuery.trim()) return true;
@@ -152,7 +153,17 @@ export function EmailPage() {
     return e.subject.toLowerCase().includes(q) || e.body.toLowerCase().includes(q) || e.from.toLowerCase().includes(q);
   }).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
-  const unreadCount = MOCK_EMAILS.filter((e) => e.folder === 'inbox' && !e.read).length;
+  const unreadCount = emails.filter((e) => e.folder === 'inbox' && !e.read).length;
+
+  // ── Real mail actions ──
+  const updateEmail = (id: string, patch: Partial<EmailMessage>) => {
+    setEmails((prev) => prev.map((m) => (m.id === id ? { ...m, ...patch } : m)));
+    setSelectedEmail((s) => (s && s.id === id ? { ...s, ...patch } : s));
+  };
+  const removeEmail = (id: string) => {
+    setEmails((prev) => prev.filter((m) => m.id !== id));
+    setSelectedEmail(null);
+  };
 
   // ── Rich Text Commands ──
   const execFormat = (command: string, value?: string) => {
@@ -287,12 +298,12 @@ export function EmailPage() {
         <div className="flex-1 flex flex-col min-w-0">
           <div className="flex items-center gap-1 px-4 py-2 border-b border-slate-200">
             <button onClick={() => setSelectedEmail(null)} className="p-2 rounded-full hover:bg-slate-100 text-slate-500"><span className="material-symbols-outlined text-[20px]">arrow_back</span></button>
-            <button onClick={() => showToast({ title: 'Archived', message: selectedEmail.subject, type: 'success' })} className="p-2 rounded-full hover:bg-slate-100 text-slate-500" title="Archive"><span className="material-symbols-outlined text-[20px]">archive</span></button>
-            <button onClick={() => showToast({ title: 'Reported as Spam', message: '', type: 'success' })} className="p-2 rounded-full hover:bg-slate-100 text-slate-500" title="Spam"><span className="material-symbols-outlined text-[20px]">report</span></button>
-            <button onClick={() => showToast({ title: 'Deleted', message: '', type: 'success' })} className="p-2 rounded-full hover:bg-slate-100 text-slate-500" title="Delete"><span className="material-symbols-outlined text-[20px]">delete</span></button>
+            <button onClick={() => { updateEmail(selectedEmail.id, { folder: 'archive' }); setSelectedEmail(null); showToast({ title: 'Archived', message: selectedEmail.subject, type: 'success' }); }} className="p-2 rounded-full hover:bg-slate-100 text-slate-500" title="Archive"><span className="material-symbols-outlined text-[20px]">archive</span></button>
+            <button onClick={() => { updateEmail(selectedEmail.id, { folder: 'spam' }); setSelectedEmail(null); showToast({ title: 'Moved to Spam', message: selectedEmail.subject, type: 'success' }); }} className="p-2 rounded-full hover:bg-slate-100 text-slate-500" title="Spam"><span className="material-symbols-outlined text-[20px]">report</span></button>
+            <button onClick={() => { removeEmail(selectedEmail.id); showToast({ title: 'Deleted', message: 'Message moved out of your mailbox.', type: 'success' }); }} className="p-2 rounded-full hover:bg-slate-100 text-slate-500" title="Delete"><span className="material-symbols-outlined text-[20px]">delete</span></button>
             <div className="ml-auto flex items-center gap-1">
-              <button className="p-2 rounded-full hover:bg-slate-100 text-slate-500" title="Mark Unread"><span className="material-symbols-outlined text-[20px]">mark_email_unread</span></button>
-              <button className={cn('p-2 rounded-full hover:bg-slate-100', selectedEmail.starred ? 'text-yellow-500' : 'text-slate-500')} title="Star"><span className="material-symbols-outlined text-[20px]">{selectedEmail.starred ? 'star' : 'star_outline'}</span></button>
+              <button onClick={() => updateEmail(selectedEmail.id, { read: false })} className="p-2 rounded-full hover:bg-slate-100 text-slate-500" title="Mark Unread"><span className="material-symbols-outlined text-[20px]">mark_email_unread</span></button>
+              <button onClick={() => updateEmail(selectedEmail.id, { starred: !selectedEmail.starred })} className={cn('p-2 rounded-full hover:bg-slate-100', selectedEmail.starred ? 'text-yellow-500' : 'text-slate-500')} title="Star"><span className="material-symbols-outlined text-[20px]">{selectedEmail.starred ? 'star' : 'star_outline'}</span></button>
             </div>
           </div>
           <div className="flex-1 overflow-y-auto p-6">

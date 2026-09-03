@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
+import { exportRecordSheet } from '@/lib/export';
 import type { Contract } from '@/types';
 
 const MOCK_CONTRACTS: Contract[] = [
@@ -202,7 +203,6 @@ function AddContractModal({ onSave, onClose }: { onSave: () => void; onClose: ()
 
 // ── CONTRACT DETAIL MODAL (full record) ──
 function ContractDetailModal({ contract, onClose }: { contract: Contract; onClose: () => void }) {
-  const { showToast } = useNotifications();
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={onClose}>
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden" onClick={(e) => e.stopPropagation()}>
@@ -228,7 +228,7 @@ function ContractDetailModal({ contract, onClose }: { contract: Contract; onClos
             <p className="text-[10px] text-slate-400 mt-1">Auto-filed to Documents {'>'} HR &amp; Contracts. Refer to FORM-HR-01 for the full contract template.</p>
           </div>
           <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
-            <button onClick={() => showToast({ title: 'Downloading', message: `${contract.employeeName} contract PDF.`, type: 'success' })} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg">Download PDF</button>
+            <button onClick={() => exportRecordSheet(`${contract.employeeName} contract`, 'Employment Contract', [['Employee', contract.employeeName], ['Type', contract.type], ['Start Date', contract.startDate], ['End Date', contract.endDate || 'Indefinite'], ['Salary (Monthly)', `UGX ${(contract.salary * 1000).toLocaleString()}`], ['Status', contract.status], ['Created', contract.createdAt], ['Updated', contract.updatedAt]])} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg">Download PDF</button>
           </div>
         </div>
       </div>

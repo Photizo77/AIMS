@@ -3,6 +3,7 @@ import { useState, useMemo } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
+import { exportCsv, exportTableAsPdf } from '@/lib/export';
 import { financeService, type FinanceRecordType } from '@/services/financeService';
 import { FormsShortcut } from '@/components/forms/FormsShortcut';
 import { AIPanel } from '@/components/ai/AIPanel';
@@ -433,8 +434,8 @@ export function Finance() {
         <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100">
           <span className="text-xs text-slate-500">{filteredTransactions.length} transaction{filteredTransactions.length !== 1 ? 's' : ''}</span>
           <div className="flex gap-2">
-            <button onClick={() => showToast({ title: 'Exporting CSV', message: `${filteredTransactions.length} transactions exported.`, type: 'success' })} className="px-3 py-1.5 text-[10px] font-bold text-aims-navy border border-aims-navy/20 rounded-lg hover:bg-aims-navy/5 transition-colors flex items-center gap-1"><span className="material-symbols-outlined text-[12px]">download</span>CSV</button>
-            <button onClick={() => showToast({ title: 'Exporting PDF', message: 'Report generated.', type: 'success' })} className="px-3 py-1.5 text-[10px] font-bold text-aims-navy border border-aims-navy/20 rounded-lg hover:bg-aims-navy/5 transition-colors flex items-center gap-1"><span className="material-symbols-outlined text-[12px]">picture_as_pdf</span>PDF</button>
+            <button onClick={() => { const rows = filteredTransactions.map((t) => ({ date: t.date, type: t.type, category: t.category, department: t.department, channel: t.channel, amount: `UGX ${t.amount.toLocaleString()}`, description: t.description, ref: t.ref })); if (rows.length === 0) { showToast({ title: 'Nothing to Export', message: 'No transactions match the current filters.', type: 'error' }); return; } exportCsv('aims-transactions', rows); showToast({ title: 'CSV Exported', message: `${rows.length} transaction(s) exported.`, type: 'success' }); }} className="px-3 py-1.5 text-[10px] font-bold text-aims-navy border border-aims-navy/20 rounded-lg hover:bg-aims-navy/5 transition-colors flex items-center gap-1"><span className="material-symbols-outlined text-[12px]">download</span>CSV</button>
+            <button onClick={() => { if (filteredTransactions.length === 0) { showToast({ title: 'Nothing to Export', message: 'No transactions match the current filters.', type: 'error' }); return; } exportTableAsPdf('Transactions — Finance Export', ['Date', 'Type', 'Category', 'Department', 'Channel', 'Amount (UGX)', 'Description', 'Ref'], filteredTransactions.map((t) => [t.date, t.type, t.category, t.department, t.channel, t.amount.toLocaleString(), t.description, t.ref])); showToast({ title: 'Print Layout Ready', message: 'Choose "Save as PDF" in the print dialog.', type: 'success' }); }} className="px-3 py-1.5 text-[10px] font-bold text-aims-navy border border-aims-navy/20 rounded-lg hover:bg-aims-navy/5 transition-colors flex items-center gap-1"><span className="material-symbols-outlined text-[12px]">picture_as_pdf</span>PDF</button>
           </div>
         </div>
       </div>
