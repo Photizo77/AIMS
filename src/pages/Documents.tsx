@@ -3,13 +3,16 @@ import { useState, useRef, useMemo } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
+import { useLiveData } from '@/lib/useLiveData';
+import { listHrDocs } from '@/services/employeeDocsService';
 
-type DocCategory = 'governance' | 'hr_contracts' | 'finance_procurement' | 'grants' | 'grants_resource' | 'innovations' | 'inventory_policy' | 'system_security' | 'shared_reference';
+type DocCategory = 'governance' | 'hr_contracts' | 'hr_confidential' | 'finance_procurement' | 'grants' | 'grants_resource' | 'innovations' | 'inventory_policy' | 'system_security' | 'shared_reference';
 type AccessLevel = 'full' | 'view' | 'flag' | 'none';
 
 const CATEGORIES: { key: DocCategory; label: string; icon: string; description: string }[] = [
   { key: 'governance', label: 'Governance', icon: 'gavel', description: 'Board minutes, compliance policies, institutional announcements' },
   { key: 'hr_contracts', label: 'HR & Contracts', icon: 'badge', description: 'Employee contracts, appraisal forms, employee profiles' },
+  { key: 'hr_confidential', label: 'HR Confidential — Employee Files', icon: 'lock', description: 'Employee CVs and confidential personnel files — Executive Director & HR only' },
   { key: 'finance_procurement', label: 'Finance & Procurement', icon: 'account_balance', description: 'Requisition backup, receipts, budget sheets, procurement records' },
   { key: 'grants', label: 'Grants', icon: 'volunteer_activism', description: 'Proposal drafts, budgets, funder correspondence, award letters' },
   { key: 'grants_resource', label: 'Grants Resource Library', icon: 'menu_book', description: 'Proposal & budget templates, funder guidelines, ARDHI boilerplate' },
@@ -20,11 +23,14 @@ const CATEGORIES: { key: DocCategory; label: string; icon: string; description: 
 ];
 
 // ── Visibility Matrix (F/V/Flag/none) ──
+// Missing categories default to 'none' — e.g. HR Confidential (employee
+// CVs) is visible ONLY to the ED and HR (COMPANY_ADMIN); everyone else
+// including the CD and SYS_ADMIN has no access.
 function getCategoryAccess(role: string, category: DocCategory): AccessLevel {
-  const matrix: Record<string, Record<DocCategory, AccessLevel>> = {
+  const matrix: Record<string, Partial<Record<DocCategory, AccessLevel>>> = {
     CD: { governance: 'full', hr_contracts: 'flag', finance_procurement: 'flag', grants: 'view', grants_resource: 'view', innovations: 'flag', inventory_policy: 'flag', system_security: 'none', shared_reference: 'full' },
-    ED: { governance: 'full', hr_contracts: 'full', finance_procurement: 'full', grants: 'full', grants_resource: 'full', innovations: 'full', inventory_policy: 'full', system_security: 'view', shared_reference: 'full' },
-    COMPANY_ADMIN: { governance: 'view', hr_contracts: 'full', finance_procurement: 'none', grants: 'none', grants_resource: 'none', innovations: 'none', inventory_policy: 'full', system_security: 'none', shared_reference: 'full' },
+    ED: { governance: 'full', hr_contracts: 'full', hr_confidential: 'full', finance_procurement: 'full', grants: 'full', grants_resource: 'full', innovations: 'full', inventory_policy: 'full', system_security: 'view', shared_reference: 'full' },
+    COMPANY_ADMIN: { governance: 'view', hr_contracts: 'full', hr_confidential: 'full', finance_procurement: 'none', grants: 'none', grants_resource: 'none', innovations: 'none', inventory_policy: 'full', system_security: 'none', shared_reference: 'full' },
     SYS_ADMIN: { governance: 'none', hr_contracts: 'none', finance_procurement: 'none', grants: 'none', grants_resource: 'none', innovations: 'none', inventory_policy: 'none', system_security: 'full', shared_reference: 'view' },
     FINANCE: { governance: 'none', hr_contracts: 'none', finance_procurement: 'full', grants: 'none', grants_resource: 'none', innovations: 'none', inventory_policy: 'none', system_security: 'none', shared_reference: 'view' },
     GRANT_WRITER: { governance: 'none', hr_contracts: 'none', finance_procurement: 'none', grants: 'full', grants_resource: 'full', innovations: 'none', inventory_policy: 'none', system_security: 'none', shared_reference: 'view' },
@@ -162,6 +168,9 @@ export function Documents() {
 
   const userRole = user?.role ?? '';
 
+  // Live updates: re-reads when any data writes (incl. HR CV uploads, other tabs)
+  const live = useLiveData();
+
   // Persona profile for the tailored panel
   const persona = PERSONA_PROFILE[userRole];
   const pinnedDocs = useMemo(() => (persona ? MOCK_DOCUMENTS.filter((d) => persona.pinned.includes(d.id)) : []), [persona]);
@@ -177,15 +186,18 @@ export function Documents() {
   const canUpload = activeAccess === 'full';
   const activeCategoryMeta = CATEGORIES.find((c) => c.key === activeCategory);
 
+  // Repository = seeded documents + HR-confidential files (e.g. uploaded CVs)
+  const allDocs = useMemo(() => [...MOCK_DOCUMENTS, ...listHrDocs()], [live]);
+
   const filteredDocs = useMemo(() => {
-    return MOCK_DOCUMENTS.filter((doc) => {
+    return allDocs.filter((doc) => {
       if (doc.category !== activeCategory) return false;
       if (filterType && doc.fileType !== filterType) return false;
       if (!searchQuery.trim()) return true;
       const q = searchQuery.toLowerCase();
       return doc.title.toLowerCase().includes(q) || doc.tags.some((t) => t.toLowerCase().includes(q)) || doc.uploadedBy.toLowerCase().includes(q);
     }).sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
-  }, [activeCategory, searchQuery, filterType]);
+  }, [allDocs, activeCategory, searchQuery, filterType]);
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
@@ -461,7 +473,7 @@ export function Documents() {
 
         {/* Version History */}
         {versionDocId && (() => {
-          const doc = MOCK_DOCUMENTS.find((d) => d.id === versionDocId);
+          const doc = allDocs.find((d) => d.id === versionDocId);
           if (!doc) return null;
           return (
             <div className="border-t border-slate-200 bg-slate-50 px-4 py-3">

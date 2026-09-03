@@ -1,8 +1,11 @@
 // src/components/admin/PeopleTab.tsx
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { User } from '@/types';
 import { ROLE_LABELS } from '@/config/roles';
 import { ACTIVE_STAFF } from '@/data/roster';
+import { useLiveData } from '@/lib/useLiveData';
+import { getDirectoryEntries, type DirectoryEntry } from '@/services/employeeService';
+import { openEmployeeOnboarding } from '@/components/hr/EmployeeOnboardingForm';
 
 // Unified staff roster — the single source of truth for people
 const MOCK_EMPLOYEES: (User & { position: string })[] = ACTIVE_STAFF.map((s) => ({
@@ -14,12 +17,17 @@ export function PeopleTab() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterDept, setFilterDept] = useState('all');
   const [filterPosition, setFilterPosition] = useState('all');
-  const [selectedEmployee, setSelectedEmployee] = useState<(User & { position: string }) | null>(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<(User & { position: string }) | DirectoryEntry | null>(null);
+  const live = useLiveData();
 
-  const departments = ['all', ...Array.from(new Set(MOCK_EMPLOYEES.map(e => e.department)))];
-  const positions = ['all', ...Array.from(new Set(MOCK_EMPLOYEES.map(e => e.position)))];
+  // Roster + employees added through the onboarding form (auto-updates live)
+  const employees = useMemo(() => [...MOCK_EMPLOYEES, ...getDirectoryEntries()], [live]);
+  const onboardingCount = getDirectoryEntries().length;
 
-  const filtered = MOCK_EMPLOYEES.filter(emp => {
+  const departments = ['all', ...Array.from(new Set(employees.map(e => e.department)))];
+  const positions = ['all', ...Array.from(new Set(employees.map(e => e.position)))];
+
+  const filtered = employees.filter(emp => {
     const matchesSearch = emp.name.toLowerCase().includes(searchQuery.toLowerCase()) || emp.email.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesDept = filterDept === 'all' || emp.department === filterDept;
     const matchesPos = filterPosition === 'all' || emp.position === filterPosition;
@@ -28,7 +36,15 @@ export function PeopleTab() {
 
   return (
     <div>
-      <div className="mb-6"><h2 className="text-lg font-semibold text-slate-900">People Directory</h2><p className="text-sm text-slate-500">View employee profiles and contracts</p></div>
+      <div className="mb-6 flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h2 className="text-lg font-semibold text-slate-900">People Directory</h2>
+          <p className="text-sm text-slate-500">View employee profiles and contracts{onboardingCount > 0 ? ` · ${onboardingCount} new hire(s) in onboarding` : ''}</p>
+        </div>
+        <button onClick={openEmployeeOnboarding} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90 flex items-center gap-1.5">
+          <span className="material-symbols-outlined text-[16px]">person_add</span>Add Employee
+        </button>
+      </div>
 
       {/* ADVANCED FILTERS */}
       <div className="bg-white rounded-xl border border-slate-200 p-4 mb-4 space-y-3">
@@ -43,7 +59,7 @@ export function PeopleTab() {
         {filtered.map(employee => (
           <button key={employee.id} onClick={() => setSelectedEmployee(employee)} className="bg-white rounded-xl border border-slate-200 p-4 text-left hover:shadow-md transition-shadow">
             <div className="flex items-center gap-3">
-              {employee.avatarUrl ? <img src={employee.avatarUrl} alt={employee.name} className="w-10 h-10 rounded-full border border-slate-200 object-cover" /> : <div className="w-10 h-10 rounded-full bg-aims-mint flex items-center justify-center text-white font-bold">{employee.name.charAt(0)}</div>}
+              {avatarOf(employee) ? <img src={avatarOf(employee)} alt={employee.name} className="w-10 h-10 rounded-full border border-slate-200 object-cover" /> : <div className="w-10 h-10 rounded-full bg-aims-mint flex items-center justify-center text-white font-bold">{employee.name.charAt(0)}</div>}
               <div><p className="text-sm font-semibold text-slate-900">{employee.name}</p><p className="text-xs text-slate-500">{employee.position}</p></div>
             </div>
             <div className="mt-3 pt-3 border-t border-slate-100"><p className="text-xs text-slate-500">{employee.email}</p><p className="text-xs text-slate-400 mt-1">{employee.department}</p></div>
@@ -57,7 +73,7 @@ export function PeopleTab() {
           <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
             <button onClick={() => setSelectedEmployee(null)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><span className="material-symbols-outlined">close</span></button>
             <div className="flex items-center gap-4 mb-6">
-              {selectedEmployee.avatarUrl ? <img src={selectedEmployee.avatarUrl} alt={selectedEmployee.name} className="w-16 h-16 rounded-full border-2 border-slate-200 object-cover" /> : <div className="w-16 h-16 rounded-full bg-aims-mint flex items-center justify-center text-white text-2xl font-bold">{selectedEmployee.name.charAt(0)}</div>}
+              {avatarOf(selectedEmployee) ? <img src={avatarOf(selectedEmployee)} alt={selectedEmployee.name} className="w-16 h-16 rounded-full border-2 border-slate-200 object-cover" /> : <div className="w-16 h-16 rounded-full bg-aims-mint flex items-center justify-center text-white text-2xl font-bold">{selectedEmployee.name.charAt(0)}</div>}
               <div><h3 className="text-lg font-bold text-slate-900">{selectedEmployee.name}</h3><p className="text-sm text-slate-500">{selectedEmployee.position}</p></div>
             </div>
             <div className="space-y-3">
@@ -88,4 +104,9 @@ export function PeopleTab() {
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (<div className="flex justify-between py-2 border-b border-slate-50"><span className="text-sm text-slate-500">{label}</span><span className="text-sm font-medium text-slate-800 capitalize">{value}</span></div>);
+}
+
+/** Avatar URL, safe across roster employees and onboarding entries */
+function avatarOf(e: (User & { position: string }) | DirectoryEntry): string | undefined {
+  return (e as { avatarUrl?: string }).avatarUrl;
 }

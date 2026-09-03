@@ -38,7 +38,7 @@ export function Grants() {
   const [showClosed, setShowClosed] = useState(false);
   const [stageFilter, setStageFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
+  const [viewMode, setViewMode] = useState<'kanban' | 'list'>('list');
 
   if (!user) return <div className="p-8 text-center text-slate-500">Loading…</div>;
 

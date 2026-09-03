@@ -18,6 +18,8 @@ export const STORAGE_KEYS = {
   attendancePrefix: 'aims_attendance_',
   fab: 'aims_fab_pos',
   sidebar: 'sidebar-collapsed',
+  employees: 'aims_employees_onboarding',
+  hrDocs: 'aims_hr_employee_docs',
 } as const;
 
 export function loadJSON<T>(key: string, fallback: T): T {

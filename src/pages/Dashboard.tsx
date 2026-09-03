@@ -854,7 +854,7 @@ function InnovatorDashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const showCheckIn = user?.role === 'INNOVATOR';
-  const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
+  const [viewMode, setViewMode] = useState<'kanban' | 'list'>('list');
 
   // FIX: Use getAllProjects to show the ENTIRE organizational pipeline
   const projects = innovationService.getAllProjects();

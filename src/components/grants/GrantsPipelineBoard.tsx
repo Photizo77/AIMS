@@ -13,7 +13,7 @@ export function GrantsPipelineBoard() {
   const { user } = useAuth();
   const { showToast, addNotification } = useNotifications();
   const navigate = useNavigate();
-  const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
+  const [viewMode, setViewMode] = useState<'kanban' | 'list'>('list');
   const [searchQuery, setSearchQuery] = useState('');
   const [grants, setGrants] = useState<GrantRecord[]>(() => grantService.getAllGrants());
 

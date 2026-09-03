@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import type { Role } from '@/types';
 import { ROLE_LABELS } from '@/config/roles';
 import { OffboardingTab } from '@/components/admin/OffboardingTab';
+import { openEmployeeOnboarding } from '@/components/hr/EmployeeOnboardingForm';
 
 type TabKey = 'directory' | 'onboarding' | 'offboarding' | 'roles' | 'audit';
 
@@ -258,9 +259,14 @@ export function UserManagement() {
         <div className="space-y-4">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <p className="text-sm font-bold text-slate-700">New Hires In Pipeline: <span className="text-aims-navy">{onboardees.length}</span></p>
-            <button onClick={() => setShowAddHire(true)} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90 flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[16px]">person_add</span>Add New Hire
-            </button>
+            <div className="flex items-center gap-2 flex-wrap">
+              <button onClick={openEmployeeOnboarding} className="px-4 py-2 border border-aims-navy/30 text-aims-navy text-xs font-bold rounded-lg hover:bg-aims-navy/5 flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[16px]">description</span>Employee Information Form
+              </button>
+              <button onClick={() => setShowAddHire(true)} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90 flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[16px]">person_add</span>Add New Hire
+              </button>
+            </div>
           </div>
           {onboardees.map((ob) => {
             const { done, total, pct } = stepCount(ob.steps);

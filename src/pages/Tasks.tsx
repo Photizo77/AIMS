@@ -14,7 +14,7 @@ import { FormsShortcut } from '@/components/forms/FormsShortcut';
 export function Tasks() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
+  const [viewMode, setViewMode] = useState<'kanban' | 'list'>('list');
   const [searchQuery, setSearchQuery] = useState('');
   
   // For Innovators, we default to 'mine'. Admins can toggle.
