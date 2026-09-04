@@ -26,7 +26,7 @@ const STATUS_STYLE: Record<string, string> = {
 
 export function LeaveTab() {
   const { user } = useAuth();
-  const { showToast } = useNotifications();
+  const { showToast, addNotification } = useNotifications();
   const [showFile, setShowFile] = useState(false);
   const [infoNote, setInfoNote] = useState<string | null>(null);
   useLiveData();
@@ -41,6 +41,14 @@ export function LeaveTab() {
   const act = (r: LeaveRequest, status: 'approved' | 'denied') => {
     decideLeave(r.id, status, actor);
     showToast({ title: status === 'approved' ? 'Leave Approved' : 'Leave Denied', message: `${r.name}'s ${r.type} ${status}.${status === 'approved' && !r.exceedsThreshold ? ' Balance updated.' : ''}`, type: status === 'approved' ? 'success' : 'warning' });
+    // Notify the employee — shows in their bell & Email inbox
+    addNotification({
+      recipientName: r.name,
+      title: status === 'approved' ? 'Leave Approved' : 'Leave Request Denied',
+      message: `${r.type} — ${r.days} day(s), ${r.period}. ${status === 'approved' ? 'Approved' : 'Denied'} by ${actor}.${status === 'approved' && !r.exceedsThreshold ? ' Your leave balance has been updated.' : ''}`,
+      type: status === 'approved' ? 'success' : 'info',
+      link: '/attendance',
+    });
   };
 
   const askInfo = (r: LeaveRequest) => {

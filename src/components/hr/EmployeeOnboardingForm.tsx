@@ -19,12 +19,13 @@ import { cn } from '@/lib/utils';
 import { ROLE_LABELS } from '@/config/roles';
 import type { Role } from '@/types';
 import {
-  emptyOnboarding, addOnboarding, listOnboarding,
+  emptyOnboarding, addOnboarding, listOnboarding, updateOnboarding,
   type EmployeeOnboarding,
   type EmployeeEducationRow, type EmployeeTertiaryRow, type EmployeeCertRow,
   type EmployeeWorkRow, type EmployeeLanguageRow, type EmployeeReferenceRow,
 } from '@/services/employeeService';
 import { addHrDoc, formatBytes } from '@/services/employeeDocsService';
+import { addContract } from '@/services/contractService';
 
 /** Programmatically open the employee onboarding form (used across HR surfaces) */
 export function openEmployeeOnboarding(): void {
@@ -44,12 +45,24 @@ const DOCS_CHECKLIST = [
   'Bank / Mobile Money Details',
   'Medical / Fitness Certificate',
   'Police Clearance / Good Conduct',
+  'Signed Employment Contract / Offer Letter',
 ];
 
 const GENDERS = ['Male', 'Female', 'Other'];
 const MARITAL = ['Single', 'Married', 'Divorced', 'Widowed', 'Other'];
 const LITERACY = ['Basic', 'Intermediate', 'Advanced'];
 const PROFICIENCY = ['Basic', 'Fluent', 'Native'];
+
+/** Contract options shown in the quick-fields bar (label ↔ persisted contract kind) */
+const CONTRACT_TYPES = [
+  { label: 'Permanent', kind: 'permanent' },
+  { label: 'Fixed-Term (Contract)', kind: 'contract' },
+  { label: 'Probation', kind: 'contract' },
+  { label: 'Internship', kind: 'intern' },
+  { label: 'Consultant', kind: 'consultant' },
+] as const;
+const contractKindFor = (label: string): 'permanent' | 'contract' | 'intern' | 'consultant' =>
+  CONTRACT_TYPES.find((c) => c.label === label)?.kind ?? 'contract';
 
 function F({ label, value, onChange, placeholder, type = 'text' }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; type?: string }) {
   return (
@@ -117,9 +130,10 @@ export function EmployeeOnboardingModal() {
   const [declarations, setDeclarationsState] = useState(blank.declarations);
   const [signature, setSignatureState] = useState(blank.signature);
   const [hrUse, setHrUseState] = useState(blank.hrUse);
-  const [top, setTop] = useState<{ employeeId: string; position: string; department: string; role: Role }>({ employeeId: '', position: '', department: '', role: 'GRANT_WRITER' });
+  const [top, setTop] = useState<{ employeeId: string; position: string; department: string; role: Role; startDate: string; contractType: string; salary: string }>({ employeeId: '', position: '', department: '', role: 'GRANT_WRITER', startDate: '', contractType: '', salary: '' });
   const [docsSubmitted, setDocsSubmitted] = useState<Set<string>>(new Set());
   const [cv, setCv] = useState<{ name: string; size: string; type: string } | null>(null);
+  const [created, setCreated] = useState<{ id: string; fullName: string; employeeId: string; roleLabel: string; dept: string; loginEmail: string; password: string; createdAt: string; docsCount: number; contractCreated: boolean; sent: boolean } | null>(null);
 
   useEffect(() => {
     const handler = () => {
@@ -139,9 +153,10 @@ export function EmployeeOnboardingModal() {
       setDeclarationsState(fresh.declarations);
       setSignatureState(fresh.signature);
       setHrUseState(fresh.hrUse);
-      setTop({ employeeId: '', position: '', department: '', role: 'GRANT_WRITER' });
+      setTop({ employeeId: '', position: '', department: '', role: 'GRANT_WRITER', startDate: '', contractType: '', salary: '' });
       setDocsSubmitted(new Set());
       setCv(null);
+      setCreated(null);
       setOpen(true);
     };
     window.addEventListener('aims:employee-onboarding', handler);
@@ -184,14 +199,24 @@ export function EmployeeOnboardingModal() {
     }
     const now = new Date().toISOString();
     const seq = String(listOnboarding().length + 1).padStart(3, '0');
+    const employeeId = top.employeeId.trim() || `ARD-${new Date().getFullYear()}-${seq}`;
+    // Create the AIMS login account: default password generated, credentials returned to HR
+    const firstPart = (personal.firstName || fullName.split(' ')[0] || 'employee').toLowerCase().replace(/[^a-z0-9]+/g, '');
+    const lastPart = (personal.surname || '').toLowerCase().replace(/[^a-z0-9]+/g, '') || firstPart;
+    const loginEmail = (contact.personalEmail || '').trim() || `${firstPart}.${lastPart}@ardhi.org.ug`;
+    const defaultPassword = `ARDHI-${new Date().getFullYear()}-${String(Math.floor(1000 + Math.random() * 9000))}`;
+    const account = { loginEmail, defaultPassword, createdAt: now };
     const rec: EmployeeOnboarding = {
       id: `emp-${Date.now()}`,
-      employeeId: top.employeeId.trim() || `ARD-${new Date().getFullYear()}-${seq}`,
+      employeeId,
       status: 'Onboarding',
       role: top.role,
       position: top.position.trim() || 'New Hire',
       department: top.department.trim() || 'Unassigned',
       submittedAt: now,
+      startDate: top.startDate,
+      contractType: top.contractType,
+      account,
       personal,
       contact,
       nextOfKin,
@@ -208,6 +233,19 @@ export function EmployeeOnboardingModal() {
     };
     addOnboarding(rec);
 
+    // Draft contract created on save so it appears under Contracts for this employee
+    let contractCreated = false;
+    if (top.startDate && top.contractType) {
+      addContract({
+        employeeId,
+        employeeName: fullName,
+        type: contractKindFor(top.contractType),
+        startDate: top.startDate,
+        salary: Number(String(top.salary).replace(/,/g, '')) || 0,
+      });
+      contractCreated = true;
+    }
+
     // CV goes straight into HR-confidential documents (ED + HR only)
     if (cv) {
       addHrDoc({
@@ -221,12 +259,114 @@ export function EmployeeOnboardingModal() {
     }
 
     showToast({
-      title: 'Employee Added',
-      message: `${fullName} (${rec.employeeId}) added to the People Directory as onboarding.${cv ? ' CV filed under HR Confidential documents.' : ''}`,
+      title: 'Employee Added — User Account Created',
+      message: `${fullName} (${employeeId}) added to the People Directory. AIMS account ${loginEmail} created with a default password — send credentials to finish onboarding.`,
       type: 'success',
     });
     setOpen(false);
+    setCreated({
+      id: rec.id,
+      fullName,
+      employeeId,
+      roleLabel: ROLE_LABELS[top.role],
+      dept: rec.department,
+      loginEmail,
+      password: defaultPassword,
+      createdAt: now,
+      docsCount: docsSubmitted.size,
+      contractCreated,
+      sent: false,
+    });
   };
+
+  const sendCredentials = () => {
+    if (!created || created.sent) return;
+    updateOnboarding(created.id, {
+      account: { loginEmail: created.loginEmail, defaultPassword: created.password, createdAt: created.createdAt, credentialsSentAt: new Date().toISOString() },
+    });
+    setCreated({ ...created, sent: true });
+    showToast({ title: 'Credentials Sent', message: `Email delivered to ${created.loginEmail} with sign-in link & default password (demo SMTP).`, type: 'success' });
+  };
+
+  const copyText = (text: string) => {
+    try {
+      navigator.clipboard.writeText(text);
+      showToast({ title: 'Copied', message: 'Value copied to clipboard.', type: 'success' });
+    } catch {
+      showToast({ title: 'Copy Unavailable', message: 'Select the value and copy manually.', type: 'error' });
+    }
+  };
+
+  // Success stage — user account created, ready to send credentials
+  if (created) {
+    return (
+      <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black/50" onClick={() => setCreated(null)} />
+        <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6">
+          <div className="flex items-start justify-between gap-3 mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-aims-green/15 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-aims-green text-[26px]">how_to_reg</span>
+              </div>
+              <div>
+                <h3 className="text-lg font-extrabold text-slate-900">Employee & User Account Created</h3>
+                <p className="text-xs text-slate-500 mt-0.5">Onboarding record saved — send the credentials to finish</p>
+              </div>
+            </div>
+            <button onClick={() => setCreated(null)} className="text-slate-400 hover:text-slate-600 shrink-0"><span className="material-symbols-outlined">close</span></button>
+          </div>
+
+          {/* Employee summary */}
+          <div className="rounded-xl border border-slate-200 p-4 mb-3">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-11 h-11 rounded-full bg-aims-mint flex items-center justify-center text-white font-extrabold text-lg shrink-0">{created.fullName.charAt(0)}</div>
+              <div>
+                <p className="text-sm font-extrabold text-slate-900">{created.fullName}</p>
+                <p className="text-[11px] text-slate-500">{created.roleLabel} · {created.dept}</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px]">
+              <p className="text-slate-500">Employee ID <span className="font-mono font-bold text-slate-900 block">{created.employeeId}</span></p>
+              <p className="text-slate-500">Documents on file <span className="font-bold text-slate-900 block">{created.docsCount} {created.docsCount === 1 ? 'item' : 'items'} ticked</span></p>
+              {created.contractCreated && <p className="text-slate-500 col-span-2 text-aims-green flex items-center gap-1"><span className="material-symbols-outlined text-[13px]">description</span>Draft contract created from start date & type — visible in Contracts</p>}
+            </div>
+          </div>
+
+          {/* Credentials */}
+          <div className="rounded-xl border border-aims-mint bg-aims-mint/20 p-4 mb-4">
+            <p className="text-[10px] font-bold text-aims-navy uppercase tracking-wider mb-3 flex items-center gap-1.5"><span className="material-symbols-outlined text-[13px]">key</span>AIMS Login Credentials — default password generated</p>
+            <div className="flex items-center justify-between gap-2 bg-white rounded-lg border border-slate-200 px-3 py-2 mb-2">
+              <div className="min-w-0">
+                <p className="text-[9px] font-bold text-slate-400 uppercase">Login email</p>
+                <p className="text-xs font-mono font-bold text-slate-900 truncate">{created.loginEmail}</p>
+              </div>
+              <button onClick={() => copyText(created.loginEmail)} className="text-[10px] font-bold text-aims-navy border border-aims-navy/20 rounded-lg px-2 py-1 hover:bg-aims-navy/5 shrink-0">Copy</button>
+            </div>
+            <div className="flex items-center justify-between gap-2 bg-white rounded-lg border border-slate-200 px-3 py-2">
+              <div className="min-w-0">
+                <p className="text-[9px] font-bold text-slate-400 uppercase">Default password</p>
+                <p className="text-xs font-mono font-bold text-slate-900">{created.password}</p>
+              </div>
+              <button onClick={() => copyText(created.password)} className="text-[10px] font-bold text-aims-navy border border-aims-navy/20 rounded-lg px-2 py-1 hover:bg-aims-navy/5 shrink-0">Copy</button>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <button onClick={() => setCreated(null)} className="px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100 rounded-lg">Done</button>
+            <button
+              onClick={sendCredentials}
+              disabled={created.sent}
+              className={cn('px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors', created.sent ? 'bg-aims-green/15 text-aims-green cursor-default' : 'bg-aims-green text-white hover:bg-aims-green/90')}
+            >
+              <span className="material-symbols-outlined text-[14px]">{created.sent ? 'mark_email_read' : 'send'}</span>
+              {created.sent ? 'Credentials Sent' : 'Send Credentials by Email'}
+            </button>
+          </div>
+          {created.sent && <p className="text-[10px] text-aims-green mt-2 flex items-center gap-1"><span className="material-symbols-outlined text-[12px]">mark_email_read</span>Email confirmation sent to {created.loginEmail} — change on first login (demo SMTP; wire SendGrid in production).</p>}
+        </div>
+      </div>
+    );
+  }
 
   if (!open) return null;
 
@@ -256,6 +396,11 @@ export function EmployeeOnboardingModal() {
             <F label="Employee ID (HR)" value={top.employeeId} onChange={(v) => setTop((t) => ({ ...t, employeeId: v }))} placeholder="ARD-2026-001 (auto if blank)" />
             <F label="Position" value={top.position} onChange={(v) => setTop((t) => ({ ...t, position: v }))} placeholder="e.g. Grants Officer" />
             <F label="Department" value={top.department} onChange={(v) => setTop((t) => ({ ...t, department: v }))} placeholder="e.g. Grants" />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <F label="Start Date (Contract)" type="date" value={top.startDate} onChange={(v) => setTop((t) => ({ ...t, startDate: v }))} />
+            <SEL label="Contract Type" value={top.contractType} onChange={(v) => setTop((t) => ({ ...t, contractType: v }))} options={CONTRACT_TYPES.map((c) => c.label)} />
+            <F label="Monthly Salary (UGX)" value={top.salary} onChange={(v) => setTop((t) => ({ ...t, salary: v }))} placeholder="e.g. 1,200,000" />
           </div>
           <div className="max-w-xs">
             <SEL label="System Role" value={top.role} onChange={(v) => setTop((t) => ({ ...t, role: v as Role }))} options={Object.keys(ROLE_LABELS)} />

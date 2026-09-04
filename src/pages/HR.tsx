@@ -16,14 +16,16 @@ import { LeaveTab } from '@/components/admin/LeaveTab';
 import { ContractsTab } from '@/components/admin/ContractsTab';
 import { PerformanceTab } from '@/components/admin/PerformanceTab';
 import { OffboardingTab } from '@/components/admin/OffboardingTab';
+import { HROverview } from '@/components/admin/HROverview';
 import { HRSummary } from '@/components/admin/HRSummary';
 import { FormsShortcut } from '@/components/forms/FormsShortcut';
 import { AIPanel } from '@/components/ai/AIPanel';
 import { sentimentSummary, contractRenewalAdvice, type AiInsight } from '@/lib/aiEngine';
 
-type AdminTab = 'directory' | 'payslips' | 'leave' | 'contracts' | 'appraisals' | 'offboarding';
+type AdminTab = 'overview' | 'directory' | 'payslips' | 'leave' | 'contracts' | 'appraisals' | 'offboarding';
 
 const TABS: { id: AdminTab; label: string; icon: string }[] = [
+  { id: 'overview', label: 'Dashboard', icon: 'dashboard' },
   { id: 'directory', label: 'People Directory', icon: 'people' },
   { id: 'payslips', label: 'Payslips', icon: 'payments' },
   { id: 'leave', label: 'Leave', icon: 'event_available' },
@@ -34,6 +36,10 @@ const TABS: { id: AdminTab; label: string; icon: string }[] = [
 
 function initialTab(stateTab?: string): AdminTab {
   const map: Record<string, AdminTab> = {
+    overview: 'overview',
+    dashboard: 'overview',
+    summary: 'overview',
+    home: 'overview',
     people: 'directory',
     users: 'directory',
     directory: 'directory',
@@ -44,7 +50,7 @@ function initialTab(stateTab?: string): AdminTab {
     appraisals: 'appraisals',
     offboarding: 'offboarding',
   };
-  return (stateTab && map[stateTab]) || 'directory';
+  return (stateTab && map[stateTab]) || 'overview';
 }
 
 /** Contain per-tab failures so one bad panel never blanks the whole HR page */
@@ -90,6 +96,11 @@ export function HR() {
     );
   }
 
+  const goTab = (tab: AdminTab) => {
+    setActiveTab(tab);
+    document.getElementById('hr-tab-content')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  };
+
   return (
     <div className="space-y-6">
       <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
@@ -102,10 +113,7 @@ export function HR() {
         {TABS.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => {
-              setActiveTab(tab.id);
-              document.getElementById('hr-tab-content')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }}
+            onClick={() => goTab(tab.id)}
             className={cn(
               'flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors',
               activeTab === tab.id ? 'bg-white text-aims-navy shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-white/60'
@@ -120,6 +128,7 @@ export function HR() {
       {/* Active panel — directly under the tabs so switching is always visible */}
       <div id="hr-tab-content" className="scroll-mt-20 bg-slate-50 rounded-xl p-5">
         <TabBoundary key={activeTab} name={activeTab}>
+          {activeTab === 'overview' && <HROverview onGo={(tab) => goTab(tab as AdminTab)} />}
           {activeTab === 'directory' && <PeopleTab />}
           {activeTab === 'payslips' && <PayslipsTab />}
           {activeTab === 'leave' && <LeaveTab />}

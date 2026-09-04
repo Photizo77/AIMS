@@ -62,6 +62,16 @@ export interface EmployeeOnboarding {
   };
   documentsSubmitted: string[];
   cvFile: { name: string; size: string; type: string } | null;
+  /** Contract start date & type captured in the HR quick-fields bar */
+  startDate?: string;
+  contractType?: string;
+  /** Generated AIMS login account — created by HR when the employee is saved */
+  account?: {
+    loginEmail: string;
+    defaultPassword: string;
+    createdAt: string;
+    credentialsSentAt?: string;
+  };
 }
 
 /** A blank form with one empty row per repeatable section */
