@@ -15,6 +15,30 @@ export function CheckInCard() {
   const [isLocating, setIsLocating] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [netInfo, setNetInfo] = useState<{ onOffice: boolean; ips: string[] } | null>(null);
+  const [coordsInfo, setCoordsInfo] = useState<string | null>(null);
+
+  const locateMe = () => {
+    if (!navigator.geolocation) {
+      setCoordsInfo('Geolocation is not supported by this browser.');
+      return;
+    }
+    setCoordsInfo('Locating…');
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude, accuracy } = position.coords;
+        const distance = haversineDistance(latitude, longitude, OFFICE_GEOFENCE.latitude, OFFICE_GEOFENCE.longitude);
+        setCoordsInfo(`Latitude: ${latitude.toFixed(6)} | Longitude: ${longitude.toFixed(6)} — accuracy ±${Math.round(accuracy)} m · ${Math.round(distance)} m from the geofence centre`);
+      },
+      (error) => {
+        let msg = 'Unable to retrieve your location.';
+        if (error.code === error.PERMISSION_DENIED) msg = 'Location permission denied — allow location access.';
+        if (error.code === error.POSITION_UNAVAILABLE) msg = 'Location unavailable — try a GPS-enabled device or HTTPS.';
+        if (error.code === error.TIMEOUT) msg = 'Location request timed out — try again.';
+        setCoordsInfo(msg);
+      },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+    );
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -152,6 +176,21 @@ export function CheckInCard() {
                   : 'Office network not detectable in this browser (GPS will be used)'}
             </p>
           )}
+
+          {coordsInfo && (
+            <p className="text-[10px] font-bold bg-aims-navy/5 border border-aims-navy/20 text-aims-navy rounded-lg px-3 py-1.5 max-w-[300px] text-right">
+              {coordsInfo}
+            </p>
+          )}
+
+          {!isCheckedIn ? (
+            <button
+              onClick={locateMe}
+              className="text-[10px] font-bold text-slate-500 hover:text-aims-navy hover:underline flex items-center gap-1"
+            >
+              <span className="material-symbols-outlined text-[13px]">my_location</span>Locate me (show my GPS)
+            </button>
+          ) : null}
 
           {!isCheckedIn ? (
             <button
