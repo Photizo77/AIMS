@@ -44,6 +44,8 @@ export interface NavItem {
 
 export type NotificationType = 'info' | 'success' | 'warning' | 'error' | 'approval';
 
+export type NotificationPriority = 'critical' | 'high' | 'medium' | 'low';
+
 export interface Notification {
   id: string;
   /** Target user id (empty = org-wide); falls back to recipientName matching */
@@ -51,6 +53,8 @@ export interface Notification {
   title: string;
   message: string;
   type: NotificationType;
+  /** Optional urgency — default low/medium by type when absent */
+  priority?: NotificationPriority;
   /** Optional deep link navigated to when the notification is clicked */
   link?: string;
   actionUrl?: string;
