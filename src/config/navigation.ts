@@ -83,7 +83,7 @@ const GRANT_WRITER_NAV_ITEMS: NavItem[] = [
 
 const INNOVATOR_NAV_ITEMS: NavItem[] = [
   { title: 'Dashboard', href: '/dashboard', icon: 'dashboard', roles: ['INNOVATOR'] },
-  { title: 'Innovations & Tasks', href: '/tasks', icon: 'lightbulb', roles: ['INNOVATOR'] },
+  { title: 'Innovations & Tasks', href: '/innovations', icon: 'lightbulb', roles: ['INNOVATOR'] },
   { title: 'My Attendance', href: '/attendance', icon: 'schedule', roles: ['INNOVATOR'] },
   { title: 'Calendar', href: '/calendar', icon: 'calendar_month', roles: ['INNOVATOR'] },
   { title: 'Feed', href: '/feed', icon: 'feed', roles: ['INNOVATOR'] },
@@ -118,7 +118,7 @@ export function roleLanding(role: Role): string {
     case 'FINANCE': return '/finance';
     case 'GRANT_WRITER':
     case 'GRANTS_MANAGER': return '/grants';
-    case 'INNOVATOR': return '/tasks';
+    case 'INNOVATOR': return '/innovations';
     case 'COMPANY_ADMIN': return '/user-management';
     default: return '/dashboard'; // CD, ED, SYS_ADMIN and fallback
   }

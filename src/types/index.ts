@@ -288,6 +288,43 @@ export interface InnovationComment {
   flagType?: 'concern' | 'review' | 'urgent' | 'clarification';
 }
 
+// ─────────────────────────────────────────────
+// INNOVATION PROPOSAL LIFECYCLE
+// Innovator drafts a proposal → CD/ED reviews →
+// approved projects execute through the pipeline.
+// ─────────────────────────────────────────────
+
+export type InnovationCategory = 'Technology' | 'Process' | 'Service';
+
+export type InnovationLifecycleStatus = 'draft' | 'review' | 'changes' | 'active' | 'complete' | 'archived';
+
+export interface ProjectBudgetLine {
+  kind: 'equipment' | 'software' | 'personnel' | 'other';
+  item: string;
+  amount: number;
+}
+
+export interface InnovationLifecycle {
+  status: InnovationLifecycleStatus;
+  category?: InnovationCategory;
+  expectedImpact?: string;
+  /** Free-text timeline estimate, e.g. "6 months (Sep 2026 – Feb 2027)" */
+  timeline?: string;
+  budgetLines?: ProjectBudgetLine[];
+  budgetEstimate?: number;
+  submittedAt?: string;
+  submittedBy?: string;
+  decision?: {
+    reviewer: string;
+    decidedAt: string;
+    decision: 'approved' | 'changes';
+    feedback?: string;
+  };
+  finalReport?: string;
+  completedAt?: string;
+  archivedAt?: string;
+}
+
 export interface InnovationProject {
   id: string;
   title: string;
@@ -306,4 +343,6 @@ export interface InnovationProject {
   documents: InnovationDocument[];
   createdAt: string;
   updatedAt: string;
+  /** Proposal lifecycle — undefined for legacy/executing projects (treated as active) */
+  lifecycle?: InnovationLifecycle;
 }

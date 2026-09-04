@@ -1,5 +1,5 @@
 // src/services/innovationService.ts
-import type { InnovationProject, InnovationStage, InnovationMilestone, InnovationComment, InnovationDocument } from '@/types';
+import type { InnovationProject, InnovationStage, InnovationMilestone, InnovationComment, InnovationDocument, InnovationCategory, InnovationLifecycleStatus, ProjectBudgetLine } from '@/types';
 import { loadJSON, saveJSON, STORAGE_KEYS } from '@/lib/storage';
 
 // ═══════════════════════════════════════════
@@ -349,4 +349,181 @@ export const innovationService = {
     saveProjects();
     return project;
   },
+
+  // ═══════════════════════════════════════════
+  // PROPOSAL LIFECYCLE (Innovator → CD/ED review)
+  // ═══════════════════════════════════════════
+
+  /** Innovator creates a proposal as a draft in aims_projects */
+  createProposal: (input: {
+    title: string; description: string; category: InnovationCategory;
+    expectedImpact: string; timeline: string; leadName: string;
+  }): InnovationProject => {
+    const now = new Date().toISOString();
+    const today = now.slice(0, 10);
+    const proposal: InnovationProject = {
+      id: `inv-${Date.now().toString(36)}`,
+      title: input.title.trim(),
+      description: input.description.trim(),
+      stage: 'research',
+      leadName: input.leadName,
+      contributorNames: [],
+      progressPercent: 0,
+      daysInStage: 0,
+      milestones: [],
+      activityLog: [{ id: nextId('a'), timestamp: now, actorName: input.leadName, type: 'comment', description: 'Proposal created as a draft (aims_projects)' }],
+      comments: [],
+      documents: [],
+      createdAt: today,
+      updatedAt: today,
+      lifecycle: {
+        status: 'draft',
+        category: input.category,
+        expectedImpact: input.expectedImpact.trim(),
+        timeline: input.timeline.trim(),
+        budgetLines: [],
+        budgetEstimate: 0,
+      },
+    };
+    projects = [proposal, ...projects];
+    saveProjects();
+    return proposal;
+  },
+
+  /** Edit a draft or a returned ("changes") proposal */
+  updateProposal: (projectId: string, patch: { title?: string; description?: string; category?: InnovationCategory; expectedImpact?: string; timeline?: string }): InnovationProject | undefined => {
+    const project = projects.find((p) => p.id === projectId);
+    if (!project || !project.lifecycle || (project.lifecycle.status !== 'draft' && project.lifecycle.status !== 'changes')) return undefined;
+    if (patch.title !== undefined) project.title = patch.title.trim();
+    if (patch.description !== undefined) project.description = patch.description.trim();
+    if (patch.category !== undefined) project.lifecycle.category = patch.category;
+    if (patch.expectedImpact !== undefined) project.lifecycle.expectedImpact = patch.expectedImpact.trim();
+    if (patch.timeline !== undefined) project.lifecycle.timeline = patch.timeline.trim();
+    project.updatedAt = new Date().toISOString().slice(0, 10);
+    saveProjects();
+    return project;
+  },
+
+  /** Add budget line items (equipment / software / personnel / other) to a proposal */
+  setBudgetLines: (projectId: string, lines: ProjectBudgetLine[]): InnovationProject | undefined => {
+    const project = projects.find((p) => p.id === projectId);
+    if (!project || !project.lifecycle) return undefined;
+    const budgetLines = lines.filter((l) => l.item.trim() && l.amount > 0);
+    const total = budgetLines.reduce((s, l) => s + l.amount, 0);
+    project.lifecycle.budgetLines = budgetLines;
+    project.lifecycle.budgetEstimate = total;
+    if (total > 0) project.budget = total;
+    project.updatedAt = new Date().toISOString().slice(0, 10);
+    saveProjects();
+    return project;
+  },
+
+  /** Innovator submits a draft (or revised) proposal for CD/ED review */
+  submitForReview: (projectId: string, submittedBy: string): InnovationProject | undefined => {
+    const project = projects.find((p) => p.id === projectId);
+    if (!project || !project.lifecycle || (project.lifecycle.status !== 'draft' && project.lifecycle.status !== 'changes')) return undefined;
+    project.lifecycle.status = 'review';
+    project.lifecycle.submittedAt = new Date().toISOString();
+    project.lifecycle.submittedBy = submittedBy;
+    project.updatedAt = new Date().toISOString().slice(0, 10);
+    project.activityLog = [
+      ...project.activityLog,
+      { id: nextId('a'), timestamp: new Date().toISOString(), actorName: submittedBy, type: 'flag', description: 'Proposal submitted for CD/ED review' },
+    ];
+    saveProjects();
+    return project;
+  },
+
+  /** Resubmit after requested changes — moves the proposal back into review */
+  resubmitProposal: (projectId: string): InnovationProject | undefined => {
+    const project = projects.find((p) => p.id === projectId);
+    if (!project || !project.lifecycle || project.lifecycle.status !== 'changes') return undefined;
+    return innovationService.submitForReview(projectId, project.lifecycle.submittedBy ?? project.leadName);
+  },
+
+  /** CD/ED decision on a proposal under review */
+  decideProposal: (projectId: string, decision: 'approved' | 'changes', reviewer: string, feedback: string): InnovationProject | undefined => {
+    const project = projects.find((p) => p.id === projectId);
+    if (!project || !project.lifecycle || project.lifecycle.status !== 'review') return undefined;
+    project.lifecycle.decision = { reviewer, decidedAt: new Date().toISOString(), decision, feedback: feedback.trim() };
+    project.lifecycle.status = decision === 'approved' ? 'active' : 'changes';
+    if (decision === 'approved') {
+      const estimate = project.lifecycle.budgetEstimate ?? 0;
+      if (estimate > 0 && (project.budget ?? 0) === 0) project.budget = estimate;
+      project.activityLog = [
+        ...project.activityLog,
+        { id: nextId('a'), timestamp: new Date().toISOString(), actorName: reviewer, type: 'stage_transition', description: `Proposal approved — project is now In Progress${feedback.trim() ? ` (${feedback.trim()})` : ''}`, fromStage: 'research', toStage: 'research' },
+      ];
+    } else {
+      project.activityLog = [
+        ...project.activityLog,
+        { id: nextId('a'), timestamp: new Date().toISOString(), actorName: reviewer, type: 'flag', description: `Changes requested — ${feedback.trim() || 'no feedback provided'}` },
+      ];
+    }
+    project.updatedAt = new Date().toISOString().slice(0, 10);
+    saveProjects();
+    return project;
+  },
+
+  /** Innovator closes the project with a final report */
+  completeProposal: (projectId: string, finalReport: string): InnovationProject | undefined => {
+    const project = projects.find((p) => p.id === projectId);
+    if (!project || !project.lifecycle || project.lifecycle.status !== 'active') return undefined;
+    project.lifecycle.finalReport = finalReport.trim();
+    project.lifecycle.status = 'complete';
+    project.lifecycle.completedAt = new Date().toISOString();
+    project.progressPercent = 100;
+    project.daysInStage = 0;
+    project.activityLog = [
+      ...project.activityLog,
+      { id: nextId('a'), timestamp: new Date().toISOString(), actorName: project.leadName, type: 'comment', description: `Project completed — final report filed${finalReport.trim() ? `: "${finalReport.trim()}"` : ''}` },
+    ];
+    project.updatedAt = new Date().toISOString().slice(0, 10);
+    saveProjects();
+    return project;
+  },
+
+  /** Archive a completed (or abandoned active) project */
+  archiveProposal: (projectId: string): InnovationProject | undefined => {
+    const project = projects.find((p) => p.id === projectId);
+    if (!project || !project.lifecycle || project.lifecycle.status === 'archived') return undefined;
+    project.lifecycle.status = 'archived';
+    project.lifecycle.archivedAt = new Date().toISOString();
+    project.updatedAt = new Date().toISOString().slice(0, 10);
+    saveProjects();
+    return project;
+  },
+};
+
+// ── Proposal helpers shared across UI (lifecycle-aware reads) ──
+
+export function proposalStatus(p: InnovationProject): InnovationLifecycleStatus {
+  return p.lifecycle?.status ?? 'active';
+}
+
+export function isProposal(p: InnovationProject): boolean {
+  return Boolean(p.lifecycle);
+}
+
+/** Active/executing projects only (legacy projects count as active) — excludes drafts, reviews and archives */
+export function isExecutingProject(p: InnovationProject): boolean {
+  const s = proposalStatus(p);
+  return s === 'active' || s === 'complete';
+}
+
+export function executingProjects(list: InnovationProject[]): InnovationProject[] {
+  return list.filter(isExecutingProject);
+}
+
+export function activeProposals(list: InnovationProject[]): InnovationProject[] {
+  return list.filter((p) => isProposal(p) && (p.lifecycle?.status === 'draft' || p.lifecycle?.status === 'review' || p.lifecycle?.status === 'changes'));
+}
+
+export const LIFECYCLE_LABELS: Record<InnovationLifecycleStatus, string> = {
+  draft: 'Draft',
+  review: 'Pending CD/ED Approval',
+  changes: 'Changes Requested',
+  active: 'In Progress',
+  complete: 'Complete',
+  archived: 'Archived',
 };

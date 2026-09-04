@@ -19,7 +19,7 @@ import { openGrantsAssistant } from '@/components/grants/GrantsAssistant';
 import { openFlagForED } from '@/components/grants/FlagForEDModal';
 import { flagService } from '@/services/flagService';
 import { SharedLibraryWidget } from '@/components/dashboard/SharedLibraryWidget';
-import { innovationService } from '@/services/innovationService'; // Importing our centralized service
+import { innovationService, isExecutingProject } from '@/services/innovationService'; // Importing our centralized service
 import { grantService } from '@/services/grantService';
 import { financeService } from '@/services/financeService';
 import { GRANT_STAGES } from '@/data/grants';
@@ -1004,8 +1004,8 @@ function InnovatorDashboard() {
   const showCheckIn = user?.role === 'INNOVATOR';
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('list');
 
-  // FIX: Use getAllProjects to show the ENTIRE organizational pipeline
-  const projects = innovationService.getAllProjects();
+  // FIX: Use getAllProjects to show the ENTIRE organizational pipeline (drafts/reviews excluded)
+  const projects = innovationService.getAllProjects().filter(isExecutingProject);
   const STAGES = innovationService.getStages();
 
   const getAgingColor = (days: number) => {

@@ -12,8 +12,9 @@ import { exportRecordSheet } from '@/lib/export';
 import { useNotifications } from '@/context/NotificationContext';
 import { INNOVATION_STAGES, INNOVATION_STAGE_LABELS, type InnovationProject } from '@/types';
 import { cn } from '@/lib/utils';
-import { innovationService } from '@/services/innovationService';
+import { innovationService, proposalStatus, LIFECYCLE_LABELS } from '@/services/innovationService';
 import { addRequisition } from '@/services/requisitionService';
+import { ProposalModal } from '@/components/innovations/ProposalModal';
 
 // Known team members available for handoff / team management
 const STAFF_ROSTER = ['Pius Odong', 'Florence Adong', 'Isaac Tumusiime', 'Janet Apio', 'Grace Nakamya', 'Sarah Aciro', 'Amos Ojok', 'Okello Komakech'];
@@ -45,6 +46,10 @@ export function ProjectDetail() {
   const [teamMember, setTeamMember] = useState('');
   const [showMilestoneModal, setShowMilestoneModal] = useState(false);
   const [newMilestoneTitle, setNewMilestoneTitle] = useState('');
+  const [showProposalModal, setShowProposalModal] = useState(false);
+  const [reviewFeedback, setReviewFeedback] = useState('');
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const [finalReport, setFinalReport] = useState('');
 
   if (!user) return <div className="p-8 text-center text-slate-500">Loading…</div>;
   if (!project) {
@@ -60,6 +65,14 @@ export function ProjectDetail() {
   const isContributor = project.contributorNames.includes(user.name);
   // ED has full control on every project; CD remains view-only
   const canEdit = isLead || isContributor || user.role === 'ED';
+
+  // Proposal lifecycle awareness
+  const lifecycle = project.lifecycle;
+  const lcStatus = proposalStatus(project);
+  const isProposalProject = Boolean(lifecycle);
+  const isExecutingStage = !isProposalProject || lcStatus === 'active';
+  const isOwnerOrED = isLead || user.role === 'ED';
+  const canReview = lifecycle?.status === 'review' && (user.role === 'ED' || user.role === 'CD');
 
   const currentStageIndex = STAGE_ORDER.indexOf(project.stage);
   const nextStage = currentStageIndex >= 0 && currentStageIndex < STAGE_ORDER.length - 1 ? STAGE_ORDER[currentStageIndex + 1] : null;
@@ -175,6 +188,71 @@ export function ProjectDetail() {
     showToast({ title: 'Team Updated', message: `${name} removed from contributors.`, type: 'info' });
   };
 
+  // ── Proposal lifecycle actions (Innovator + CD/ED) ──
+
+  const handleSubmitProposal = () => {
+    const updated = innovationService.submitForReview(project.id, user.name);
+    if (!updated) return;
+    ['Nassir Mwanje', 'Peter Byamugisha'].forEach((name) => addNotification({
+      recipientName: name,
+      title: 'Innovation Proposal — Awaiting Your Review',
+      message: `${user.name} submitted "${project.title}" for CD/ED review.`,
+      type: 'approval',
+      link: '/innovations?review=1',
+      actionUrl: '/innovations?review=1',
+    }));
+    setProject({ ...updated });
+    showToast({ title: 'Submitted for Review', message: `"${project.title}" is now Pending CD/ED Approval.`, type: 'success' });
+  };
+
+  const handleReviewDecision = (decision: 'approved' | 'changes') => {
+    const feedback = reviewFeedback.trim();
+    if (decision === 'changes' && !feedback) {
+      showToast({ title: 'Feedback Required', message: 'Provide feedback so the innovator knows what to revise.', type: 'error' });
+      return;
+    }
+    const updated = innovationService.decideProposal(project.id, decision, user.name, feedback);
+    if (!updated) return;
+    addNotification({
+      recipientName: updated.leadName,
+      title: decision === 'approved' ? 'Innovation Proposal Approved' : 'Innovation Proposal — Changes Requested',
+      message: decision === 'approved'
+        ? `"${updated.title}" was approved by ${user.name} — it is now In Progress. Add milestones and execute.`
+        : `${user.name} requested changes on "${updated.title}". Feedback: ${feedback}`,
+      type: decision === 'approved' ? 'success' : 'warning',
+      link: `/innovations/${updated.id}`,
+    });
+    setProject({ ...updated });
+    setReviewFeedback('');
+    showToast({ title: decision === 'approved' ? 'Proposal Approved' : 'Changes Requested', message: decision === 'approved' ? `"${project.title}" is now In Progress.` : 'Feedback sent back to the innovator.', type: decision === 'approved' ? 'success' : 'warning' });
+  };
+
+  const handleCompleteProject = () => {
+    if (!finalReport.trim()) {
+      showToast({ title: 'Final Report Required', message: 'Summarise what was delivered, measured and learned.', type: 'error' });
+      return;
+    }
+    const updated = innovationService.completeProposal(project.id, finalReport);
+    if (!updated) return;
+    setProject({ ...updated });
+    setShowCompleteModal(false);
+    setFinalReport('');
+    showToast({ title: 'Project Completed', message: `Final report filed — "${project.title}" is marked Complete.`, type: 'success' });
+  };
+
+  const handleArchiveProject = () => {
+    const updated = innovationService.archiveProposal(project.id);
+    if (!updated) return;
+    setProject({ ...updated });
+    showToast({ title: 'Project Archived', message: `"${project.title}" archived — kept in aims_projects for reference.`, type: 'success' });
+  };
+
+  const handleProposalSaved = (p: InnovationProject) => {
+    setProject({ ...p });
+    setShowProposalModal(false);
+    showToast({ title: 'Revision Saved', message: 'Draft updated — resubmit for review when ready.', type: 'success' });
+  };
+
   const TABS: { key: TabKey; label: string; icon: string }[] = [
     { key: 'overview', label: 'Overview', icon: 'info' },
     { key: 'milestones', label: 'Milestones', icon: 'checklist' },
@@ -195,26 +273,123 @@ export function ProjectDetail() {
             <h1 className="text-3xl font-extrabold tracking-tight text-white mb-2">{project.title}</h1>
             <div className="flex items-center gap-4 text-sm font-medium text-white/90 flex-wrap">
               <span className="px-2 py-0.5 rounded bg-white/20 text-white text-xs font-bold uppercase">{INNOVATION_STAGE_LABELS[project.stage]}</span>
+              {lifecycle && (
+                <span className={cn('px-2 py-0.5 rounded text-xs font-bold uppercase', lcStatus === 'review' ? 'bg-aims-orange text-white' : lcStatus === 'changes' ? 'bg-amber-400 text-aims-navy' : lcStatus === 'active' ? 'bg-aims-green text-white' : lcStatus === 'complete' ? 'bg-aims-mint text-aims-navy' : 'bg-white/20 text-white')}>
+                  {LIFECYCLE_LABELS[lcStatus]}
+                </span>
+              )}
               <span>Lead: {project.leadName}</span>
+              {isProposalProject && lifecycle?.category && <span className="text-white/80">{lifecycle.category}</span>}
               <span>Progress: {progress}%</span>
               <span>{project.daysInStage}d in stage</span>
-              {project.budget != null && <span>Budget: UGX {(project.budget / 1000000).toFixed(1)}M</span>}
+              {project.budget != null && project.budget > 0 && <span>Budget: UGX {(project.budget / 1000000).toFixed(1)}M</span>}
             </div>
           </div>
-          <div className="flex gap-2">
-            {canEdit && (
+          <div className="flex gap-2 flex-wrap">
+            {lifecycle && (lcStatus === 'draft' || lcStatus === 'changes') && isOwnerOrED && (
+              <>
+                <button onClick={() => setShowProposalModal(true)} className="px-5 py-2.5 bg-white text-aims-navy rounded-xl text-xs font-bold hover:bg-aims-mint/90 transition-colors flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[16px]">edit</span>{lcStatus === 'changes' ? 'Revise Proposal' : 'Edit Draft'}
+                </button>
+                <button onClick={handleSubmitProposal} className="px-5 py-2.5 bg-aims-orange text-white rounded-xl text-xs font-bold hover:bg-aims-orange/90 transition-colors flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[16px]">send</span>{lcStatus === 'changes' ? 'Resubmit for Review' : 'Submit for Review'}
+                </button>
+              </>
+            )}
+            {isExecutingStage && canEdit && project.budget != null && project.budget > 0 && (
               <button onClick={handleRequestFunding} className="px-5 py-2.5 bg-aims-orange text-white rounded-xl text-xs font-bold hover:bg-aims-orange/90 transition-colors flex items-center gap-1.5">
                 <span className="material-symbols-outlined text-[16px]">request_quote</span>Request Funding
               </button>
             )}
-            {isLead && nextStage && (
+            {isExecutingStage && isLead && nextStage && (
               <button onClick={() => setShowHandoffModal(true)} className="px-5 py-2.5 bg-aims-green text-white rounded-xl text-xs font-bold hover:bg-aims-green/90 transition-colors flex items-center gap-1.5">
                 <span className="material-symbols-outlined text-[16px]">send</span>Push to {INNOVATION_STAGE_LABELS[nextStage]}
+              </button>
+            )}
+            {lifecycle && lcStatus === 'active' && isOwnerOrED && (
+              <button onClick={() => setShowCompleteModal(true)} className="px-5 py-2.5 bg-aims-mint text-aims-navy rounded-xl text-xs font-bold hover:bg-aims-mint/80 transition-colors flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[16px]">flag</span>Final Report & Complete
+              </button>
+            )}
+            {lifecycle && lcStatus === 'complete' && isOwnerOrED && (
+              <button onClick={handleArchiveProject} className="px-5 py-2.5 bg-white/15 border border-white/40 text-white rounded-xl text-xs font-bold hover:bg-white/25 transition-colors flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[16px]">archive</span>Archive Project
               </button>
             )}
           </div>
         </div>
       </div>
+
+      {/* Proposal lifecycle panels */}
+      {lifecycle && lcStatus === 'review' && canReview && (
+        <div className="bg-white rounded-xl border border-aims-orange/40 border-t-4 border-t-aims-orange p-5 shadow-sm">
+          <div className="flex items-start justify-between flex-wrap gap-3 mb-3">
+            <div>
+              <h3 className="text-base font-bold text-aims-orange flex items-center gap-2"><span className="material-symbols-outlined text-[18px]">rate_review</span>CD/ED Review — Impact Assessment</h3>
+              <p className="text-xs text-slate-500 mt-0.5">Submitted {lifecycle.submittedAt ? new Date(lifecycle.submittedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'} by {lifecycle.submittedBy ?? project.leadName} · {lifecycle.category ?? 'Innovation'}</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-3">
+            <div className="lg:col-span-2 p-3 bg-aims-green/5 rounded-lg border border-aims-green/20">
+              <p className="text-[10px] font-bold text-aims-green uppercase tracking-wider flex items-center gap-1"><span className="material-symbols-outlined text-[12px]">track_changes</span>Expected Impact</p>
+              <p className="text-sm text-slate-700 mt-1">{lifecycle.expectedImpact || 'No impact statement provided.'}</p>
+              {lifecycle.timeline && <p className="text-[11px] text-slate-500 mt-2 flex items-center gap-1"><span className="material-symbols-outlined text-[13px]">schedule</span>{lifecycle.timeline}</p>}
+            </div>
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Budget Estimate</p>
+              <p className="text-lg font-extrabold text-slate-900">{lifecycle.budgetEstimate ? `UGX ${(lifecycle.budgetEstimate / 1000000).toFixed(1)}M` : '—'}</p>
+              <p className="text-[10px] text-slate-400 mt-0.5">{lifecycle.budgetLines?.length ?? 0} line item(s) · {(lifecycle.budgetLines ?? []).map((l) => l.kind).join(', ') || 'no lines'}</p>
+            </div>
+          </div>
+          <textarea value={reviewFeedback} onChange={(e) => setReviewFeedback(e.target.value)} rows={2} placeholder="Decision note — required when requesting changes, optional on approval…" className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 mb-3 focus:outline-none focus:ring-2 focus:ring-aims-orange/40" />
+          <div className="flex gap-2 flex-wrap">
+            <button onClick={() => handleReviewDecision('approved')} className="px-4 py-2 bg-aims-green text-white text-xs font-bold rounded-lg hover:bg-aims-green/90 flex items-center gap-1.5"><span className="material-symbols-outlined text-[14px]">check_circle</span>Approve — Project Active (In Progress)</button>
+            <button onClick={() => handleReviewDecision('changes')} className="px-4 py-2 bg-aims-orange text-white text-xs font-bold rounded-lg hover:bg-aims-orange/90 flex items-center gap-1.5"><span className="material-symbols-outlined text-[14px]">assignment_return</span>Request Changes</button>
+          </div>
+        </div>
+      )}
+
+      {lifecycle && lcStatus === 'review' && !canReview && (
+        <div className="bg-aims-orange/10 border border-aims-orange/30 rounded-xl p-4 flex items-start gap-3">
+          <span className="material-symbols-outlined text-aims-orange text-[20px]">hourglass_top</span>
+          <div><p className="text-xs font-bold text-aims-orange">Proposal under review</p><p className="text-[11px] text-slate-600 mt-0.5">The CD/ED has been notified. You'll be told the moment it is approved or changes are requested.</p></div>
+        </div>
+      )}
+
+      {lifecycle && lcStatus === 'changes' && (
+        <div className="bg-amber-50 border border-amber-300/70 rounded-xl p-4 flex items-start gap-3">
+          <span className="material-symbols-outlined text-amber-500 text-[20px]">assignment_return</span>
+          <div className="flex-1">
+            <p className="text-xs font-bold text-amber-700">Changes requested by {lifecycle.decision?.reviewer ?? 'the reviewer'}{lifecycle.decision?.decidedAt ? ` · ${new Date(lifecycle.decision.decidedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}` : ''}</p>
+            {lifecycle.decision?.feedback && <p className="text-[11px] text-slate-700 mt-1">"{lifecycle.decision.feedback}"</p>}
+            <p className="text-[10px] text-slate-500 mt-1">Revise the proposal, then resubmit — it goes straight back into the CD/ED review queue.</p>
+          </div>
+        </div>
+      )}
+
+      {lifecycle && lcStatus === 'complete' && (
+        <div className="bg-white rounded-xl border border-aims-mint border-t-4 border-t-aims-mint p-5 shadow-sm space-y-4">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2"><span className="material-symbols-outlined text-aims-green text-[18px]">task_alt</span>Project Complete</h3>
+              <p className="text-xs text-slate-500 mt-0.5">{lifecycle.completedAt ? `Completed ${new Date(lifecycle.completedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}` : 'Final report filed'}</p>
+            </div>
+            <button onClick={handleArchiveProject} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90 flex items-center gap-1.5"><span className="material-symbols-outlined text-[14px]">archive</span>Archive Project</button>
+          </div>
+          <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Final Report</p>
+            <p className="text-sm text-slate-700">{lifecycle.finalReport || 'No report text recorded.'}</p>
+          </div>
+          <div className="p-4 bg-aims-green/5 rounded-xl border border-aims-green/20">
+            <p className="text-[10px] font-bold text-aims-green uppercase tracking-wider flex items-center gap-1 mb-2"><span className="material-symbols-outlined text-[13px]">smart_toy</span>AI Resource Suggestions — Next Steps</p>
+            <ul className="space-y-1.5">
+              <li className="text-xs text-slate-700 flex gap-2"><span className="material-symbols-outlined text-aims-green text-[14px] shrink-0">lightbulb</span>Package findings & impact into a <strong>grant concept note</strong> — approved results strengthen follow-on funding proposals.</li>
+              <li className="text-xs text-slate-700 flex gap-2"><span className="material-symbols-outlined text-aims-green text-[14px] shrink-0">lightbulb</span>Reuse the tested components/approach in a <strong>scale-up or replication project</strong> (raise a new proposal).</li>
+              <li className="text-xs text-slate-700 flex gap-2"><span className="material-symbols-outlined text-aims-green text-[14px] shrink-0">lightbulb</span>Share the report with <strong>Grants, Advocacy and Communications</strong> for donor updates and policy briefs.</li>
+            </ul>
+          </div>
+        </div>
+      )}
 
       {/* Team + Progress row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -434,6 +609,32 @@ export function ProjectDetail() {
           </div>
         </div>
       )}
+      {/* ── Final Report & Complete Modal ── */}
+      {showCompleteModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-bold text-slate-900">Final Report & Complete</h3>
+              <button onClick={() => setShowCompleteModal(false)} className="text-slate-400 hover:text-slate-600"><span className="material-symbols-outlined">close</span></button>
+            </div>
+            <p className="text-xs text-slate-500 mb-4">Summarise what was delivered, measured and learned — this report is filed on the project and unlocks archiving.</p>
+            <textarea value={finalReport} onChange={(e) => setFinalReport(e.target.value)} rows={5} placeholder="Outcomes, milestones achieved, impact evidence, lessons & next-step recommendations…" className="w-full border border-slate-200 rounded-lg p-3 text-sm mb-4 focus:ring-2 focus:ring-aims-navy/30 focus:outline-none" />
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setShowCompleteModal(false)} className="px-4 py-2 text-sm font-bold text-slate-500">Cancel</button>
+              <button onClick={handleCompleteProject} disabled={!finalReport.trim()} className={cn('px-4 py-2 rounded-lg text-sm font-bold', finalReport.trim() ? 'bg-aims-green text-white' : 'bg-slate-100 text-slate-400 cursor-not-allowed')}>Complete Project</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Revise Proposal (draft / changes requested) ── */}
+      <ProposalModal
+        open={showProposalModal}
+        editing={project}
+        creatorName={user.name}
+        onClose={() => setShowProposalModal(false)}
+        onSaved={handleProposalSaved}
+      />
     </div>
   );
 }

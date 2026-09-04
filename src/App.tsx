@@ -64,6 +64,7 @@ export function App() {
                 
                 {/* Innovations Module Routes */}
                 <Route path="/tasks" element={<ProtectedRoute module="innovations"><Tasks /></ProtectedRoute>} />
+                <Route path="/innovations" element={<ProtectedRoute module="innovations"><Tasks /></ProtectedRoute>} />
                 <Route path="/innovations/:id" element={<ProtectedRoute module="innovations"><ProjectDetail /></ProtectedRoute>} />
                 
                 <Route path="/attendance" element={<ProtectedRoute module="attendance"><Attendance /></ProtectedRoute>} />
