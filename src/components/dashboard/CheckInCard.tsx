@@ -111,6 +111,11 @@ export function CheckInCard() {
                 {location ? ` · ${location}` : ''}
               </p>
             )}
+            {!isCheckedIn && (
+              <p className="text-[10px] text-slate-400 mt-1">
+                GPS geofence: {OFFICE_GEOFENCE.latitude.toFixed(6)}, {OFFICE_GEOFENCE.longitude.toFixed(6)} · within {OFFICE_GEOFENCE.radiusMeters} m · GPS first, office network fallback
+              </p>
+            )}
           </div>
         </div>
 
