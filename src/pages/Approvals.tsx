@@ -6,6 +6,8 @@ import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
 import { exportRecordSheet } from '@/lib/export';
 import { flagService, subscribeFlags } from '@/services/flagService';
+import { financeService } from '@/services/financeService';
+import { requisitionPriceFlags, type PriceFlag } from '@/lib/aiEngine';
 import { type Requisition, type RequisitionStatus, requisitions, useRequisitions, mutateRequisitions } from '@/services/requisitionService';
 import { openFlagForED } from '@/components/grants/FlagForEDModal';
 
@@ -34,6 +36,54 @@ const STATUS_BADGE: Record<RequisitionStatus, { label: string; cls: string }> = 
   rejected: { label: 'Rejected', cls: 'bg-red-100 text-red-600' },
 };
 
+// ── Price anomaly detection (finance review helper) ──
+function unitToFullNumber(unit: string): string {
+  const m = unit.match(/([\d.,]+)/);
+  if (!m) return '0';
+  let n = parseFloat(m[1].replace(/,/g, ''));
+  const u = unit.toUpperCase();
+  if (u.includes('M')) n *= 1000000;
+  else if (u.includes('K')) n *= 1000;
+  return String(n);
+}
+
+function flagsForLineItems(items: Requisition['lineItems']): PriceFlag[] {
+  return requisitionPriceFlags(items.map((li) => ({ item: li.item, unit: unitToFullNumber(li.unit), total: li.total })));
+}
+
+function PriceFlagsRow({ items }: { items: Requisition['lineItems'] }) {
+  const flags = flagsForLineItems(items);
+  if (flags.length === 0) {
+    return (
+      <p className="text-[10px] font-bold text-aims-green flex items-center gap-1">
+        <span className="material-symbols-outlined text-[13px]">verified_user</span>Price check: no anomalies against market averages
+      </p>
+    );
+  }
+  return (
+    <div className="space-y-1">
+      {flags.map((f, i) => (
+        <p key={i} className={cn('text-[10px] font-bold px-2 py-1 rounded border flex items-center gap-1.5', f.deltaPct > 50 ? 'bg-red-50 text-red-600 border-red-200' : 'bg-aims-orange/10 text-aims-orange border-aims-orange/30')}>
+          <span>{f.deltaPct > 50 ? '🔴 Alert' : '🟡 Warning'}</span>
+          <span>{f.item}: {fmtMoney(f.amount)} vs market avg {fmtMoney(f.marketAvg)} ({f.deltaPct}% over)</span>
+        </p>
+      ))}
+    </div>
+  );
+}
+
+function BudgetStatusRow({ dept, amount }: { dept: string; amount: number }) {
+  const info = financeService.budgetRemainingFor(dept);
+  if (!info) return null;
+  const over = amount > info.remaining;
+  return (
+    <p className={cn('text-[10px] font-bold px-2 py-1 rounded border flex items-center gap-1.5', over ? 'bg-red-50 text-red-600 border-red-200' : 'bg-aims-green/10 text-aims-green border-aims-green/20')}>
+      <span className="material-symbols-outlined text-[13px]">account_balance_wallet</span>
+      Budget check ({info.dept}): {fmtMoney(info.remaining)} remaining{over ? ' — this request EXCEEDS the remaining budget' : ' — funded'}
+    </p>
+  );
+}
+
 // ── FULL REQUISITION DETAIL MODAL (ED / CD / Finance) ──
 function RequisitionDetailModal({ req, onClose }: { req: Requisition; onClose: () => void }) {
   return (
@@ -58,6 +108,12 @@ function RequisitionDetailModal({ req, onClose }: { req: Requisition; onClose: (
             <div className="p-3 bg-slate-50 rounded-lg border border-slate-100"><p className="text-[10px] font-bold text-slate-500 uppercase">Department</p><p className="text-sm font-bold text-slate-900 mt-0.5">{req.dept}</p></div>
             <div className="p-3 bg-slate-50 rounded-lg border border-slate-100"><p className="text-[10px] font-bold text-slate-500 uppercase">Amount</p><p className="text-sm font-extrabold text-aims-navy mt-0.5">{fmtMoney(req.amount)}</p></div>
             <div className="p-3 bg-slate-50 rounded-lg border border-slate-100"><p className="text-[10px] font-bold text-slate-500 uppercase">Budget Line</p><p className="text-xs font-bold text-slate-900 mt-0.5 font-mono">{req.budgetLine}</p></div>
+          </div>
+
+          {/* Finance checks: price anomalies + budget */}
+          <div className="space-y-2">
+            <PriceFlagsRow items={req.lineItems} />
+            <BudgetStatusRow dept={req.dept} amount={req.amount} />
           </div>
 
           {/* Purpose */}
@@ -440,7 +496,10 @@ function EDApprovalQueue() {
       }
     });
     if (action === 'approved') {
-      addNotification({ title: 'Requisition Approved', message: `${id} approved → routed to Finance for disbursement.`, type: 'success', link: '/approvals', actionUrl: '/approvals' });
+      // Record the commitment in finance: expense created + department budget reduced.
+      const rec = requisitions.find((x) => x.id === id);
+      if (rec) financeService.recordRequisitionExpense({ amount: rec.amount, dept: rec.dept, description: rec.title, ref: rec.id });
+      addNotification({ title: 'Requisition Approved', message: `${id} approved → expense recorded, budget updated; Finance to process disbursement.`, type: 'success', link: '/approvals', actionUrl: '/approvals' });
       showToast({ title: 'Approved', message: `${id} approved → routed to Finance for disbursement.`, type: 'success' });
     } else if (action === 'returned') {
       addNotification({ title: 'Requisition Pushed Back', message: `${id} pushed back to Finance for revision.`, type: 'warning', link: '/approvals', actionUrl: '/approvals' });

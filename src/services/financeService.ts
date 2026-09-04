@@ -169,4 +169,32 @@ export const financeService = {
     saveFinance();
     return edit;
   },
+
+  /**
+   * Record an approved requisition as an expense and charge it to the
+   * matching department budget (actuals increase). Called by the ED on
+   * approval so the finance ledger and budgets reflect the commitment.
+   */
+  recordRequisitionExpense: (input: { amount: number; dept: string; description: string; ref: string }): FinanceRecord => {
+    const rec: FinanceRecord = {
+      id: nextId('exp'),
+      type: 'expense',
+      label: `Requisition — ${input.description}`,
+      amount: input.amount,
+      detail: `Disbursed against ${input.ref} · ${input.dept}`,
+    };
+    expenses = [rec, ...expenses];
+    const match = budgets.find((b) => input.dept.toLowerCase().includes(b.dept.toLowerCase()) || b.dept.toLowerCase().includes(input.dept.toLowerCase()));
+    if (match) {
+      budgets = budgets.map((b) => (b.id === match.id ? { ...b, actual: Math.min(b.budget, b.actual + input.amount), forecastPct: Math.min(100, Math.round(((b.actual + input.amount) / b.budget) * 100)) } : b));
+    }
+    saveFinance();
+    return rec;
+  },
+
+  /** Remaining (unspent) budget for a department, when a match exists */
+  budgetRemainingFor: (dept: string): { dept: string; budget: number; actual: number; remaining: number } | null => {
+    const match = budgets.find((b) => dept.toLowerCase().includes(b.dept.toLowerCase()) || b.dept.toLowerCase().includes(dept.toLowerCase()));
+    return match ? { dept: match.dept, budget: match.budget, actual: match.actual, remaining: Math.max(0, match.budget - match.actual) } : null;
+  },
 };
