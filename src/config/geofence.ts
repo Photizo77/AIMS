@@ -3,12 +3,12 @@ import type { GeofenceConfig } from '@/types';
 
 /**
  * ARDHI Office Geofence Configuration
- * Coordinates: 0°19'12.0"N, 32°34'48.0"E  (0.3200, 32.5800)
+ * Coordinates: 0.2783160°N, 32.6138310°E (Latitude: 0.278316 | Longitude: 32.613831)
  * Radius: 200 metres
  */
 export const OFFICE_GEOFENCE: GeofenceConfig = {
-  latitude: 0.32,
-  longitude: 32.58,
+  latitude: 0.278316,
+  longitude: 32.613831,
   radiusMeters: 200,
   label: 'ARDHI Office (200m geofence)',
 };

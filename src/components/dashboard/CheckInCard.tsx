@@ -5,22 +5,7 @@ import { useNotifications } from '@/context/NotificationContext';
 import { useAttendance } from '@/context/AttendanceContext';
 import { cn } from '@/lib/utils';
 import { logGeofenceAttempt } from '@/services/attendanceService';
-import { detectLocalIPv4s, matchesOfficeNetwork } from '@/config/geofence';
-
-// Office geofence: 0°19'12.0"N, 32°34'48.0"E — 200 metre radius
-const OFFICE_LAT = 0.32;
-const OFFICE_LNG = 32.58;
-const MAX_RADIUS_METERS = 200;
-
-function getDistanceMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371e3;
-  const p1 = (lat1 * Math.PI) / 180;
-  const p2 = (lat2 * Math.PI) / 180;
-  const dp = ((lat2 - lat1) * Math.PI) / 180;
-  const dl = ((lon2 - lon1) * Math.PI) / 180;
-  const a = Math.sin(dp / 2) * Math.sin(dp / 2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl / 2) * Math.sin(dl / 2);
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
+import { detectLocalIPv4s, matchesOfficeNetwork, OFFICE_GEOFENCE, haversineDistance } from '@/config/geofence';
 
 export function CheckInCard() {
   const { user } = useAuth();
@@ -61,15 +46,15 @@ export function CheckInCard() {
         navigator.geolocation.getCurrentPosition(
           (position) => {
             const { latitude, longitude } = position.coords;
-            const distance = getDistanceMeters(latitude, longitude, OFFICE_LAT, OFFICE_LNG);
+            const distance = haversineDistance(latitude, longitude, OFFICE_GEOFENCE.latitude, OFFICE_GEOFENCE.longitude);
             setIsLocating(false);
-            if (distance <= MAX_RADIUS_METERS) {
+            if (distance <= OFFICE_GEOFENCE.radiusMeters) {
               checkIn('physical', 'ARDHI Office, Kampala', true);
             } else {
               // BLOCKED — log the failed attempt (appears in Attendance → Anomalies & Violations)
               if (user) logGeofenceAttempt(user.id, user.name, distance, `${latitude.toFixed(4)}°N, ${longitude.toFixed(4)}°E`);
-              setLocationError(`You must be within ${MAX_RADIUS_METERS}m of the ARDHI office (or on the office network) to check in. You are ${Math.round(distance)}m away.`);
-              showToast({ title: 'Outside Office Radius', message: `Physical check-in blocked — ${Math.round(distance)}m from the office (limit 200m).`, type: 'error' });
+              setLocationError(`You must be within ${OFFICE_GEOFENCE.radiusMeters}m of the ARDHI office (or on the office network) to check in. You are ${Math.round(distance)}m away.`);
+              showToast({ title: 'Outside Office Radius', message: `Physical check-in blocked — ${Math.round(distance)}m from the office (limit ${OFFICE_GEOFENCE.radiusMeters}m).`, type: 'error' });
             }
           },
           (error) => {
