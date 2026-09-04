@@ -413,10 +413,17 @@ function EDApprovalQueue() {
   const openFlags = flagService.getOpenFlags();
 
   const resolveFlag = (id: string) => {
-    const flag = flagService.resolveFlag(id, user?.name ?? 'ED');
+    const flag = flagService.resolveFlag(id, user?.name ?? 'ED', 'approved');
     if (!flag) return;
-    addNotification({ title: 'CD Flag Resolved', message: `"${flag.recordLabel}" resolved by ${user?.name}.`, type: 'success' });
-    showToast({ title: 'Flag Resolved', message: 'Removed from the queue.', type: 'success' });
+    addNotification({ userId: 'user-cd-001', title: 'Flag Resolved by ED', message: `"${flag.recordLabel}" approved/resolved by ${user?.name}.`, type: 'success', link: '/approvals', actionUrl: '/approvals' });
+    showToast({ title: 'Flag Resolved', message: 'Approved — removed from the queue.', type: 'success' });
+  };
+
+  const askMoreInfo = (id: string) => {
+    const flag = flagService.requestMoreInfo(id, user?.name ?? 'ED', 'The ED needs more information before deciding.');
+    if (!flag) return;
+    addNotification({ userId: 'user-cd-001', title: 'Flag: More Info Requested', message: `ED requested more information on "${flag.recordLabel}".`, type: 'info', link: '/approvals', actionUrl: '/approvals' });
+    showToast({ title: 'More Info Requested', message: 'The CD has been notified — the flag stays on the queue.', type: 'info' });
   };
 
   const decide = (id: string, action: 'approved' | 'rejected' | 'returned') => {
@@ -458,20 +465,24 @@ function EDApprovalQueue() {
             <span className="material-symbols-outlined text-[16px]">flag</span>CD Flags — Priority Interrupts ({openFlags.length})
           </p>
           {openFlags.map((f) => (
-            <div key={f.id} className={cn('rounded-lg border p-4 shadow-sm', f.priority === 'urgent' ? 'bg-red-50 border-red-200' : 'bg-aims-orange/5 border-aims-orange/20')}>
+            <div key={f.id} className={cn('rounded-lg border p-4 shadow-sm', f.priority === 'critical' ? 'bg-red-50 border-red-200' : f.priority === 'high' ? 'bg-aims-orange/5 border-aims-orange/30' : 'bg-slate-50 border-slate-200')}>
               <div className="flex items-start justify-between flex-wrap gap-2">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <span className={cn('text-[9px] font-bold px-1.5 py-0.5 rounded uppercase', f.priority === 'urgent' ? 'bg-red-500 text-white' : 'bg-aims-orange/20 text-aims-orange')}>{f.priority}</span>
+                    <span className={cn('text-[9px] font-bold px-1.5 py-0.5 rounded uppercase flex items-center gap-1', f.priority === 'critical' ? 'bg-red-500 text-white' : f.priority === 'high' ? 'bg-aims-orange text-white' : 'bg-slate-500 text-white')}>
+                      {f.priority === 'critical' ? '🚩' : f.priority === 'high' ? '🔶' : ''} {f.priority}
+                    </span>
+                    {f.infoRequested && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-aims-navy text-white uppercase">ℹ️ Info requested</span>}
                     <span className="text-[10px] font-bold text-slate-500">{f.raisedBy} · {new Date(f.raisedAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
                     <span className="text-[10px] font-bold text-aims-navy bg-aims-navy/5 px-1.5 py-0.5 rounded uppercase">{f.sourceModule}</span>
                   </div>
                   <p className="text-sm font-bold text-slate-900">{f.recordLabel}</p>
                   <p className="text-xs text-slate-600 mt-1 italic">"{f.note}"</p>
+                  {f.reference && <p className="text-[10px] text-slate-400 mt-1">📎 Reference: {f.reference}</p>}
                 </div>
-                <div className="flex gap-2 shrink-0">
-                  <button onClick={() => openFlagForED({ recordLabel: f.recordLabel, sourceModule: f.sourceModule })} className="px-3 py-1.5 bg-white border border-slate-200 text-slate-600 text-[10px] font-bold rounded-lg hover:bg-slate-50">Comment</button>
-                  <button onClick={() => resolveFlag(f.id)} className="px-3 py-1.5 bg-aims-navy text-white text-[10px] font-bold rounded-lg hover:bg-aims-navy/90">Resolve Flag</button>
+                <div className="flex gap-2 shrink-0 flex-wrap justify-end">
+                  <button onClick={() => askMoreInfo(f.id)} className="px-3 py-1.5 bg-white border border-slate-200 text-slate-600 text-[10px] font-bold rounded-lg hover:bg-slate-50">Request More Info</button>
+                  <button onClick={() => resolveFlag(f.id)} className="px-3 py-1.5 bg-aims-navy text-white text-[10px] font-bold rounded-lg hover:bg-aims-navy/90">✓ Approve & Resolve</button>
                 </div>
               </div>
             </div>

@@ -477,7 +477,8 @@ function EDDashboard() {
               <div key={f.id} className="flex items-start justify-between gap-3 p-3 bg-red-50/50 rounded-lg border border-red-100">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className={f.priority === 'urgent' ? 'text-[9px] font-bold px-1.5 py-0.5 rounded bg-red-500 text-white uppercase' : 'text-[9px] font-bold px-1.5 py-0.5 rounded bg-aims-orange/20 text-aims-orange uppercase'}>{f.priority}</span>
+                    <span className={cn('text-[9px] font-bold px-1.5 py-0.5 rounded uppercase', f.priority === 'critical' ? 'bg-red-500 text-white' : f.priority === 'high' ? 'bg-aims-orange text-white' : 'bg-slate-500 text-white')}>{f.priority === 'critical' ? '🚩 Critical' : f.priority === 'high' ? '🔶 High' : 'Medium'}</span>
+                    {f.infoRequested && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-aims-navy text-white uppercase">Info requested</span>}
                     <span className="text-[10px] font-bold text-slate-500">{f.raisedBy}</span>
                     <span className="text-[10px] text-slate-400">{new Date(f.raisedAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
                   </div>

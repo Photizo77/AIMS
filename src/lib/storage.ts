@@ -28,6 +28,7 @@ export const STORAGE_KEYS = {
   userOps: 'aims_user_ops',
   crm: 'aims_crm',
   contracts: 'aims_contracts',
+  flags: 'aims_flags',
 } as const;
 
 export function loadJSON<T>(key: string, fallback: T): T {
