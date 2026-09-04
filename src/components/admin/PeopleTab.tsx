@@ -1,11 +1,15 @@
 // src/components/admin/PeopleTab.tsx
 import { useMemo, useState } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { cn } from '@/lib/utils';
 import type { User } from '@/types';
 import { ROLE_LABELS } from '@/config/roles';
 import { ACTIVE_STAFF } from '@/data/roster';
 import { useLiveData } from '@/lib/useLiveData';
 import { getDirectoryEntries, type DirectoryEntry } from '@/services/employeeService';
 import { openEmployeeOnboarding } from '@/components/hr/EmployeeOnboardingForm';
+import { contractsFor, contractsByName, addContract, contractGet, type ContractRecord } from '@/services/contractService';
+import { ContractScanViewer } from '@/components/hr/ContractScanViewer';
 
 // Unified staff roster — the single source of truth for people
 const MOCK_EMPLOYEES: (User & { position: string })[] = ACTIVE_STAFF.map((s) => ({
@@ -14,15 +18,36 @@ const MOCK_EMPLOYEES: (User & { position: string })[] = ACTIVE_STAFF.map((s) => 
 }));
 
 export function PeopleTab() {
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterDept, setFilterDept] = useState('all');
   const [filterPosition, setFilterPosition] = useState('all');
   const [selectedEmployee, setSelectedEmployee] = useState<(User & { position: string }) | DirectoryEntry | null>(null);
+  const [viewingContract, setViewingContract] = useState<ContractRecord | null>(null);
   const live = useLiveData();
+
+  const canManage = user?.role === 'COMPANY_ADMIN' || user?.role === 'ED';
 
   // Roster + employees added through the onboarding form (auto-updates live)
   const employees = useMemo(() => [...MOCK_EMPLOYEES, ...getDirectoryEntries()], [live]);
   const onboardingCount = getDirectoryEntries().length;
+
+  const contractsOf = (emp: (User & { position: string }) | DirectoryEntry): ContractRecord[] => {
+    const byId = contractsFor(emp.id);
+    return byId.length > 0 ? byId : contractsByName(emp.name);
+  };
+
+  const openNewContract = (emp: (User & { position: string }) | DirectoryEntry) => {
+    const created = addContract({ employeeId: emp.id, employeeName: emp.name, type: 'permanent', startDate: new Date().toISOString().slice(0, 10), salary: 0 });
+    setViewingContract(created);
+  };
+
+  const refreshViewer = () => {
+    if (viewingContract) {
+      const fresh = contractGet().find((c) => c.id === viewingContract.id);
+      if (fresh) setViewingContract(fresh);
+    }
+  };
 
   const departments = ['all', ...Array.from(new Set(employees.map(e => e.department)))];
   const positions = ['all', ...Array.from(new Set(employees.map(e => e.position)))];
@@ -83,20 +108,45 @@ export function PeopleTab() {
               <InfoRow label="Status" value={selectedEmployee.status} />
               <InfoRow label="Joined" value={selectedEmployee.createdAt} />
             </div>
-            {/* READ-ONLY CONTRACT VIEW */}
+            {/* CONTRACTS ON FILE */}
             <div className="mt-4 pt-4 border-t border-slate-100">
-              <p className="text-xs font-bold text-slate-500 uppercase mb-2">Employment Contract</p>
-              <div className="bg-slate-50 rounded-lg p-4 border border-slate-200 flex items-center gap-3">
-                <span className="material-symbols-outlined text-[24px] text-slate-400">description</span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-slate-900 truncate">{selectedEmployee.name} — Employment Contract</p>
-                  <p className="text-xs text-slate-500">Scanned PDF • Last updated Jan 2025</p>
-                </div>
-                <button className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 rounded-lg text-xs font-bold text-slate-700 transition-colors">View</button>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-bold text-slate-500 uppercase">Contracts on file ({contractsOf(selectedEmployee).length})</p>
+                {canManage && <button onClick={() => openNewContract(selectedEmployee)} className="text-[10px] font-bold text-aims-navy hover:underline">+ New / Attach</button>}
               </div>
+              {contractsOf(selectedEmployee).length === 0 ? (
+                <div className="bg-slate-50 rounded-lg p-4 border border-dashed border-slate-200 text-center">
+                  <span className="material-symbols-outlined text-[22px] text-slate-300 block">description</span>
+                  <p className="text-xs text-slate-500 mt-1">No contract on file yet.</p>
+                  {canManage && <button onClick={() => openNewContract(selectedEmployee)} className="mt-2 px-3 py-1.5 bg-aims-navy text-white text-[10px] font-bold rounded-lg hover:bg-aims-navy/90">Create Contract & Attach Scan</button>}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {contractsOf(selectedEmployee).map((c) => (
+                    <div key={c.id} className="bg-slate-50 rounded-lg p-3 border border-slate-200 flex items-center gap-2">
+                      <span className="material-symbols-outlined text-[20px] text-slate-400">description</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-slate-900 capitalize truncate">{c.type} contract</p>
+                        <p className="text-[10px] text-slate-500">{c.startDate}{c.endDate ? ` → ${c.endDate}` : ' · open-ended'} · {c.status.replace('_', ' ')}{c.scanDataUrl ? ' · 📄 scan on file' : ' · no scan yet'}</p>
+                      </div>
+                      <button onClick={() => setViewingContract(c)} className={cn('px-3 py-1.5 rounded-lg text-[10px] font-bold', c.scanDataUrl ? 'bg-aims-navy text-white hover:bg-aims-navy/90' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100')}>View Scan</button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
+      )}
+
+      {/* Scanned contract viewer */}
+      {viewingContract && (
+        <ContractScanViewer
+          contract={viewingContract}
+          canManage={canManage}
+          onClose={() => setViewingContract(null)}
+          onChanged={refreshViewer}
+        />
       )}
     </div>
   );

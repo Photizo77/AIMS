@@ -6,6 +6,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { roleLanding } from '@/config/navigation';
 
 export function LoginMFA() {
   const navigate = useNavigate();
@@ -17,9 +18,11 @@ export function LoginMFA() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    const success = login(email, password);
-    if (success) {
-      navigate('/dashboard', { replace: true });
+    const foundUser = login(email, password);
+    if (foundUser) {
+      // Attendance auto check-in is recorded by the attendance context on login.
+      // Route to the role-specific landing (role-aware redirect).
+      navigate(roleLanding(foundUser.role), { replace: true });
     } else {
       setError('Invalid credentials. Please check your email and password.');
     }

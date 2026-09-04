@@ -14,6 +14,7 @@ import { loadDemoInventory } from './inventoryService';
 import { loadDemoAttendance } from './attendanceService';
 import { loadDemoLeave } from './leaveService';
 import { loadDemoOffboarding } from './offboardingService';
+import { loadDemoContracts } from './contractService';
 
 /** Load the demo dataset into every persisted module store */
 export function loadDemoDataset(): void {
@@ -24,4 +25,5 @@ export function loadDemoDataset(): void {
   loadDemoAttendance();
   loadDemoLeave();
   loadDemoOffboarding();
+  loadDemoContracts();
 }

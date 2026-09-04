@@ -106,3 +106,20 @@ export function getVisibleNavItems(userRole: Role): NavItem[] {
   if (userRole === 'INNOVATOR') return INNOVATOR_NAV_ITEMS;
   return [];
 }
+
+/**
+ * Role-aware landing page after login (single source of truth):
+ * CD/ED → Executive dashboard · FINANCE → Cash flow analytics ·
+ * GRANTS roles → Grants pipeline · INNOVATOR → Tasks workspace ·
+ * SYS_ADMIN → Telemetry dashboard · COMPANY_ADMIN → User management.
+ */
+export function roleLanding(role: Role): string {
+  switch (role) {
+    case 'FINANCE': return '/finance';
+    case 'GRANT_WRITER':
+    case 'GRANTS_MANAGER': return '/grants';
+    case 'INNOVATOR': return '/tasks';
+    case 'COMPANY_ADMIN': return '/user-management';
+    default: return '/dashboard'; // CD, ED, SYS_ADMIN and fallback
+  }
+}

@@ -24,7 +24,8 @@ const MOCK_USERS: Record<string, User> = Object.fromEntries(
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => boolean;
+  /** Verify credentials against the roster-derived accounts; returns the signed-in user or null */
+  login: (email: string, password: string) => User | null;
   logout: () => void;
   getRoleLabel: (role: Role) => string;
   updateAvatar: (url: string) => void;
@@ -35,10 +36,13 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
-  const login = (email: string, _password: string): boolean => {
+  const login = (email: string, _password: string): User | null => {
     const foundUser = MOCK_USERS[email.toLowerCase()];
-    if (foundUser) { setUser(foundUser); return true; }
-    return false;
+    if (foundUser) {
+      setUser(foundUser);
+      return foundUser;
+    }
+    return null;
   };
 
   const logout = () => setUser(null);

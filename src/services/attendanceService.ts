@@ -160,3 +160,32 @@ export function sendReminder(subject: string, body: string): Reminder {
 
 /** All active staff email addresses (for real email dispatch) */
 export function staffEmails(): string[] { return ACTIVE_STAFF.map((s) => s.email).filter(Boolean); }
+
+/**
+ * Attendance auto check-in: called when a user logs in.
+ * Marks the person present in the register and writes a dated
+ * history record (the per-user aims_attendance_{userId} session state
+ * is handled separately by AttendanceContext).
+ */
+export function recordAutoCheckIn(staffId: string, name?: string, location = 'System login — office session'): void {
+  const person = ACTIVE_STAFF.find((s) => s.id === staffId);
+  const displayName = person?.name ?? name ?? 'Employee';
+  const dept = person?.department ?? '—';
+  const time = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  state = {
+    ...state,
+    presence: state.presence.map((p) => (p.id === staffId ? { ...p, mode: 'remote' as PresenceMode, checkIn: time, location, note: undefined } : p)),
+  };
+  const date = dayStr(0);
+  const exists = state.history.some((h) => h.staffId === staffId && h.date === date);
+  if (!exists) {
+    state = {
+      ...state,
+      history: [
+        { id: `h-${Date.now()}-${staffId}`, staffId, name: displayName, dept, date, checkIn: time, checkOut: '—', mode: 'remote', status: 'present' as HistoryStatus },
+        ...state.history,
+      ],
+    };
+  }
+  persist();
+}

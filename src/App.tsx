@@ -2,9 +2,10 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AppShell } from '@/components/layout/AppShell';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
-import { AuthProvider } from '@/context/AuthContext';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { NotificationProvider } from '@/context/NotificationContext';
 import { AttendanceProvider } from '@/context/AttendanceContext';
+import { roleLanding } from '@/config/navigation';
 
 // Auth & Layout
 import { LoginMFA } from '@/pages/auth/LoginMFA';
@@ -35,6 +36,12 @@ import { RBAC } from '@/pages/RBAC';
 import { Settings } from '@/pages/Settings';
 import { AIAssistant } from '@/pages/AIAssistant';
 import { FormsLibrary } from '@/pages/FormsLibrary';
+
+/** Role-aware home: signed-out users go to /login, everyone else to their role landing */
+function RoleHome() {
+  const { user } = useAuth();
+  return <Navigate to={user ? roleLanding(user.role) : '/login'} replace />;
+}
 
 export function App() {
   return (
@@ -77,12 +84,12 @@ export function App() {
                 <Route path="/ai-assistant" element={<ProtectedRoute><AIAssistant /></ProtectedRoute>} />
                 <Route path="/forms" element={<ProtectedRoute module="forms"><FormsLibrary /></ProtectedRoute>} />
 
-                {/* ── Catch-all: redirect to dashboard ── */}
-                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                {/* ── Catch-all: role-aware landing ── */}
+                <Route path="*" element={<RoleHome />} />
               </Route>
 
-              {/* ── Root redirect ── */}
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              {/* ── Root redirect: role-aware landing ── */}
+              <Route path="/" element={<RoleHome />} />
             </Routes>
           </BrowserRouter>
         </AttendanceProvider>
