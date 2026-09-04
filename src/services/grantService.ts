@@ -7,16 +7,28 @@
 // ============================================================
 
 import { MOCK_GRANTS, type GrantRecord } from '@/data/grants';
-import { loadJSON, saveJSON, STORAGE_KEYS } from '@/lib/storage';
+import { loadJSON, saveJSON, STORAGE_KEYS, demoMode } from '@/lib/storage';
 
 const persistedGrants = loadJSON<GrantRecord[] | null>(STORAGE_KEYS.grants, null);
-let grants: GrantRecord[] = (persistedGrants && persistedGrants.length > 0 ? persistedGrants : MOCK_GRANTS).map((g) => ({
+let grants: GrantRecord[] = (persistedGrants && persistedGrants.length > 0 ? persistedGrants : demoMode() ? MOCK_GRANTS : []).map((g) => ({
   ...g,
   milestones: g.milestones.map((m) => ({ ...m })),
   activity: g.activity.map((a) => ({ ...a })),
   documents: g.documents?.map((d) => ({ ...d })),
   comments: g.comments?.map((c) => ({ ...c })),
 }));
+
+/** Reseed the grants store with the demo catalogue (Settings → Load demo dataset) */
+export function loadDemoGrants(): void {
+  grants = MOCK_GRANTS.map((g) => ({
+    ...g,
+    milestones: g.milestones.map((m) => ({ ...m })),
+    activity: g.activity.map((a) => ({ ...a })),
+    documents: g.documents?.map((d) => ({ ...d })),
+    comments: g.comments?.map((c) => ({ ...c })),
+  }));
+  saveGrants();
+}
 
 let idCounter = 0;
 function nextId(prefix: string): string {

@@ -6,7 +6,7 @@
 // ============================================================
 
 import { useEffect, useState } from 'react';
-import { loadJSON, saveJSON, STORAGE_KEYS } from '@/lib/storage';
+import { loadJSON, saveJSON, STORAGE_KEYS, demoMode } from '@/lib/storage';
 
 export type RequisitionStatus = 'draft' | 'pushed' | 'returned' | 'approved' | 'disbursed' | 'rejected';
 
@@ -53,11 +53,21 @@ const MOCK_REQUISITIONS: Requisition[] = [
 ];
 
 const persisted = loadJSON<Requisition[] | null>(STORAGE_KEYS.requisitions, null);
-export let requisitions: Requisition[] = (persisted && persisted.length > 0 ? persisted : MOCK_REQUISITIONS).map((r) => ({
+export let requisitions: Requisition[] = (persisted && persisted.length > 0 ? persisted : demoMode() ? MOCK_REQUISITIONS : []).map((r) => ({
   ...r,
   lineItems: r.lineItems.map((l) => ({ ...l })),
   attachments: r.attachments.map((a) => ({ ...a })),
 }));
+
+/** Reseed the requisition store with the demo catalogue (Settings → Load demo dataset) */
+export function loadDemoRequisitions(): void {
+  requisitions = MOCK_REQUISITIONS.map((r) => ({
+    ...r,
+    lineItems: r.lineItems.map((l) => ({ ...l })),
+    attachments: r.attachments.map((a) => ({ ...a })),
+  }));
+  persist();
+}
 
 const reqListeners = new Set<() => void>();
 

@@ -1,6 +1,6 @@
 // src/services/innovationService.ts
 import type { InnovationProject, InnovationStage, InnovationMilestone, InnovationComment, InnovationDocument, InnovationCategory, InnovationLifecycleStatus, ProjectBudgetLine } from '@/types';
-import { loadJSON, saveJSON, STORAGE_KEYS } from '@/lib/storage';
+import { loadJSON, saveJSON, STORAGE_KEYS, demoMode } from '@/lib/storage';
 
 // ═══════════════════════════════════════════
 // ORGANIZATION INNOVATION PIPELINE
@@ -176,13 +176,25 @@ const SEED_PROJECTS: InnovationProject[] = [
 
 // Mutable in-memory store (replaces MOCK_PROJECTS so persona actions persist during the session)
 const persistedProjects = loadJSON<InnovationProject[] | null>(STORAGE_KEYS.projects, null);
-let projects: InnovationProject[] = (persistedProjects && persistedProjects.length > 0 ? persistedProjects : SEED_PROJECTS).map((p) => ({
+let projects: InnovationProject[] = (persistedProjects && persistedProjects.length > 0 ? persistedProjects : demoMode() ? SEED_PROJECTS : []).map((p) => ({
   ...p,
   milestones: p.milestones.map((m) => ({ ...m })),
   activityLog: p.activityLog.map((a) => ({ ...a })),
   comments: p.comments.map((c) => ({ ...c })),
   documents: p.documents.map((d) => ({ ...d })),
 }));
+
+/** Reseed the projects store with the demo catalogue (Settings → Load demo dataset) */
+export function loadDemoProjects(): void {
+  projects = SEED_PROJECTS.map((p) => ({
+    ...p,
+    milestones: p.milestones.map((m) => ({ ...m })),
+    activityLog: p.activityLog.map((a) => ({ ...a })),
+    comments: p.comments.map((c) => ({ ...c })),
+    documents: p.documents.map((d) => ({ ...d })),
+  }));
+  saveProjects();
+}
 
 let idCounter = 0;
 function nextId(prefix: string): string {

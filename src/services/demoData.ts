@@ -15,6 +15,10 @@ import { loadDemoAttendance } from './attendanceService';
 import { loadDemoLeave } from './leaveService';
 import { loadDemoOffboarding } from './offboardingService';
 import { loadDemoContracts } from './contractService';
+import { loadDemoGrants } from './grantService';
+import { loadDemoProjects } from './innovationService';
+import { loadDemoRequisitions } from './requisitionService';
+import { loadDemoFinance } from './financeService';
 
 /** Load the demo dataset into every persisted module store */
 export function loadDemoDataset(): void {
@@ -26,4 +30,8 @@ export function loadDemoDataset(): void {
   loadDemoLeave();
   loadDemoOffboarding();
   loadDemoContracts();
+  loadDemoGrants();
+  loadDemoProjects();
+  loadDemoRequisitions();
+  loadDemoFinance();
 }

@@ -3,7 +3,7 @@ import { useRef, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
-import { exportAllData, exportModuleData, importAllData, validateVaultFile, downloadFile, toCSV, vaultFilename, DATA_VAULT_VERSION, DATA_VAULT_BASELINE, STORAGE_KEYS } from '@/lib/storage';
+import { exportAllData, exportModuleData, importAllData, validateVaultFile, downloadFile, toCSV, vaultFilename, DATA_VAULT_VERSION, DATA_VAULT_BASELINE, STORAGE_KEYS, flashAllSystemData } from '@/lib/storage';
 import { grantService } from '@/services/grantService';
 import { innovationService } from '@/services/innovationService';
 import { financeService } from '@/services/financeService';
@@ -85,16 +85,9 @@ export function Settings() {
     window.setTimeout(() => window.location.reload(), 900);
   };
 
-  // ── Flash / factory reset ──
+  // ── Flash / factory reset — wipes EVERY aim_* key so no mock or demo data remains ──
   const flashSystem = () => {
-    try {
-      const doomed: string[] = [];
-      for (let i = 0; i < localStorage.length; i += 1) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith('aims_')) doomed.push(key);
-      }
-      doomed.forEach((k) => localStorage.removeItem(k));
-    } catch { /* ignore */ }
+    flashAllSystemData();
     window.location.reload();
   };
 

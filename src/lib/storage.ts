@@ -217,6 +217,24 @@ export function downloadFile(filename: string, content: string, type = 'applicat
   URL.revokeObjectURL(url);
 }
 
+/**
+ * FLASH / FACTORY RESET — wipe EVERYTHING recorded in this browser.
+ * Removes every AIMS storage key (incl. demo marker, attendance, backups'
+ * underlying keys, notifications, feed, user ops…). Callers usually reload
+ * afterwards so each store re-initialises clean (demo-gated seeds stay out).
+ */
+export function flashAllSystemData(): void {
+  const doomed: string[] = [];
+  try {
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('aims_')) doomed.push(key);
+    }
+    doomed.forEach((k) => localStorage.removeItem(k));
+  } catch { /* ignore */ }
+  notifyDataChanged();
+}
+
 /** Render rows as CSV text */
 export function toCSV(rows: Record<string, unknown>[], columns?: string[]): string {
   if (rows.length === 0) return '';

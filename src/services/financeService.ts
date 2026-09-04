@@ -8,7 +8,7 @@
 
 export type FinanceRecordType = 'income' | 'expense' | 'budget';
 
-import { loadJSON, saveJSON, STORAGE_KEYS } from '@/lib/storage';
+import { loadJSON, saveJSON, STORAGE_KEYS, demoMode } from '@/lib/storage';
 
 export interface FinanceRecord {
   id: string;
@@ -72,11 +72,20 @@ const SEED_BUDGETS: BudgetRecord[] = [
 ];
 
 const persistedFinance = loadJSON<PersistedFinance | null>(STORAGE_KEYS.finance, null);
-let income: FinanceRecord[] = (persistedFinance?.income ?? SEED_INCOME).map((r) => ({ ...r }));
-let expenses: FinanceRecord[] = (persistedFinance?.expenses ?? SEED_EXPENSES).map((r) => ({ ...r }));
-let budgets: BudgetRecord[] = (persistedFinance?.budgets ?? SEED_BUDGETS).map((r) => ({ ...r }));
+let income: FinanceRecord[] = (persistedFinance?.income ?? (demoMode() ? SEED_INCOME : [])).map((r) => ({ ...r }));
+let expenses: FinanceRecord[] = (persistedFinance?.expenses ?? (demoMode() ? SEED_EXPENSES : [])).map((r) => ({ ...r }));
+let budgets: BudgetRecord[] = (persistedFinance?.budgets ?? (demoMode() ? SEED_BUDGETS : [])).map((r) => ({ ...r }));
 let pendingEdits: PendingFinanceEdit[] = persistedFinance?.pendingEdits ?? [];
 let exportLogs: FinanceExportLog[] = persistedFinance?.exports ?? [];
+
+/** Reseed the finance store with the demo ledger (Settings → Load demo dataset) */
+export function loadDemoFinance(): void {
+  income = SEED_INCOME.map((r) => ({ ...r }));
+  expenses = SEED_EXPENSES.map((r) => ({ ...r }));
+  budgets = SEED_BUDGETS.map((r) => ({ ...r }));
+  pendingEdits = [];
+  saveFinance();
+}
 
 let idCounter = 0;
 function nextId(prefix: string): string {
