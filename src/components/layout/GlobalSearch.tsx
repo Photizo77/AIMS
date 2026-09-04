@@ -198,6 +198,9 @@ export function GlobalSearch() {
 
   const quickNav = user ? getVisibleNavItems(user.role).filter((n) => !n.href.includes('?') || n.href.startsWith('/dashboard')).slice(0, 10) : [];
 
+  // Hidden until the user explicitly presses Ctrl/Cmd+K — never auto-shown
+  if (!open) return null;
+
   return (
     <div className="fixed inset-0 z-[80] bg-black/40 backdrop-blur-sm p-4 flex items-start justify-center pt-[10vh]" onClick={() => setOpen(false)}>
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Global search">
