@@ -8,7 +8,7 @@ import { exportRecordSheet } from '@/lib/export';
 import { flagService, subscribeFlags } from '@/services/flagService';
 import { financeService } from '@/services/financeService';
 import { requisitionPriceFlags, type PriceFlag } from '@/lib/aiEngine';
-import { type Requisition, type RequisitionStatus, requisitions, useRequisitions, mutateRequisitions } from '@/services/requisitionService';
+import { type Requisition, type RequisitionStatus, requisitions, useRequisitions, mutateRequisitions, addRequisition } from '@/services/requisitionService';
 import { openFlagForED } from '@/components/grants/FlagForEDModal';
 
 type FinanceTab = 'drafts' | 'pushed' | 'returned' | 'history';
@@ -202,6 +202,34 @@ function FinanceRequisitionWorkspace({ userName }: { userName: string }) {
   const [showCreateForm, setShowCreateForm] = useState(() => Boolean((location.state as { new?: boolean } | null)?.new));
   const [detail, setDetail] = useState<Requisition | null>(null);
 
+  // New requisition form (real creation)
+  const [cf, setCf] = useState({ title: '', dept: 'Finance', purpose: '', budgetLine: 'GL-5210 Office Supplies', link: '' });
+  const [cfItems, setCfItems] = useState<{ item: string; qty: number; unitPrice: number }[]>([{ item: '', qty: 1, unitPrice: 0 }]);
+  const cfTotal = cfItems.reduce((s, i) => s + (Number(i.qty) || 0) * (Number(i.unitPrice) || 0), 0);
+  const setCfItem = (idx: number, patch: Partial<{ item: string; qty: number; unitPrice: number }>) =>
+    setCfItems((prev) => prev.map((r, i) => (i === idx ? { ...r, ...patch } : r)));
+  const submitCreate = () => {
+    const lineItems = cfItems
+      .filter((i) => i.item.trim())
+      .map((i) => ({ item: i.item.trim(), qty: Number(i.qty) || 1, unit: fmtMoney(Number(i.unitPrice) || 0), total: (Number(i.qty) || 1) * (Number(i.unitPrice) || 0) }));
+    if (!cf.title.trim()) { showToast({ title: 'Title Required', message: 'Give the requisition a title.', type: 'error' }); return; }
+    if (lineItems.length === 0) { showToast({ title: 'Line Items Required', message: 'Add at least one line item with description, quantity and unit price.', type: 'error' }); return; }
+    const req = addRequisition({
+      title: cf.title.trim(),
+      dept: cf.dept,
+      requester: userName || 'Finance Officer',
+      amount: lineItems.reduce((s, l) => s + l.total, 0),
+      purpose: cf.purpose.trim() || (cf.link.trim() ? `Linked to: ${cf.link.trim()}` : 'Funding request'),
+      budgetLine: cf.budgetLine,
+      lineItems,
+    });
+    setShowCreateForm(false);
+    setCf({ title: '', dept: 'Finance', purpose: '', budgetLine: 'GL-5210 Office Supplies', link: '' });
+    setCfItems([{ item: '', qty: 1, unitPrice: 0 }]);
+    addNotification({ title: 'Requisition Created', message: `${req.id} saved with status "Pending Finance Review".`, type: 'info' });
+    showToast({ title: 'Requisition Created', message: `${req.id} saved as a draft (Pending Finance Review).`, type: 'success' });
+  };
+
   const visibleReqs = useMemo(() => requisitions.filter((r) => {
     if (activeTab === 'drafts' && !(r.status === 'draft' && r.requester === userName)) return false;
     if (activeTab === 'pushed' && r.status !== 'pushed') return false;
@@ -328,23 +356,52 @@ function FinanceRequisitionWorkspace({ userName }: { userName: string }) {
             <button onClick={() => setShowCreateForm(false)} className="text-slate-400 hover:text-slate-600"><span className="material-symbols-outlined text-[20px]">close</span></button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Title</label><input type="text" placeholder="e.g., Q4 Training Materials" className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-aims-navy/30" /></div>
-            <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Department</label><select className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-aims-navy/30"><option>Finance</option><option>Grants</option><option>Innovation</option><option>HR</option><option>IT</option></select></div>
-            <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Amount (UGX)</label><input type="number" placeholder="e.g., 2500000" className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-aims-navy/30" /></div>
-            <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Budget Line</label><select className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-aims-navy/30"><option>GL-5210 Office Supplies</option><option>GL-5220 Communications</option><option>GL-5230 Training</option><option>GL-5315 Field Equipment</option><option>GL-5421 R&D Equipment</option></select></div>
-            <div className="md:col-span-2"><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Purpose</label><textarea rows={2} placeholder="Why is this purchase needed?" className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-aims-navy/30 resize-none" /></div>
             <div className="md:col-span-2">
-              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Attachments (quotes, receipts, invoices)</label>
-              <div className="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center hover:border-aims-navy/50 cursor-pointer transition-colors">
-                <span className="material-symbols-outlined text-slate-400 text-[24px]">upload_file</span>
-                <p className="text-xs text-slate-500 mt-1">Click or drag files here • PDF, DOCX, XLSX, images</p>
+              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Title *</label>
+              <input value={cf.title} onChange={(e) => setCf({ ...cf, title: e.target.value })} placeholder="e.g., Q4 Training Materials" className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-aims-navy/30" />
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Department</label>
+              <select value={cf.dept} onChange={(e) => setCf({ ...cf, dept: e.target.value })} className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 bg-white">
+                {['Finance', 'Grants', 'Innovation', 'HR', 'IT', 'Executive', 'Operations'].map((d) => <option key={d}>{d}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Budget Code</label>
+              <select value={cf.budgetLine} onChange={(e) => setCf({ ...cf, budgetLine: e.target.value })} className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 bg-white">
+                <option>GL-5210 Office Supplies</option><option>GL-5220 Communications</option><option>GL-5230 Training</option><option>GL-5315 Field Equipment</option><option>GL-5421 R&amp;D Equipment</option>
+              </select>
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Project / Grant link (optional)</label>
+              <input value={cf.link} onChange={(e) => setCf({ ...cf, link: e.target.value })} placeholder="e.g., Solar Grain Dryer (inv-001) or Grant g9 — Land Rights" className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-aims-navy/30" />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Justification</label>
+              <textarea value={cf.purpose} onChange={(e) => setCf({ ...cf, purpose: e.target.value })} rows={2} placeholder="Why is this funding needed?" className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-aims-navy/30 resize-none" />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Line items (description · quantity · unit price)</label>
+              <div className="space-y-1.5">
+                {cfItems.map((row, idx) => (
+                  <div key={idx} className="flex items-center gap-2 flex-wrap">
+                    <input value={row.item} onChange={(e) => setCfItem(idx, { item: e.target.value })} placeholder="Item description" className="flex-1 min-w-[140px] text-xs border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-aims-navy/30" />
+                    <input type="number" min="1" value={row.qty} onChange={(e) => setCfItem(idx, { qty: Number(e.target.value) })} className="w-16 text-xs border border-slate-200 rounded-lg px-2 py-1.5" title="Quantity" />
+                    <input type="number" min="0" value={row.unitPrice} onChange={(e) => setCfItem(idx, { unitPrice: Number(e.target.value) })} placeholder="Unit price (UGX)" className="w-32 text-xs border border-slate-200 rounded-lg px-2 py-1.5" />
+                    <span className="text-xs font-bold text-aims-navy w-24 text-right">{fmtMoney((Number(row.qty) || 0) * (Number(row.unitPrice) || 0))}</span>
+                    {cfItems.length > 1 && (
+                      <button onClick={() => setCfItems((prev) => prev.filter((_, i) => i !== idx))} className="text-red-400 hover:text-red-600"><span className="material-symbols-outlined text-[16px]">remove_circle</span></button>
+                    )}
+                  </div>
+                ))}
+                <button onClick={() => setCfItems((prev) => [...prev, { item: '', qty: 1, unitPrice: 0 }])} className="text-[11px] font-bold text-aims-navy hover:underline flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">add_circle</span>Add line item</button>
               </div>
             </div>
           </div>
-          <div className="flex justify-end gap-2 mt-4 pt-4 border-t border-slate-100">
+          <div className="flex items-center justify-end gap-2 mt-4 pt-4 border-t border-slate-100 flex-wrap">
+            <p className="mr-auto text-xs font-extrabold text-slate-900">Total: {fmtMoney(cfTotal)}</p>
             <button onClick={() => setShowCreateForm(false)} className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
-            <button onClick={() => { showToast({ title: 'Draft saved', message: 'Saved to My Drafts.', type: 'success' }); setShowCreateForm(false); }} className="px-4 py-2 text-xs font-bold text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50">Save Draft</button>
-            <button onClick={() => { showToast({ title: 'Pushed to ED', message: 'Sent to ED for approval.', type: 'success' }); setShowCreateForm(false); }} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90 flex items-center gap-1.5"><span className="material-symbols-outlined text-[14px]">send</span>Push to ED</button>
+            <button onClick={submitCreate} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90 flex items-center gap-1.5"><span className="material-symbols-outlined text-[14px]">save</span>Create Requisition</button>
           </div>
         </div>
       )}
