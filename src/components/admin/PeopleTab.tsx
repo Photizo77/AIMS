@@ -1,5 +1,6 @@
 // src/components/admin/PeopleTab.tsx
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
 import type { User } from '@/types';
@@ -31,6 +32,20 @@ export function PeopleTab() {
   // Roster + employees added through the onboarding form (auto-updates live)
   const employees = useMemo(() => [...MOCK_EMPLOYEES, ...getDirectoryEntries()], [live]);
   const onboardingCount = getDirectoryEntries().length;
+
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Global-search deep link (?user=id) — open that person's profile
+  useEffect(() => {
+    const uid = searchParams.get('user');
+    if (!uid) return;
+    const found = employees.find((e) => e.id === uid);
+    if (found) setSelectedEmployee(found);
+    const next = new URLSearchParams(searchParams.toString());
+    next.delete('user');
+    setSearchParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const contractsOf = (emp: (User & { position: string }) | DirectoryEntry): ContractRecord[] => {
     const byId = contractsFor(emp.id);

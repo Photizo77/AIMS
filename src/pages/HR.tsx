@@ -7,7 +7,7 @@
 // ============================================================
 
 import { Component, useState, type ReactNode } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
 import { PeopleTab } from '@/components/admin/PeopleTab';
@@ -81,7 +81,8 @@ class TabBoundary extends Component<{ name: string; children: ReactNode }, { err
 export function HR() {
   const { user } = useAuth();
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState<AdminTab>(() => initialTab((location.state as { tab?: string } | null)?.tab));
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState<AdminTab>(() => initialTab((location.state as { tab?: string } | null)?.tab ?? searchParams.get('tab') ?? undefined));
 
   // Country Director gets the consolidated HR & Admin Summary (no individual records)
   if (user?.role === 'CD') {

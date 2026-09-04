@@ -7,7 +7,8 @@
 // downloads a record sheet of the document; Share copies a link.
 // ============================================================
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
@@ -134,6 +135,24 @@ export function Documents() {
     setVersionDocId(null);
     setPreviewDoc(null);
   };
+
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Deep link from global search (?doc=id) — jump to the category and open the preview
+  useEffect(() => {
+    const docId = searchParams.get('doc');
+    if (!docId) return;
+    const doc = listDocs().find((d) => d.id === docId);
+    const allowed = doc ? getCategoryAccess(userRole, doc.category) !== 'none' : false;
+    const next = new URLSearchParams(searchParams.toString());
+    next.delete('doc');
+    setSearchParams(next, { replace: true });
+    if (doc && allowed) {
+      setActiveCategory(doc.category);
+      setPreviewDoc(doc);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, userRole]);
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {

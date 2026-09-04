@@ -1,18 +1,7 @@
 // src/pages/Knowledge.tsx
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import type { KnowledgeResource } from '@/types';
-
-const MOCK_RESOURCES: KnowledgeResource[] = [
-  { id: 'k1', title: 'Grant Writing Best Practices Guide', type: 'document', category: 'Grants', uploadedBy: 'Sarah Aciro', uploadedAt: '2026-07-20', url: '#', description: 'Comprehensive guide for institutional funders' },
-  { id: 'k2', title: 'Ardhi Impact Report 2025', type: 'document', category: 'Reports', uploadedBy: 'Grace Aceng', uploadedAt: '2026-06-15', url: '#', description: 'Annual impact metrics and beneficiary stories' },
-  { id: 'k3', title: 'Climate-Smart Agriculture Training', type: 'video', category: 'Training', uploadedBy: 'Pius Odong', uploadedAt: '2026-07-10', url: '#', description: '45-min training session recording for field staff' },
-  { id: 'k4', title: 'Donor Pitch Presentation', type: 'video', category: 'Grants', uploadedBy: 'Sarah Aciro', uploadedAt: '2026-08-01', url: '#', description: 'Standard 10-min pitch deck walkthrough' },
-  { id: 'k5', title: 'Board Meeting Recording Q2', type: 'audio', category: 'Governance', uploadedBy: 'Nassir Mwanje', uploadedAt: '2026-06-30', url: '#', description: 'Full audio recording of Q2 board meeting' },
-  { id: 'k6', title: 'Field Visit Photos - Karamoja', type: 'photo', category: 'Documentation', uploadedBy: 'Janet Apio', uploadedAt: '2026-07-25', url: '#', description: '24 photos from irrigation project site visit' },
-  { id: 'k7', title: 'Organizational Theory of Change', type: 'document', category: 'Strategy', uploadedBy: 'Nassir Mwanje', uploadedAt: '2026-05-10', url: '#', description: 'Logic model and impact pathway documentation' },
-  { id: 'k8', title: 'Staff Onboarding Orientation', type: 'video', category: 'HR', uploadedBy: 'Grace Aceng', uploadedAt: '2026-04-20', url: '#', description: 'New hire orientation video package' },
-];
+import { KNOWLEDGE_RESOURCES } from '@/data/knowledgeResources';
 
 const TYPE_CONFIG: Record<string, { icon: string; color: string; bg: string }> = {
   document: { icon: 'description', color: 'text-aims-navy', bg: 'bg-blue-50' },
@@ -25,7 +14,7 @@ export function Knowledge() {
   const [filterType, setFilterType] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filtered = MOCK_RESOURCES.filter(r => {
+  const filtered = KNOWLEDGE_RESOURCES.filter(r => {
     const matchesType = filterType === 'all' || r.type === filterType;
     const matchesSearch = r.title.toLowerCase().includes(searchQuery.toLowerCase()) || r.category.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesType && matchesSearch;
