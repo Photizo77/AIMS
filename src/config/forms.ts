@@ -10,6 +10,8 @@ export interface FormField {
   required?: boolean;
   section?: string;
   colSpan?: number;
+  /** Conditional logic — field only renders when another field equals this value */
+  showWhen?: { key: string; value: string };
 }
 
 export interface FormSection {
@@ -127,6 +129,7 @@ export const FORMS_LIBRARY: FormDefinition[] = [
         fields: [
           { label: 'Cover Person During Leave', key: 'coverPerson', type: 'text' },
           { label: 'Contactable During Leave?', key: 'contactable', type: 'select', options: ['Yes', 'No'] },
+          { label: 'Contact Number During Leave', key: 'contactPhone', type: 'text', showWhen: { key: 'contactable', value: 'Yes' } },
           { label: 'Pending Tasks / Handover Notes', key: 'handoverNotes', type: 'textarea' },
         ],
       },
@@ -628,6 +631,120 @@ export const FORMS_LIBRARY: FormDefinition[] = [
           { label: 'Module', key: 'module', type: 'text' },
           { label: 'Access Level Needed', key: 'accessLevel', type: 'select', options: ['View', 'Edit', 'Full'] },
           { label: 'Justification', key: 'justification', type: 'textarea' },
+        ],
+      },
+    ],
+  },
+  // HR operational forms — Timesheet & Travel
+  {
+    id: 'hr-06',
+    code: 'HR-06',
+    title: 'Timesheet Form',
+    instructions: 'Record hours worked per day and per project/activity. Submit weekly by Friday 17:00. Overtime requires pre-approval from your supervisor.',
+    module: 'hr',
+    sections: [
+      {
+        title: 'Timesheet Period',
+        fields: [
+          { label: 'Week Starting (Monday)', key: 'weekStart', type: 'date', required: true },
+          { label: 'Employee Name', key: 'employeeName', type: 'text', required: true },
+          { label: 'Department', key: 'department', type: 'select', options: ['Executive', 'Finance', 'Grants', 'Innovation', 'HR & Admin', 'IT', 'Field Operations'] },
+          { label: 'Supervisor', key: 'supervisor', type: 'text' },
+        ],
+      },
+      {
+        title: 'Hours by Day',
+        fields: [
+          { label: 'Monday Hours', key: 'mon', type: 'number', placeholder: '0 – 12' },
+          { label: 'Tuesday Hours', key: 'tue', type: 'number' },
+          { label: 'Wednesday Hours', key: 'wed', type: 'number' },
+          { label: 'Thursday Hours', key: 'thu', type: 'number' },
+          { label: 'Friday Hours', key: 'fri', type: 'number' },
+          { label: 'Weekend / Field Hours', key: 'weekendHours', type: 'number' },
+          { label: 'Total Hours This Week', key: 'totalHours', type: 'auto' },
+          { label: 'Leave Days Taken (this week)', key: 'leaveDays', type: 'number' },
+        ],
+      },
+      {
+        title: 'Activity Allocation',
+        fields: [
+          { label: 'Primary Project / Grant', key: 'project', type: 'text' },
+          { label: 'Main Activities Undertaken', key: 'activities', type: 'textarea', required: true },
+          { label: 'Any Overtime?', key: 'overtime', type: 'select', options: ['No', 'Yes — pre-approved'] },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'hr-07',
+    code: 'HR-07',
+    title: 'Travel Request Form',
+    instructions: 'Submit before booking any travel. Field trips require department head approval; accommodation and advances are handled only after this form is approved.',
+    module: 'hr',
+    sections: [
+      {
+        title: 'Travel Details',
+        fields: [
+          { label: 'Traveller Name', key: 'travellerName', type: 'text', required: true },
+          { label: 'Department', key: 'department', type: 'select', options: ['Executive', 'Finance', 'Grants', 'Innovation', 'HR & Admin', 'Field Operations'] },
+          { label: 'Travel Purpose', key: 'purpose', type: 'textarea', required: true },
+          { label: 'Destination', key: 'destination', type: 'text', required: true },
+          { label: 'Departure Date', key: 'departure', type: 'date', required: true },
+          { label: 'Return Date', key: 'returnDate', type: 'date', required: true },
+          { label: 'Mode of Transport', key: 'transport', type: 'select', options: ['Road — ARDHI vehicle', 'Road — hired/private', 'Flight', 'Other'], required: true },
+          { label: 'Flight Booking Reference / Airline', key: 'flightRef', type: 'text', showWhen: { key: 'transport', value: 'Flight' } },
+          { label: 'Vehicle Registration / Driver', key: 'vehicle', type: 'text', showWhen: { key: 'transport', value: 'Road — ARDHI vehicle' } },
+        ],
+      },
+      {
+        title: 'Accommodation & Advance',
+        fields: [
+          { label: 'Accommodation Needed?', key: 'accommodation', type: 'select', options: ['No', 'Yes'] },
+          { label: 'Hotel / Guest House & Nights', key: 'hotel', type: 'text', showWhen: { key: 'accommodation', value: 'Yes' } },
+          { label: 'Cash Advance Needed?', key: 'advance', type: 'select', options: ['No', 'Yes'] },
+          { label: 'Advance Amount (UGX)', key: 'advanceAmount', type: 'number', showWhen: { key: 'advance', value: 'Yes' } },
+        ],
+      },
+      {
+        title: 'Approvals',
+        fields: [
+          { label: 'Supervisor Name', key: 'supervisor', type: 'text' },
+          { label: 'Comments', key: 'comments', type: 'textarea' },
+        ],
+      },
+    ],
+  },
+  // Compliance forms
+  {
+    id: 'sys-03',
+    code: 'SYS-03',
+    title: 'Risk Assessment Form',
+    confidentiality: 'Confidential — For Management Use',
+    instructions: 'Complete a risk assessment before any new activity, field operation or partner engagement. High risks must be reviewed by the ED before proceeding.',
+    module: 'rbac',
+    sections: [
+      {
+        title: 'Risk Context',
+        fields: [
+          { label: 'Assessed By', key: 'assessedBy', type: 'text', required: true },
+          { label: 'Activity / Operation', key: 'activity', type: 'textarea', required: true },
+          { label: 'Location', key: 'location', type: 'text' },
+          { label: 'Date of Assessment', key: 'assessmentDate', type: 'date', required: true },
+          { label: 'Risk Category', key: 'category', type: 'select', options: ['Field Safety', 'Safeguarding', 'Data Protection', 'Financial', 'Reputational', 'Operational'] },
+          { label: 'Affects Children / Vulnerable Beneficiaries?', key: 'affectsVulnerable', type: 'select', options: ['No', 'Yes'] },
+          { label: 'Safeguarding Lead Informed?', key: 'safeguardingLead', type: 'select', options: ['Yes', 'No'], showWhen: { key: 'affectsVulnerable', value: 'Yes' } },
+        ],
+      },
+      {
+        title: 'Risk Rating & Mitigation',
+        fields: [
+          { label: 'Likelihood', key: 'likelihood', type: 'select', options: ['Low', 'Medium', 'High'] },
+          { label: 'Impact', key: 'impact', type: 'select', options: ['Low', 'Medium', 'High'] },
+          { label: 'Overall Rating', key: 'rating', type: 'auto' },
+          { label: 'Existing Controls', key: 'controls', type: 'textarea' },
+          { label: 'Additional Mitigation Required', key: 'mitigation', type: 'textarea', required: true },
+          { label: 'Action Owner', key: 'owner', type: 'text' },
+          { label: 'Review / Due Date', key: 'dueDate', type: 'date' },
         ],
       },
     ],

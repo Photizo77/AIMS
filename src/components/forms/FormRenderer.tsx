@@ -1,8 +1,18 @@
 // src/components/forms/FormRenderer.tsx
+// ============================================================
+// AIMS — dynamic form renderer: schema-driven fields, required-field
+// validation and conditional (show-when) logic. On submit the data is
+// persisted (aims_form_submissions), the owning team is notified and
+// the user is routed to the queue that reviews that form type.
+// ============================================================
+
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { FormDefinition, FormField } from '@/config/forms';
+import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
+import { queueForModule, saveFormSubmission } from '@/lib/formSubmissions';
 
 interface FormRendererProps {
   form: FormDefinition;
@@ -11,18 +21,27 @@ interface FormRendererProps {
 }
 
 export function FormRenderer({ form, onSubmit, onClose }: FormRendererProps) {
-  const { showToast } = useNotifications();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { showToast, addNotification } = useNotifications();
   const [formData, setFormData] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (key: string, value: string) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
 
+  // Conditional logic: a field renders only when its trigger field equals the expected value
+  const fieldVisible = (field: FormField): boolean =>
+    !field.showWhen || formData[field.showWhen.key] === field.showWhen.value;
+
+  const visibleFields = (sectionIdx: number): FormField[] =>
+    form.sections[sectionIdx].fields.filter(fieldVisible);
+
   const handleSubmit = () => {
     const missingFields = form.sections
-      .flatMap((s) => s.fields)
-      .filter((f) => f.required && !formData[f.key]);
-    
+      .flatMap((_section, idx) => visibleFields(idx).filter((f) => f.required && !formData[f.key]));
+
     if (missingFields.length > 0) {
       showToast({
         title: 'Missing Required Fields',
@@ -32,9 +51,44 @@ export function FormRenderer({ form, onSubmit, onClose }: FormRendererProps) {
       return;
     }
 
-    showToast({ title: 'Form Submitted', message: `${form.code}: ${form.title} submitted successfully.`, type: 'success' });
+    setSubmitting(true);
+    const queue = queueForModule(form.module);
+    const submittedAt = new Date().toISOString();
+    const submittedBy = user?.name ?? 'Staff member';
+
+    // 1) Save the submission
+    saveFormSubmission({
+      code: form.code,
+      title: form.title,
+      module: form.module,
+      submittedBy,
+      submittedAt,
+      data: formData,
+    });
+
+    // 2) Notify the team that owns that queue
+    queue?.recipients.forEach((r) => {
+      addNotification({
+        userId: r.userId,
+        recipientName: r.name,
+        title: `New Form — ${form.code}: ${form.title}`,
+        message: `${submittedBy} submitted ${form.code} (${form.title}). Review it in the ${queue?.label ?? 'relevant module'}.`,
+        type: 'approval',
+        link: queue?.route ?? '/forms',
+        actionUrl: queue?.route ?? '/forms',
+      });
+    });
+
+    // 3) Route based on the form's module
+    showToast({
+      title: 'Form Submitted',
+      message: `${form.code} saved. Sent to ${queue?.label ?? 'the relevant queue'} — the team has been notified.`,
+      type: 'success',
+    });
     onSubmit?.(formData);
     onClose?.();
+    setSubmitting(false);
+    if (queue?.route) navigate(queue.route);
   };
 
   const renderField = (field: FormField) => {
@@ -71,6 +125,8 @@ export function FormRenderer({ form, onSubmit, onClose }: FormRendererProps) {
     }
   };
 
+  const queue = queueForModule(form.module);
+
   return (
     <div className="space-y-5">
       <div className="bg-aims-navy rounded-xl p-5 text-white">
@@ -90,7 +146,7 @@ export function FormRenderer({ form, onSubmit, onClose }: FormRendererProps) {
           </h3>
           {section.description && <p className="text-xs text-slate-500 mb-3">{section.description}</p>}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {section.fields.map((field) => (
+            {section.fields.filter(fieldVisible).map((field) => (
               <div key={field.key} className={field.type === 'textarea' || field.type === 'checkbox' ? 'md:col-span-2' : ''}>
                 {field.type !== 'checkbox' && (
                   <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
@@ -104,11 +160,17 @@ export function FormRenderer({ form, onSubmit, onClose }: FormRendererProps) {
         </div>
       ))}
 
-      <div className="flex justify-end gap-2 pt-2">
-        {onClose && <button onClick={onClose} className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>}
-        <button onClick={handleSubmit} className="px-6 py-2 bg-aims-green text-white text-xs font-bold rounded-lg hover:bg-aims-green/90 flex items-center gap-1.5">
-          <span className="material-symbols-outlined text-[14px]">check</span>Submit Form
-        </button>
+      <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 flex items-center justify-between gap-3 flex-wrap">
+        <p className="text-[10px] text-slate-500 italic flex items-center gap-1.5">
+          <span className="material-symbols-outlined text-[13px] text-aims-navy">send</span>
+          On submit: data saved and sent to the <strong>{queue?.label ?? 'relevant queue'}</strong> — the team is notified.
+        </p>
+        <div className="flex gap-2">
+          {onClose && <button onClick={onClose} className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>}
+          <button onClick={handleSubmit} disabled={submitting} className="px-6 py-2 bg-aims-green text-white text-xs font-bold rounded-lg hover:bg-aims-green/90 flex items-center gap-1.5">
+            <span className="material-symbols-outlined text-[14px]">check</span>{submitting ? 'Submitting…' : `Submit & Send to ${queue?.label ?? 'Queue'}`}
+          </button>
+        </div>
       </div>
     </div>
   );

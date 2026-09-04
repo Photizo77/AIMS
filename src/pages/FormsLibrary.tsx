@@ -6,13 +6,13 @@ import { FormRenderer } from '@/components/forms/FormRenderer';
 
 const MODULE_LABELS: Record<string, string> = {
   hr: 'Human Resources',
+  attendance: 'Human Resources', // Leave Request groups under HR forms
   finance: 'Finance',
-  procurement: 'Procurement',
+  procurement: 'Finance',
   grants: 'Grants',
   innovations: 'Innovations',
-  attendance: 'Attendance',
   inventory: 'Inventory',
-  rbac: 'System & Security',
+  rbac: 'Compliance',
 };
 
 const MODULE_ICONS: Record<string, string> = {

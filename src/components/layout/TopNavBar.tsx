@@ -34,6 +34,14 @@ export function TopNavBar() {
         </span>
       </div>
       <div className="shrink-0 flex items-center gap-1 sm:gap-2 ml-auto">
+        <button
+          onClick={() => navigate('/forms')}
+          title="Forms Library"
+          className="flex items-center gap-1 px-2.5 sm:px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-aims-navy transition-colors"
+        >
+          <span className="material-symbols-outlined text-[20px]">description</span>
+          <span className="hidden md:block text-xs font-extrabold uppercase tracking-wide">Forms</span>
+        </button>
         <NotificationBell />
         <EmailBell />
         {user && (
