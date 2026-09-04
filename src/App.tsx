@@ -73,6 +73,7 @@ export function App() {
                 <Route path="/grants" element={<ProtectedRoute module="grants"><Grants /></ProtectedRoute>} />
                 <Route path="/grants/:grantId" element={<ProtectedRoute module="grants"><GrantDetail /></ProtectedRoute>} />
                 <Route path="/finance" element={<ProtectedRoute module="finance"><Finance /></ProtectedRoute>} />
+                <Route path="/finance/analytics" element={<ProtectedRoute module="finance"><Finance /></ProtectedRoute>} />
                 <Route path="/procurement" element={<ProtectedRoute module="procurement"><Procurement /></ProtectedRoute>} />
                 <Route path="/approvals" element={<ProtectedRoute module="approvals"><Approvals /></ProtectedRoute>} />
                 <Route path="/documents" element={<ProtectedRoute module="documents"><Documents /></ProtectedRoute>} />
