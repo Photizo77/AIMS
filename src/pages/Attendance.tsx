@@ -48,56 +48,60 @@ export function Attendance() {
     if (checkInMode === 'physical') {
       setIsLocating(true);
       setLocationError(null);
-      // 1) Office network check first (192.168.100.x = verified on-site)
-      detectLocalIPv4s().then((ips) => {
-        const officeIp = ips.find((ip) => matchesOfficeNetwork(ip));
-        if (officeIp) {
+      // GPS is the PRIMARY check (0.278316N, 32.613831E); office network is the fallback.
+      const tryNetwork = (gpsIssue: string) => {
+        detectLocalIPv4s().then((ips) => {
+          const officeIp = ips.find((ip) => matchesOfficeNetwork(ip));
           const now = new Date();
           const timeString = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-          setIsCheckedIn(true);
-          setCheckInTime(timeString);
-          recordUserCheckIn(user?.id ?? '', user?.name, 'physical', `ARDHI Office Network (${officeIp})`, true);
-          showToast({ title: 'Checked In (Physical)', message: `Office network verified (${officeIp}). Checked in at ${timeString}.`, type: 'success' });
-          return;
-        }
-        // 2) GPS fallback — within the office geofence
-        if (!navigator.geolocation) {
+          if (officeIp) {
+            setIsCheckedIn(true);
+            setCheckInTime(timeString);
+            recordUserCheckIn(user?.id ?? '', user?.name, 'physical', `ARDHI Office Network (${officeIp})`, true);
+            showToast({ title: 'Checked In (Physical)', message: `Office network verified (${officeIp}). Checked in at ${timeString}.`, type: 'success' });
+            return;
+          }
           setIsLocating(false);
-          setLocationError('Geolocation is not supported and the device is not on the office network (192.168.100.x).');
-          showToast({ title: 'Location Unavailable', message: 'Use the office network or a GPS-capable browser.', type: 'error' });
-          return;
-        }
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const { latitude, longitude } = position.coords;
-            const distance = haversineDistance(latitude, longitude, OFFICE_GEOFENCE.latitude, OFFICE_GEOFENCE.longitude);
-            setIsLocating(false);
-            if (distance <= OFFICE_GEOFENCE.radiusMeters) {
-              const now = new Date();
-              const timeString = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-              setIsCheckedIn(true);
-              setCheckInTime(timeString);
-              recordUserCheckIn(user?.id ?? '', user?.name, 'physical', 'ARDHI Office, Kampala', true);
-              showToast({ title: 'Checked In (Physical)', message: `Location verified within ${OFFICE_GEOFENCE.radiusMeters}m. Checked in at ${timeString}.`, type: 'success' });
-            } else {
-              if (user) logGeofenceAttempt(user.id, user.name, distance, `${latitude.toFixed(4)}°N, ${longitude.toFixed(4)}°E`);
-              setLocationError(`You must be within ${OFFICE_GEOFENCE.radiusMeters}m of the ARDHI office (or on the office network) to check in. You are ${Math.round(distance)}m away.`);
-              showToast({ title: 'Outside Office Radius', message: `Physical check-in blocked — ${Math.round(distance)}m from the office.`, type: 'error' });
-            }
-          },
-          (error) => {
-            setIsLocating(false);
-            let msg = 'Unable to retrieve your location.';
-            if (error.code === error.PERMISSION_DENIED) msg = 'Location permission denied — allow location access or join the office network (192.168.100.x).';
-            if (error.code === error.POSITION_UNAVAILABLE) msg = 'Location unavailable — connect to the office network (192.168.100.x) to check in.';
-            if (error.code === error.TIMEOUT) msg = 'Location request timed out — try the office network.';
-            if (user) logGeofenceAttempt(user.id, user.name, -1, msg);
-            setLocationError(msg);
-            showToast({ title: 'Location Error', message: msg, type: 'error' });
-          },
-          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-        );
-      });
+          const finalMsg = `${gpsIssue} and the device is not on the office network (192.168.100.x).`;
+          if (user) logGeofenceAttempt(user.id, user.name, -1, finalMsg);
+          setLocationError(finalMsg);
+          showToast({ title: 'Check-In Blocked', message: finalMsg, type: 'error' });
+        });
+      };
+      if (!navigator.geolocation) {
+        tryNetwork('Geolocation is not supported by this browser');
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          const distance = haversineDistance(latitude, longitude, OFFICE_GEOFENCE.latitude, OFFICE_GEOFENCE.longitude);
+          setIsLocating(false);
+          if (distance <= OFFICE_GEOFENCE.radiusMeters) {
+            // PRIMARY — GPS verified against 0.278316N, 32.613831E
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+            setIsCheckedIn(true);
+            setCheckInTime(timeString);
+            recordUserCheckIn(user?.id ?? '', user?.name, 'physical', 'ARDHI Office, Kampala', true);
+            showToast({ title: 'Checked In (Physical)', message: `Location verified within ${OFFICE_GEOFENCE.radiusMeters}m. Checked in at ${timeString}.`, type: 'success' });
+          } else {
+            // GPS reported a position outside the geofence → blocked (no IP override).
+            if (user) logGeofenceAttempt(user.id, user.name, distance, `${latitude.toFixed(4)}°N, ${longitude.toFixed(4)}°E`);
+            setLocationError(`You must be within ${OFFICE_GEOFENCE.radiusMeters}m of the ARDHI office to check in. You are ${Math.round(distance)}m away.`);
+            showToast({ title: 'Outside Office Radius', message: `Physical check-in blocked — ${Math.round(distance)}m from the office.`, type: 'error' });
+          }
+        },
+        (error) => {
+          // GPS unavailable/denied/timed out → FALLBACK to the office network.
+          let msg = 'Unable to retrieve your location.';
+          if (error.code === error.PERMISSION_DENIED) msg = 'Location permission denied.';
+          if (error.code === error.POSITION_UNAVAILABLE) msg = 'GPS location unavailable.';
+          if (error.code === error.TIMEOUT) msg = 'GPS location request timed out.';
+          tryNetwork(msg);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
     } else {
       const now = new Date();
       const timeString = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
