@@ -3,7 +3,7 @@ import { useRef, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
-import { exportAllData, importAllData, downloadFile, toCSV } from '@/lib/storage';
+import { exportAllData, exportModuleData, importAllData, validateVaultFile, downloadFile, toCSV, vaultFilename, DATA_VAULT_VERSION, DATA_VAULT_BASELINE, STORAGE_KEYS } from '@/lib/storage';
 import { grantService } from '@/services/grantService';
 import { innovationService } from '@/services/innovationService';
 import { financeService } from '@/services/financeService';
@@ -20,6 +20,7 @@ export function Settings() {
   const [imgError, setImgError] = useState(false);
   const [showFlash, setShowFlash] = useState(false);
   const [flashText, setFlashText] = useState('');
+  const [pendingVault, setPendingVault] = useState<Record<string, unknown> | null>(null);
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -33,26 +34,55 @@ export function Settings() {
 
   // ── Data Vault: backup / restore / per-domain export ──
   const handleExportBackup = () => {
-    const data = exportAllData();
-    downloadFile(`aims-backup-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(data, null, 2));
-    showToast({ title: 'Backup Exported', message: 'Full system backup downloaded (JSON).', type: 'success' });
+    const envelope = exportAllData();
+    const keys = Object.keys(envelope.data).length;
+    downloadFile(vaultFilename('backup'), JSON.stringify(envelope, null, 2));
+    showToast({ title: 'Full Backup Exported', message: `Timestamped JSON (${keys} storage keys, format v${envelope.version}).`, type: 'success' });
   };
 
-  const handleImportBackup = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Module-specific JSON export (timestamped envelope around one domain)
+  const handleExportModuleJSON = (domain: string, storageKey: string) => {
+    const envelope = exportModuleData(storageKey);
+    const count = envelope.counts[storageKey] ?? 0;
+    downloadFile(vaultFilename('module', domain), JSON.stringify(envelope, null, 2));
+    showToast({ title: 'Module Exported', message: `${domain} exported as JSON (${count} record(s)).`, type: 'success' });
+  };
+
+  const handleRestoreFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
     const reader = new FileReader();
     reader.onloadend = () => {
       try {
-        const data = JSON.parse(String(reader.result)) as Record<string, unknown>;
-        importAllData(data);
-        showToast({ title: 'Backup Restored', message: 'Data imported — refresh the page to reload.', type: 'success' });
+        const parsed = JSON.parse(String(reader.result)) as Record<string, unknown>;
+        const check = validateVaultFile(parsed);
+        if (!check.ok || !parsed) {
+          showToast({ title: 'Import Rejected', message: check.reason ?? 'The file is not a valid AIMS backup.', type: 'error' });
+          return;
+        }
+        // Staging until the admin confirms the overwrite warning
+        setPendingVault(parsed);
       } catch {
         showToast({ title: 'Import Failed', message: 'The file is not a valid AIMS backup.', type: 'error' });
       }
     };
     reader.readAsText(file);
-    e.target.value = '';
+  };
+
+  const confirmRestore = () => {
+    if (!pendingVault) return;
+    try {
+      importAllData(pendingVault);
+      showToast({ title: 'Backup Restored', message: 'Data imported — reloading the app with your restored dataset.', type: 'success' });
+    } catch {
+      showToast({ title: 'Restore Failed', message: 'Could not apply the backup to this browser.', type: 'error' });
+      setPendingVault(null);
+      return;
+    }
+    setPendingVault(null);
+    // Reload so every store re-reads the restored data from localStorage
+    window.setTimeout(() => window.location.reload(), 900);
   };
 
   // ── Flash / factory reset ──
@@ -83,8 +113,29 @@ export function Settings() {
     showToast({ title: 'Exported', message: `${domain} exported as CSV.`, type: 'success' });
   };
 
+  // ── Module catalogue for JSON exports (timestamped envelope per domain) ──
+  const JSON_MODULES: { domain: string; key: string; label: string }[] = [
+    { domain: 'grants', key: STORAGE_KEYS.grants, label: 'Grants' },
+    { domain: 'projects', key: STORAGE_KEYS.projects, label: 'Projects' },
+    { domain: 'finance', key: STORAGE_KEYS.finance, label: 'Finance' },
+    { domain: 'requisitions', key: STORAGE_KEYS.requisitions, label: 'Requisitions' },
+    { domain: 'compliance', key: STORAGE_KEYS.compliance, label: 'Compliance vault' },
+    { domain: 'contracts', key: STORAGE_KEYS.contracts, label: 'Contracts' },
+    { domain: 'leave', key: STORAGE_KEYS.leave, label: 'Leave' },
+    { domain: 'inventory', key: STORAGE_KEYS.inventory, label: 'Inventory' },
+    { domain: 'employees', key: STORAGE_KEYS.employees, label: 'Employees' },
+    { domain: 'docs', key: STORAGE_KEYS.docsLibrary, label: 'Documents' },
+    { domain: 'attendance', key: STORAGE_KEYS.attendanceRegister, label: 'Attendance' },
+    { domain: 'forms', key: STORAGE_KEYS.formSubmissions, label: 'Form submissions' },
+    { domain: 'notifications', key: STORAGE_KEYS.notifications, label: 'Notifications' },
+    { domain: 'feed', key: STORAGE_KEYS.feed, label: 'Feed' },
+  ];
+
   if (!user) return null;
   const myAccount = userOpsGet.users().find((u) => u.id === user.id);
+  const vaultMeta = pendingVault as ({ app?: string; type?: string; version?: string; exportedAt?: string; data?: Record<string, unknown>; counts?: Record<string, number> } & Record<string, unknown>) | null;
+  const vaultKeyCount = vaultMeta?.data ? Object.keys(vaultMeta.data).length : Object.keys(pendingVault ?? {}).filter((k) => k.startsWith('aims_')).length;
+  const vaultDomainCounts = vaultMeta?.counts ? Object.entries(vaultMeta.counts).slice(0, 10) : [];
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -148,12 +199,23 @@ export function Settings() {
           <button onClick={() => importRef.current?.click()} className="px-4 py-2 bg-aims-green text-white text-xs font-bold rounded-lg hover:bg-aims-green/90 flex items-center gap-1.5">
             <span className="material-symbols-outlined text-[15px]">upload</span>Restore from Backup
           </button>
-          <input ref={importRef} type="file" accept="application/json" onChange={handleImportBackup} className="hidden" />
+          <input ref={importRef} type="file" accept="application/json,.json" onChange={handleRestoreFileSelected} className="hidden" />
         </div>
+        <p className="text-[10px] text-slate-400 mb-3 flex items-center gap-1.5">
+          <span className="material-symbols-outlined text-[12px]">shield</span>Backup format v{DATA_VAULT_VERSION} · baseline {DATA_VAULT_BASELINE} · every export is timestamped and carries full metadata. Restoring replaces all current data (a confirmation step appears first).
+        </p>
+
         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Per-domain CSV export</p>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 mb-4">
           {(['grants', 'projects', 'requisitions', 'finance', 'staff'] as const).map((d) => (
             <button key={d} onClick={() => handleExportCSV(d)} className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold text-slate-600 hover:bg-slate-100 capitalize">{d}.csv</button>
+          ))}
+        </div>
+
+        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Per-domain JSON export (timestamped)</p>
+        <div className="flex flex-wrap gap-2">
+          {JSON_MODULES.map((m) => (
+            <button key={m.domain} onClick={() => handleExportModuleJSON(m.domain, m.key)} className="px-3 py-1.5 bg-aims-mint/20 border border-aims-mint/40 rounded-lg text-[10px] font-bold text-aims-navy hover:bg-aims-mint/40" title={m.label}>{m.domain}.json</button>
           ))}
         </div>
 
@@ -171,6 +233,44 @@ export function Settings() {
           </div>
         </div>
       </div>
+
+      {/* Restore confirmation modal — validating & confirming an uploaded backup */}
+      {pendingVault && vaultMeta && (
+        <div className="fixed inset-0 z-[75] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={() => setPendingVault(null)}>
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-start gap-3 mb-3">
+              <div className="w-11 h-11 rounded-full bg-aims-orange/15 flex items-center justify-center shrink-0"><span className="material-symbols-outlined text-aims-orange text-[22px]">restore</span></div>
+              <div>
+                <h3 className="text-lg font-extrabold text-slate-900">Restore Backup?</h3>
+                <p className="text-xs text-slate-500 mt-0.5">Backup v{vaultMeta.version ?? 'legacy'} · exported {vaultMeta.exportedAt ? new Date(vaultMeta.exportedAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'date unknown'}</p>
+              </div>
+            </div>
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg mb-3">
+              <p className="text-xs font-bold text-red-600 flex items-center gap-1.5"><span className="material-symbols-outlined text-[14px]">warning</span>This will replace all current data in this browser.</p>
+              <p className="text-[11px] text-red-500 mt-1">Everything stored under the AIMS keys will be overwritten with the contents of this backup file.</p>
+            </div>
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 mb-4">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Backup contents — {vaultKeyCount} storage key(s)</p>
+              {vaultDomainCounts.length > 0 ? (
+                <div className="space-y-1">
+                  {vaultDomainCounts.map(([k, c]) => (
+                    <p key={k} className="text-[11px] font-mono text-slate-600 flex items-center justify-between"><span>{k}</span><span className="font-bold">{c} record(s)</span></p>
+                  ))}
+                  {vaultDomainCounts.length < vaultKeyCount && <p className="text-[10px] text-slate-400 italic">…and {vaultKeyCount - vaultDomainCounts.length} more</p>}
+                </div>
+              ) : (
+                <p className="text-[11px] font-mono text-slate-600">{Object.keys(pendingVault).filter((k) => k.startsWith('aims_')).slice(0, 10).join('\n')}</p>
+              )}
+            </div>
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setPendingVault(null)} className="px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
+              <button onClick={confirmRestore} className="px-4 py-2 bg-aims-green text-white text-sm font-bold rounded-lg hover:bg-aims-green/90 flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[15px]">restore</span>Restore & Reload
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Flash confirmation modal */}
       {showFlash && (

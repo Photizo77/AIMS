@@ -76,21 +76,131 @@ export function setDemoMode(on: boolean): void {
 }
 
 // ── Data Vault: export & import the whole dataset ──
-export function exportAllData(): Record<string, unknown> {
-  const data: Record<string, unknown> = { exportedAt: new Date().toISOString(), app: 'aims', version: 1 };
-  Object.values(STORAGE_KEYS).forEach((key) => {
-    try {
-      const raw = localStorage.getItem(key);
-      if (raw) data[key] = JSON.parse(raw);
-    } catch { /* ignore */ }
-  });
-  return data;
+/** AIMS backup format version (kept in sync with releases) */
+export const DATA_VAULT_VERSION = '1.0.0';
+/** Baseline build hash shipped with this release (from the repo history) */
+export const DATA_VAULT_BASELINE = '834446a0';
+
+export interface VaultEnvelope {
+  app: 'aims';
+  type: 'full' | 'module';
+  version: string;
+  baseline: string;
+  exportedAt: string;
+  domain?: string;
+  counts: Record<string, number>;
+  data: Record<string, unknown>;
 }
 
-export function importAllData(data: Record<string, unknown>): void {
-  Object.values(STORAGE_KEYS).forEach((key) => {
-    if (data[key] !== undefined) {
-      try { localStorage.setItem(key, JSON.stringify(data[key])); } catch { /* ignore */ }
+/** Timestamped file label, e.g. aims-backup-2026-09-02-1534-v1.0.0 */
+export function vaultFilename(kind: 'backup' | 'module', domain?: string): string {
+  const now = new Date();
+  const stamp = `${now.toISOString().slice(0, 10)}-${now.toTimeString().slice(0, 5).replace(':', '')}`;
+  return domain ? `aims-${kind}-${domain}-${stamp}-v${DATA_VAULT_VERSION}.json` : `aims-${kind}-${stamp}-v${DATA_VAULT_VERSION}.json`;
+}
+
+/** All localStorage entries that belong to AIMS (every aims_* key, incl. attendance-* variants) */
+function aimsStorageKeys(): string[] {
+  const keys: string[] = [];
+  for (let i = 0; i < localStorage.length; i += 1) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith('aims_')) keys.push(key);
+  }
+  return keys;
+}
+
+function countOf(value: unknown): number {
+  if (Array.isArray(value)) return value.length;
+  if (value && typeof value === 'object') return Object.keys(value as Record<string, unknown>).length;
+  return 0;
+}
+
+/** Full dataset backup — metadata envelope + every aims_* storage key */
+export function exportAllData(): VaultEnvelope {
+  const data: Record<string, unknown> = {};
+  const counts: Record<string, number> = {};
+  aimsStorageKeys().forEach((key) => {
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw) {
+        const parsed = JSON.parse(raw) as unknown;
+        data[key] = parsed;
+        counts[key] = countOf(parsed);
+      }
+    } catch { /* ignore */ }
+  });
+  // Read-only references captured so a full vault always reflects the org roster & knowledge base
+  return {
+    app: 'aims',
+    type: 'full',
+    version: DATA_VAULT_VERSION,
+    baseline: DATA_VAULT_BASELINE,
+    exportedAt: new Date().toISOString(),
+    counts,
+    data,
+  };
+}
+
+/** Module-specific export (JSON) for one domain — single storage key plus metadata */
+export function exportModuleData(storageKey: string): VaultEnvelope {
+  const data: Record<string, unknown> = {};
+  let parsed: unknown = null;
+  try {
+    const raw = localStorage.getItem(storageKey);
+    if (raw) parsed = JSON.parse(raw) as unknown;
+  } catch { /* ignore */ }
+  if (parsed !== null) data[storageKey] = parsed;
+  const counts: Record<string, number> = {};
+  if (parsed !== null) counts[storageKey] = countOf(parsed);
+  return {
+    app: 'aims',
+    type: 'module',
+    version: DATA_VAULT_VERSION,
+    baseline: DATA_VAULT_BASELINE,
+    exportedAt: new Date().toISOString(),
+    domain: storageKey,
+    counts,
+    data,
+  };
+}
+
+/**
+ * Validate an uploaded backup file before restore.
+ * Accepts the current envelope format OR legacy flat maps written by older
+ * builds; verifies the app marker and the AIMS version major.
+ */
+export function validateVaultFile(input: unknown): { ok: boolean; envelope?: VaultEnvelope | null; reason?: string } {
+  if (!input || typeof input !== 'object') return { ok: false, reason: 'The file is not a valid AIMS backup.' };
+  const obj = input as Record<string, unknown>;
+  const isEnvelope = obj.app === 'aims' && obj.data && typeof obj.data === 'object';
+  const isLegacyFlat = Object.keys(obj).some((k) => k.startsWith('aims_'));
+  if (!isEnvelope && !isLegacyFlat) return { ok: false, reason: 'The file is not a valid AIMS backup — no aims_* dataset found.' };
+  if (isEnvelope) {
+    const env = obj as unknown as VaultEnvelope;
+    const major = typeof env.version === 'string' ? env.version.split('.')[0] : '';
+    if (major && major !== DATA_VAULT_VERSION.split('.')[0]) {
+      return { ok: false, reason: `Version mismatch — this backup was written by AIMS v${env.version}, but this build is v${DATA_VAULT_VERSION}.` };
+    }
+    return { ok: true, envelope: env };
+  }
+  return { ok: true, envelope: null };
+}
+
+/** Restore a validated vault into localStorage (data keys only — metadata is never written) */
+export function importAllData(envelope: VaultEnvelope | Record<string, unknown> | null | undefined): void {
+  if (!envelope) return;
+  if ('data' in envelope && envelope.data && typeof envelope.data === 'object') {
+    Object.entries(envelope.data as Record<string, unknown>).forEach(([key, value]) => {
+      if (key.startsWith('aims_')) {
+        try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* ignore */ }
+      }
+    });
+    return;
+  }
+  // Legacy flat map: every aims_* key stored as-is
+  Object.entries(envelope as Record<string, unknown>).forEach(([key, value]) => {
+    if (key.startsWith('aims_')) {
+      try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* ignore */ }
     }
   });
 }
