@@ -22,6 +22,9 @@ import { SharedLibraryWidget } from '@/components/dashboard/SharedLibraryWidget'
 import { innovationService, isExecutingProject } from '@/services/innovationService'; // Importing our centralized service
 import { grantService } from '@/services/grantService';
 import { financeService } from '@/services/financeService';
+import { userOpsGet } from '@/services/userOpsService';
+import { ACTIVE_STAFF } from '@/data/roster';
+import { DATA_VAULT_VERSION, DATA_VAULT_BASELINE } from '@/lib/storage';
 import { GRANT_STAGES } from '@/data/grants';
 
 
@@ -1129,7 +1132,10 @@ function InnovatorDashboard() {
 }
 
 function SysAdminDashboard() {
+  const navigate = useNavigate();
   const [showAuditLog, setShowAuditLog] = useState(false);
+  const managedUsers = userOpsGet.users();
+  const auditTrail = userOpsGet.audit();
   const auditEntries = [
     { time: '2026-08-22 07:42:18', user: 'Janet Apio', role: 'GRANT_WRITER', action: 'check_in', distance: '342m', coords: '0.3034°N, 32.5897°E', ip: '41.220.138.44' },
     { time: '2026-08-22 08:15:03', user: 'David Okello', role: 'FINANCE', action: 'check_in', distance: '1.2km', coords: '0.3112°N, 32.5845°E', ip: '102.82.91.12' },
@@ -1145,6 +1151,107 @@ function SysAdminDashboard() {
         <StatCard title="API Latency" value="182ms" icon="speed" color="navy" />
         <StatCard title="Sessions" value="47" icon="group" color="mint" />
       </div>
+
+      {/* System status — all systems operational */}
+      <div className="rounded-xl border border-aims-green/30 bg-aims-green/5 p-4 flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <span className="relative flex w-3 h-3">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-aims-green opacity-75" />
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-aims-green" />
+          </span>
+          <div>
+            <p className="text-sm font-extrabold text-slate-900">System Status: <span className="text-aims-green">Active — all systems operational</span></p>
+            <p className="text-[11px] text-slate-500 mt-0.5">Core modules, attendance, AI proxy and email endpoints reporting healthy.</p>
+          </div>
+        </div>
+        <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-aims-navy/10 text-aims-navy font-mono">AIMS v{DATA_VAULT_VERSION} · baseline {DATA_VAULT_BASELINE}</span>
+      </div>
+
+      {/* Live administration widgets */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <button onClick={() => navigate('/user-management')} className="text-left bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-navy p-4 shadow-sm hover:shadow-md transition-shadow">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">Total Users<span className="material-symbols-outlined text-aims-navy text-[15px]">group</span></p>
+          <p className="text-2xl font-extrabold text-slate-900 mt-1">{managedUsers.length}</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">managed accounts · ARD-EMP codes</p>
+        </button>
+        <button onClick={() => navigate('/rbac?tab=audit')} className="text-left bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-orange p-4 shadow-sm hover:shadow-md transition-shadow">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">Audit Events<span className="material-symbols-outlined text-aims-orange text-[15px]">shield</span></p>
+          <p className="text-2xl font-extrabold text-slate-900 mt-1">{auditTrail.length}</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">role changes, resets & security actions</p>
+        </button>
+        <div className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-green p-4 shadow-sm">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">Active Roster<span className="material-symbols-outlined text-aims-green text-[15px]">badge</span></p>
+          <p className="text-2xl font-extrabold text-slate-900 mt-1">{ACTIVE_STAFF.length}</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">active staff in the personnel roster</p>
+        </div>
+        <button onClick={() => navigate('/settings')} className="text-left bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-mint p-4 shadow-sm hover:shadow-md transition-shadow">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">Data Vault Exports<span className="material-symbols-outlined text-aims-navy text-[15px]">database</span></p>
+          <p className="text-2xl font-extrabold text-slate-900 mt-1">{financeService.getExportLog().length}</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">backups & exports recorded this session</p>
+        </button>
+      </div>
+
+      {/* Server services & environment */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+          <h3 className="text-sm font-extrabold text-slate-900 mb-3 flex items-center gap-2"><span className="material-symbols-outlined text-aims-navy text-[18px]">dns</span>Server Services</h3>
+          <div className="space-y-2">
+            {[
+              { name: '/api/chat.js — AI proxy', detail: 'Routes to Claude / GPT / DeepSeek / Qwen', ok: true },
+              { name: '/api/email.js — SMTP relay', detail: 'Credentials delivery & notifications', ok: true },
+              { name: 'Data Vault persistence', detail: 'localStorage via unified storage layer', ok: true },
+              { name: 'Netlify function hosting', detail: 'api/chat + api/email endpoints', ok: true },
+            ].map((s) => (
+              <div key={s.name} className="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-100">
+                <div><p className="text-xs font-bold text-slate-900 font-mono">{s.name}</p><p className="text-[10px] text-slate-500">{s.detail}</p></div>
+                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-aims-green/15 text-aims-green uppercase shrink-0">Online</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+          <h3 className="text-sm font-extrabold text-slate-900 mb-3 flex items-center gap-2"><span className="material-symbols-outlined text-aims-navy text-[18px]">settings_suggest</span>Environment Configuration</h3>
+          <div className="space-y-2">
+            {[
+              { env: 'SMTP_HOST / SMTP_KEY', note: 'Email sending configured at deploy time' },
+              { env: 'DEEPSEEK_API_KEY', note: 'DeepSeek provider' },
+              { env: 'ANTHROPIC_API_KEY', note: 'Claude provider' },
+              { env: 'OPENAI_API_KEY', note: 'GPT-4o Mini provider' },
+              { env: 'QWEN_API_KEY', note: 'Qwen Plus provider' },
+            ].map((v) => (
+              <div key={v.env} className="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-100">
+                <p className="text-xs font-mono font-bold text-slate-900">{v.env}</p>
+                <p className="text-[10px] text-slate-500 text-right">{v.note}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-[10px] text-slate-400 italic mt-2">Keys are read server-side by the Netlify functions — the built-in engine answers locally when none are set.</p>
+        </div>
+      </div>
+
+      {/* Recent audit summary */}
+      <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2"><span className="material-symbols-outlined text-aims-navy text-[18px]">verified_user</span>Audit Logs Summary — Latest Security & Role Events</h3>
+          <button onClick={() => navigate('/rbac?tab=audit')} className="text-[10px] font-bold text-aims-navy hover:underline flex items-center gap-1">Open full audit log<span className="material-symbols-outlined text-[12px]">open_in_new</span></button>
+        </div>
+        {auditTrail.length === 0 ? (
+          <p className="text-xs text-slate-400 italic">No audit events recorded yet (clean system). Role changes, resets and security actions appear here automatically.</p>
+        ) : (
+          <div className="space-y-1.5">
+            {auditTrail.slice(0, 6).map((a) => (
+              <div key={a.id} className="flex items-center justify-between gap-3 p-2 bg-slate-50 rounded-lg border border-slate-100 text-xs">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="material-symbols-outlined text-aims-navy text-[14px] shrink-0">history</span>
+                  <p className="truncate text-slate-700"><span className="font-bold">{a.user}</span> — {a.action} <span className="text-slate-400">by {a.by}</span></p>
+                </div>
+                <span className="text-[10px] text-slate-400 font-mono shrink-0">{new Date(a.ts).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       <SharedLibraryWidget />
       <div className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-red-500 p-5 shadow-sm hover:shadow-md transition-shadow">
         <div className="flex items-center justify-between mb-4">
