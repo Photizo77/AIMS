@@ -8,7 +8,7 @@
 // ============================================================
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
 import { ROLE_LABELS, hasModuleAccess } from '@/config/roles';
@@ -70,6 +70,10 @@ function loadRecent(): string[] {
 export function GlobalSearch() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  // The overlay may ONLY open from an explicit Ctrl/Cmd+K press — never on login
+  // or page load. It starts closed and force-closes on every route change so no
+  // leftover state can ever surface it automatically.
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [recent, setRecent] = useState<string[]>(loadRecent);
@@ -77,15 +81,22 @@ export function GlobalSearch() {
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      // Ignore held-key repeats so auto-repeat can never toggle the modal open
+      if (e.repeat) return;
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        setOpen((o) => !o);
+        setOpen(true);
       }
       if (e.key === 'Escape') setOpen(false);
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, []);
+
+  // Any navigation (login landing, tab switches, back/forward) closes the overlay
+  useEffect(() => {
+    setOpen(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     if (open) {
