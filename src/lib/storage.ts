@@ -217,13 +217,11 @@ export function downloadFile(filename: string, content: string, type = 'applicat
   URL.revokeObjectURL(url);
 }
 
-/**
- * FLASH / FACTORY RESET — wipe EVERYTHING recorded in this browser.
- * Removes every AIMS storage key (incl. demo marker, attendance, backups'
- * underlying keys, notifications, feed, user ops…). Callers usually reload
- * afterwards so each store re-initialises clean (demo-gated seeds stay out).
- */
-export function flashAllSystemData(): void {
+/** Key used to broadcast a flash request to every other open tab/window of AIMS */
+export const FLASH_SIGNAL_KEY = 'aims_flash_signal';
+
+/** Remove every AIMS storage key recorded in this browser (pure local wipe) */
+export function wipeAimsStorage(): void {
   const doomed: string[] = [];
   try {
     for (let i = 0; i < localStorage.length; i += 1) {
@@ -232,7 +230,42 @@ export function flashAllSystemData(): void {
     }
     doomed.forEach((k) => localStorage.removeItem(k));
   } catch { /* ignore */ }
+}
+
+/**
+ * FLASH / FACTORY RESET — wipe EVERYTHING recorded in this browser AND ask
+ * every other open tab/window of AIMS to wipe itself too. Removes every
+ * AIMS storage key (demo marker, attendance, notifications, feed, user ops…)
+ * and broadcasts a unique signal so peer tabs re-init clean + reload.
+ */
+export function flashAllSystemData(): void {
+  wipeAimsStorage();
+  const token = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  try {
+    localStorage.setItem(FLASH_SIGNAL_KEY, JSON.stringify({ ts: Date.now(), token }));
+  } catch { /* ignore */ }
   notifyDataChanged();
+}
+
+let lastFlashToken = '';
+
+/**
+ * Arm cross-tab sync: when another tab flashes, wipe this tab's data too and
+ * reload so every open AIMS window becomes clean together.
+ */
+export function armFlashSync(): void {
+  const handler = (e: StorageEvent) => {
+    if (e.key !== FLASH_SIGNAL_KEY || !e.newValue) return;
+    try {
+      const sig = JSON.parse(e.newValue) as { ts?: number; token?: string };
+      if (!sig.token || sig.token === lastFlashToken) return;
+      lastFlashToken = sig.token;
+      wipeAimsStorage();
+      notifyDataChanged();
+      window.location.reload();
+    } catch { /* ignore */ }
+  };
+  window.addEventListener('storage', handler);
 }
 
 /** Render rows as CSV text */
