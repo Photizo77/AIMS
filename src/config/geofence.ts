@@ -3,12 +3,12 @@ import type { GeofenceConfig } from '@/types';
 
 /**
  * ARDHI Office Geofence Configuration
- * Coordinates: 0.2896546°N, 32.6031649°E (Stanfield Property Partners pin)
- * Latitude: 0.2896546 | Longitude: 32.6031649 — Radius: 200 metres
+ * Coordinates: 0.300010°N, 32.593719°E (measured real office position via device GPS)
+ * Latitude: 0.300010 | Longitude: 32.593719 — Radius: 200 metres
  */
 export const OFFICE_GEOFENCE: GeofenceConfig = {
-  latitude: 0.2896546,
-  longitude: 32.6031649,
+  latitude: 0.30001,
+  longitude: 32.593719,
   radiusMeters: 200,
   label: 'ARDHI Office (200m geofence)',
 };
