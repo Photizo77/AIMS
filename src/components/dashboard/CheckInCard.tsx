@@ -4,6 +4,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { useAttendance } from '@/context/AttendanceContext';
 import { cn } from '@/lib/utils';
+import { logGeofenceAttempt } from '@/services/attendanceService';
 
 // Office geofence: 0°19'12.0"N, 32°34'48.0"E — 200 metre radius
 const OFFICE_LAT = 0.32;
@@ -23,7 +24,7 @@ function getDistanceMeters(lat1: number, lon1: number, lat2: number, lon2: numbe
 export function CheckInCard() {
   const { user } = useAuth();
   const { showToast } = useNotifications();
-  const { isCheckedIn, checkInTime, checkIn, checkOut } = useAttendance();
+  const { isCheckedIn, checkInTime, checkInMode, location, locationVerified, checkIn, checkOut } = useAttendance();
   const [selectedMode, setSelectedMode] = useState<'physical' | 'remote'>('physical');
   const [isLocating, setIsLocating] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
@@ -43,25 +44,28 @@ export function CheckInCard() {
           const distance = getDistanceMeters(latitude, longitude, OFFICE_LAT, OFFICE_LNG);
           setIsLocating(false);
           if (distance <= MAX_RADIUS_METERS) {
-            checkIn('physical', 'ARDHI Office, Kampala');
+            checkIn('physical', 'ARDHI Office, Kampala', true);
           } else {
-            setLocationError(`You are ${Math.round(distance)}m from the office. Physical check-in requires you to be within ${MAX_RADIUS_METERS}m.`);
-            showToast({ title: 'Outside Office Radius', message: `You are ${Math.round(distance)}m away. Move closer to check in physically.`, type: 'error' });
+            // BLOCKED — log the failed attempt (appears in Attendance → Anomalies & Violations)
+            if (user) logGeofenceAttempt(user.id, user.name, distance, `${latitude.toFixed(4)}°N, ${longitude.toFixed(4)}°E`);
+            setLocationError(`You must be within ${MAX_RADIUS_METERS}m of the ARDHI office to check in. You are ${Math.round(distance)}m away.`);
+            showToast({ title: 'Outside Office Radius', message: `Physical check-in blocked — you are ${Math.round(distance)}m from the office (limit 200m).`, type: 'error' });
           }
         },
         (error) => {
           setIsLocating(false);
           let msg = 'Unable to retrieve your location.';
-          if (error.code === error.PERMISSION_DENIED) msg = 'Location permission denied. Please allow location access.';
+          if (error.code === error.PERMISSION_DENIED) msg = 'Location permission denied. Please allow location access to check in.';
           if (error.code === error.POSITION_UNAVAILABLE) msg = 'Location information unavailable.';
           if (error.code === error.TIMEOUT) msg = 'Location request timed out.';
+          if (user) logGeofenceAttempt(user.id, user.name, -1, msg);
           setLocationError(msg);
           showToast({ title: 'Location Error', message: msg, type: 'error' });
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     } else {
-      checkIn('remote', 'Remote Location');
+      checkIn('remote', 'Remote Location', false);
     }
   };
 
@@ -86,6 +90,16 @@ export function CheckInCard() {
             <p className="text-xs text-slate-500 font-semibold mt-0.5">
               {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
             </p>
+            {isCheckedIn && (
+              <p className="text-[10px] font-bold mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-aims-green/10 text-aims-green">
+                {checkInMode === 'physical'
+                  ? locationVerified
+                    ? '✓ Geofence verified · within 200 m of office'
+                    : 'Physical (location pending)'
+                  : 'Remote work'}
+                {location ? ` · ${location}` : ''}
+              </p>
+            )}
           </div>
         </div>
 

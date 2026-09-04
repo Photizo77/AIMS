@@ -21,6 +21,7 @@ export interface PresenceRow {
 export interface HistoryRow {
   id: string; staffId: string; name: string; dept: string; date: string;
   checkIn: string; checkOut: string; mode: 'physical' | 'remote'; status: HistoryStatus;
+  duration?: string;
 }
 export interface Violation {
   id: string; staffId: string; name: string; ts: string; distance: string;
@@ -148,6 +149,81 @@ export function resolveViolation(id: string, actionNote: string): void {
 export function resolveAnomaly(id: string): void {
   state = { ...state, anomalies: state.anomalies.map((a) => (a.id === id ? { ...a, resolved: true } : a)) };
   persist();
+}
+
+/**
+ * Record a user-initiated check-in (geofence-verified physical or remote).
+ * Marks the person present in the register and writes a dated history record.
+ */
+export function recordUserCheckIn(staffId: string, name?: string, mode: 'physical' | 'remote' = 'remote', location = 'ARDHI Office, Kampala', verified = false): void {
+  if (mode === 'physical' && !verified) return; // never record an unverified physical check-in
+  const person = ACTIVE_STAFF.find((s) => s.id === staffId);
+  const displayName = person?.name ?? name ?? 'Employee';
+  const dept = person?.department ?? '—';
+  const time = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  state = {
+    ...state,
+    presence: state.presence.map((p) => (p.id === staffId ? { ...p, mode, checkIn: time, location, note: undefined } : p)),
+  };
+  const date = dayStr(0);
+  const existing = state.history.find((h) => h.staffId === staffId && h.date === date);
+  if (!existing) {
+    state = {
+      ...state,
+      history: [
+        { id: `h-${Date.now()}-${staffId}`, staffId, name: displayName, dept, date, checkIn: time, checkOut: '—', mode, status: 'present' as HistoryStatus },
+        ...state.history,
+      ],
+    };
+  } else if (existing.checkIn === '—') {
+    state = { ...state, history: state.history.map((h) => (h.id === existing.id ? { ...h, checkIn: time, mode, status: 'present' as HistoryStatus } : h)) };
+  }
+  persist();
+}
+
+/** Record a user-initiated check-out: stamps the check-out time and duration on today's record. */
+export function recordUserCheckOut(staffId: string): void {
+  const time = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  const date = dayStr(0);
+  state = {
+    ...state,
+    history: state.history.map((h) => {
+      if (h.staffId !== staffId || h.date !== date) return h;
+      const duration = durationBetween(h.checkIn, time);
+      return { ...h, checkOut: h.checkOut === '—' ? time : h.checkOut, duration };
+    }),
+  };
+  persist();
+}
+
+function durationBetween(fromTime: string, toTime: string): string {
+  try {
+    const [fh, fm] = fromTime.split(':').map((s) => Number(s.replace(/[^\d]/g, '')));
+    const [th, tm] = toTime.split(':').map((s) => Number(s.replace(/[^\d]/g, '')));
+    let diff = (th * 60 + tm) - (fh * 60 + fm);
+    if (diff < 0) diff += 24 * 60;
+    const h = Math.floor(diff / 60);
+    const m = diff % 60;
+    return h > 0 ? `${h}h ${m}m` : `${m}m`;
+  } catch { return '—'; }
+}
+
+/** Log a blocked physical check-in (outside the office geofence). */
+export function logGeofenceAttempt(staffId: string, name: string, distanceMeters: number, coords = ''): Violation {
+  const v: Violation = {
+    id: `v-${Date.now()}`,
+    staffId,
+    name,
+    ts: `${displayDate(0)}, ${new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`,
+    distance: `${Math.round(distanceMeters)}m away`,
+    attempted: coords || 'GPS location outside office radius',
+    note: 'Blocked physical check-in — outside the 200m office geofence',
+    resolved: false,
+    recurring: false,
+  };
+  state = { ...state, violations: [v, ...state.violations] };
+  persist();
+  return clone(v);
 }
 
 /** Record reminder comms (subject/body to all active staff) */

@@ -1,7 +1,7 @@
 // src/context/AttendanceContext.tsx
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { recordAutoCheckIn } from '@/services/attendanceService';
+import { recordAutoCheckIn, recordUserCheckIn, recordUserCheckOut } from '@/services/attendanceService';
 
 export type CheckInMode = 'physical' | 'remote';
 
@@ -11,10 +11,12 @@ interface AttendanceState {
   checkOutTime: string | null;
   checkInMode: CheckInMode;
   location: string | null;
+  /** True when a physical check-in passed the 200 m office geofence */
+  locationVerified?: boolean;
 }
 
 interface AttendanceContextType extends AttendanceState {
-  checkIn: (mode: CheckInMode, location: string) => void;
+  checkIn: (mode: CheckInMode, location: string, verified?: boolean) => void;
   checkOut: () => void;
 }
 
@@ -27,7 +29,7 @@ function loadState(userId: string): AttendanceState {
     const raw = localStorage.getItem(STORAGE_PREFIX + userId);
     if (raw) return JSON.parse(raw) as AttendanceState;
   } catch { /* ignore */ }
-  return { isCheckedIn: false, checkInTime: null, checkOutTime: null, checkInMode: 'physical', location: null };
+  return { isCheckedIn: false, checkInTime: null, checkOutTime: null, checkInMode: 'physical', location: null, locationVerified: false };
 }
 
 export function AttendanceProvider({ children }: { children: ReactNode }) {
@@ -64,6 +66,8 @@ export function AttendanceProvider({ children }: { children: ReactNode }) {
         });
       }
     } else if (lastUserId.current) {
+      // Logging out = check-out: stamp the register record with the check-out time.
+      try { recordUserCheckOut(lastUserId.current); } catch { /* register unavailable */ }
       lastUserId.current = null;
       setState((prev) => (prev.isCheckedIn
         ? { ...prev, isCheckedIn: false, checkOutTime: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) }
@@ -71,21 +75,26 @@ export function AttendanceProvider({ children }: { children: ReactNode }) {
     }
   }, [user]);
 
-  const checkIn = (mode: CheckInMode, location: string) => {
+  const checkIn = (mode: CheckInMode, location: string, verified = false) => {
     const now = new Date();
     const timeString = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    // Write the check-in into the attendance register (physical only when geofence-verified).
+    try { recordUserCheckIn(user?.id ?? '', user?.name, mode, location, verified); } catch { /* register unavailable */ }
     setState({
       isCheckedIn: true,
       checkInTime: timeString,
       checkOutTime: null,
       checkInMode: mode,
       location,
+      locationVerified: mode === 'physical' ? verified : false,
     });
   };
 
   const checkOut = () => {
     const now = new Date();
     const timeString = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    // Stamp the register record with the check-out time (duration is computed there).
+    try { recordUserCheckOut(user?.id ?? ''); } catch { /* register unavailable */ }
     setState((prev) => ({ ...prev, isCheckedIn: false, checkOutTime: timeString }));
   };
 
