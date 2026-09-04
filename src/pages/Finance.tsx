@@ -1,5 +1,6 @@
 // src/pages/Finance.tsx
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
@@ -8,6 +9,7 @@ import { financeService, type FinanceRecordType } from '@/services/financeServic
 import { FormsShortcut } from '@/components/forms/FormsShortcut';
 import { AIPanel } from '@/components/ai/AIPanel';
 import { requisitionPriceFlags, cashFlowForecast, type AiInsight } from '@/lib/aiEngine';
+import { getAllRequisitions } from '@/services/requisitionService';
 
 interface Transaction {
   id: string;
@@ -51,6 +53,7 @@ function formatDate(iso: string): string {
 
 export function Finance() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { showToast, addNotification } = useNotifications();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterDept, setFilterDept] = useState('');
@@ -65,6 +68,7 @@ export function Finance() {
   const [editValue, setEditValue] = useState('');
   const [, setVersion] = useState(0);
   const pendingEdits = financeService.getPendingEdits();
+  const exportLogs = financeService.getExportLog();
   const refresh = () => setVersion((v) => v + 1);
 
   const fmtUSD = (n: number) => (n >= 1000000 ? `$${(n / 1000000).toFixed(1)}M` : n >= 1000 ? `$${(n / 1000).toFixed(0)}K` : `$${n}`);
@@ -119,6 +123,18 @@ export function Finance() {
   const totalExpenditure = filteredTransactions.filter((t) => t.type === 'expenditure').reduce((s, t) => s + t.amount, 0);
   const netSurplus = totalIncome - totalExpenditure;
 
+  // Live cash-flow forecast + requisition commitments (real stores)
+  const forecast = cashFlowForecast();
+  const reqs = getAllRequisitions();
+  const reqAwaitingEd = reqs.filter((r) => r.status === 'pushed');
+  const reqApprovedPending = reqs.filter((r) => r.status === 'approved');
+  const committedOutstanding = reqs.filter((r) => r.status === 'approved' || r.status === 'pushed').reduce((s, r) => s + r.amount, 0);
+
+  // YTD USD actuals from the persisted aims_finance store (real ledger)
+  const finIncome = financeService.totalIncome();
+  const finExpense = financeService.totalExpense();
+  const finNet = finIncome - finExpense;
+
   const budgetVsActual = useMemo(() => {
     const depts: Record<string, { budget: number; actual: number }> = {
       Grants: { budget: 450000000, actual: 0 },
@@ -147,6 +163,37 @@ export function Finance() {
     return Object.entries(byChannel).map(([channel, amount]) => ({ channel, amount })).sort((a, b) => b.amount - a.amount);
   }, [filteredTransactions]);
 
+  // Cash flow trend geometry — cumulative income vs expenditure with a 90-day dashed forecast overlay
+  const trend = useMemo(() => {
+    const sorted = [...filteredTransactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    if (sorted.length === 0) return null;
+    const startT = new Date(sorted[0].date).getTime();
+    const spanDays = Math.max(1, (new Date(sorted[sorted.length - 1].date).getTime() - startT) / 86400000);
+    const forecastDays = 90;
+    const totalDays = spanDays + forecastDays;
+    let inc = 0;
+    let exp = 0;
+    const pts = sorted.map((t) => {
+      if (t.type === 'income') inc += t.amount; else exp += t.amount;
+      return { dx: (new Date(t.date).getTime() - startT) / 86400000, inc, exp };
+    });
+    const last = pts[pts.length - 1];
+    const dayInc = last.inc / spanDays;
+    const dayExp = last.exp / spanDays;
+    const endForecast = { dx: totalDays, inc: last.inc + dayInc * forecastDays, exp: last.exp + dayExp * forecastDays };
+    const maxVal = Math.max(last.inc, last.exp, endForecast.inc, endForecast.exp, 1);
+    const W = 640;
+    const H = 220;
+    const padL = 56;
+    const padR = 14;
+    const padT = 10;
+    const padB = 24;
+    const x = (dx: number) => padL + (dx / totalDays) * (W - padL - padR);
+    const y = (v: number) => H - padB - (v / maxVal) * (H - padT - padB);
+    const toPath = (arr: { dx: number; v: number }[]) => arr.map((p, i) => `${i ? 'L' : 'M'}${x(p.dx).toFixed(1)},${y(p.v).toFixed(1)}`).join(' ');
+    return { pts, last, endForecast, maxVal, x, y, toPath, dayInc, dayExp, spanDays, totalDays, W, H, labels: { start: formatDate(sorted[0].date), end: formatDate(sorted[sorted.length - 1].date) } };
+  }, [filteredTransactions]);
+
   const getBudgetColor = (pct: number) =>
     pct >= 90 ? 'bg-red-500' : pct >= 75 ? 'bg-aims-orange' : 'bg-aims-green';
 
@@ -169,14 +216,9 @@ export function Finance() {
       {/* AI Insights — anomaly detection & forecasting */}
       {(() => {
         const insights: AiInsight[] = [];
-        // Price anomaly check on recent requisition line items
-        const sample = [
-          { item: 'Samsung Galaxy Tab A9 (10 units)', unit: 'UGX 680,000' },
-          { item: 'Tablet — field data collection', unit: 'UGX 2,000,000' },
-          { item: 'MacBook Pro 14"', unit: 'UGX 3,400,000' },
-          { item: 'Canon Toner Cartridges', unit: 'UGX 85,000' },
-        ];
-        const flags = requisitionPriceFlags(sample);
+        // Price anomaly check on live requisition line items
+        const liveLines = reqs.flatMap((r) => r.lineItems.map((l) => ({ item: `${r.title} — ${l.item}`, unit: l.unit })));
+        const flags = requisitionPriceFlags(liveLines);
         if (flags.length > 0) {
           insights.push({
             id: 'fin-price',
@@ -215,6 +257,30 @@ export function Finance() {
           {(['income', 'expense', 'budget'] as const).map((t) => (
             <button key={t} onClick={() => setRecordTab(t)} className={cn('px-3 py-1.5 rounded-md text-xs font-bold transition-all capitalize', recordTab === t ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700')}>{t === 'income' ? 'Income' : t === 'expense' ? 'Expenditure' : 'Department Budgets'}</button>
           ))}
+        </div>
+
+        {/* USD overview widget — aggregated live from aims_finance */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+          <div className="p-3 rounded-xl bg-aims-green/5 border border-aims-green/20">
+            <p className="text-[10px] font-bold text-aims-green uppercase tracking-wider">Total Income (YTD)</p>
+            <p className="text-lg font-extrabold text-slate-900 mt-0.5">{fmtUSD(finIncome)}</p>
+            <p className="text-[10px] text-slate-500">from aims_finance ledger</p>
+          </div>
+          <div className="p-3 rounded-xl bg-aims-orange/5 border border-aims-orange/20">
+            <p className="text-[10px] font-bold text-aims-orange uppercase tracking-wider">Total Expenditure (YTD)</p>
+            <p className="text-lg font-extrabold text-slate-900 mt-0.5">{fmtUSD(finExpense)}</p>
+            <p className="text-[10px] text-slate-500">incl. ED-approved disbursements</p>
+          </div>
+          <div className="p-3 rounded-xl bg-aims-navy/5 border border-aims-navy/20">
+            <p className="text-[10px] font-bold text-aims-navy uppercase tracking-wider">Net Surplus / Deficit</p>
+            <p className={cn('text-lg font-extrabold mt-0.5', finNet >= 0 ? 'text-aims-green' : 'text-red-500')}>{fmtUSD(finNet)}</p>
+            <p className="text-[10px] text-slate-500">{finNet >= 0 ? 'positive balance' : 'funding gap'}</p>
+          </div>
+          <div className="p-3 rounded-xl bg-aims-mint/30 border border-aims-mint/40">
+            <p className="text-[10px] font-bold text-aims-navy uppercase tracking-wider">Cash Runway</p>
+            <p className="text-lg font-extrabold text-slate-900 mt-0.5">~{Math.round(forecast.monthsOfRunway * 30)} days</p>
+            <p className="text-[10px] text-slate-500">{forecast.gapWarning ? 'gap warning active' : 'sustainable burn'}</p>
+          </div>
         </div>
 
         {recordTab !== 'budget' ? (
@@ -288,7 +354,15 @@ export function Finance() {
             <button onClick={() => showToast({ title: 'Insight regenerated', message: 'Analysis refreshed with latest transactions', type: 'success' })} className="text-[10px] font-bold text-aims-navy hover:underline flex items-center gap-0.5"><span className="material-symbols-outlined text-[12px]">refresh</span>Regenerate</button>
           </div>
           <p className="text-sm text-slate-800">
-            <strong>Innovation dept</strong> at 92% utilization with 38 days remaining - forecast warns of 18M UGX overrun by quarter-end. <strong>Grants</strong> pacing on-track. <strong>Bank Wire income</strong> trending 22% above prior month driven by USAID tranche 2.
+            {(() => {
+              const topUtil = [...budgetVsActual].sort((a, b) => b.pct - a.pct)[0];
+              const topChannel = incomeByChannel[0];
+              return (
+                <>
+                  <strong>{topUtil?.dept ?? 'Finance'}</strong> at {topUtil?.pct ?? 0}% budget utilization with {Math.round(forecast.monthsOfRunway * 30)} days of runway{topUtil && topUtil.variance < 0 ? <> — <strong>{fmtMoney(Math.abs(topUtil.variance))} over budget</strong></> : ''}. {topChannel ? <><strong>{topChannel.channel} income</strong> leading at {fmtMoney(topChannel.amount)} this period</> : 'No income recorded this period'}. Forecast burn of {fmtMoney(Math.round(forecast.monthlyBurn / 22))}/day {forecast.gapWarning ? <strong>— gap warning: burn exceeds inflow, review committed requisitions.</strong> : 'is within sustainable inflow — reserve building on track.'}
+                </>
+              );
+            })()}
           </p>
         </div>
       </div>
@@ -314,6 +388,26 @@ export function Finance() {
           <p className="text-xl font-extrabold text-slate-900 mt-1">{fmtMoney(Math.round(totalExpenditure / 22))}/day</p>
           <p className="text-[10px] text-slate-400 mt-0.5">Average daily (22d period)</p>
         </div>
+      </div>
+
+      {/* Requisition commitments — live queue status */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-aims-navy/10 flex items-center justify-center"><span className="material-symbols-outlined text-aims-navy text-[20px]">hourglass_top</span></div>
+          <div><p className="text-2xl font-extrabold text-slate-900">{reqAwaitingEd.length}</p><p className="text-[10px] font-bold text-slate-500 uppercase">Awaiting ED approval</p></div>
+        </div>
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-aims-orange/10 flex items-center justify-center"><span className="material-symbols-outlined text-aims-orange text-[20px]">payments</span></div>
+          <div><p className="text-2xl font-extrabold text-slate-900">{reqApprovedPending.length}</p><p className="text-[10px] font-bold text-slate-500 uppercase">Approved — to disburse</p></div>
+        </div>
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-aims-green/10 flex items-center justify-center"><span className="material-symbols-outlined text-aims-green text-[20px]">account_balance</span></div>
+          <div><p className="text-xl font-extrabold text-slate-900">{fmtMoney(committedOutstanding)}</p><p className="text-[10px] font-bold text-slate-500 uppercase">Committed (UGX)</p></div>
+        </div>
+        <button onClick={() => navigate('/approvals')} className="bg-aims-navy text-white rounded-xl p-4 shadow-sm text-left hover:bg-aims-navy/90 transition-colors flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-white/15 flex items-center justify-center"><span className="material-symbols-outlined text-white text-[20px]">approval</span></div>
+          <div><p className="text-sm font-extrabold">Open Approvals Queue</p><p className="text-[10px] text-white/80">Review requisitions & flags</p></div>
+        </button>
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
@@ -349,6 +443,70 @@ export function Finance() {
         </div>
       </div>
 
+      {/* Cash Flow Analytics chart — income vs expenditure trend with dashed 90-day forecast overlay */}
+      <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+        <div className="flex items-center justify-between flex-wrap gap-2 mb-1">
+          <div>
+            <h3 className="text-base font-bold text-slate-900">Cash Flow Analytics Chart</h3>
+            <p className="text-xs text-slate-500 mt-0.5">Cumulative income vs expenditure (green area / orange line) with a dashed 90-day forecast overlay at the observed run-rate</p>
+          </div>
+          <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-wider">
+            <span className="flex items-center gap-1.5 text-aims-green"><span className="inline-block w-3 h-3 rounded-sm bg-aims-green/25 border border-aims-green" />Income</span>
+            <span className="flex items-center gap-1.5 text-aims-orange"><span className="inline-block w-3 h-3 rounded-full bg-aims-orange" />Expenditure</span>
+            <span className="flex items-center gap-1.5 text-slate-400"><span className="inline-block w-5 border-t-2 border-dashed border-slate-400" />Forecast</span>
+          </div>
+        </div>
+        {trend ? (
+          <svg viewBox={`0 0 ${trend.W} ${trend.H}`} className="w-full h-auto mt-2" role="img" aria-label="Cash flow trend chart with forecast overlay">
+            {/* y-axis grid */}
+            {[0, 1, 2, 3, 4].map((i) => {
+              const v = trend.maxVal * (1 - i / 4);
+              const gy = trend.y(v);
+              const label = v >= 1000000000 ? `${(v / 1000000000).toFixed(1)}B` : v >= 1000000 ? `${(v / 1000000).toFixed(0)}M` : v >= 1000 ? `${(v / 1000).toFixed(0)}K` : `${Math.round(v)}`;
+              return (
+                <g key={i}>
+                  <line x1={56} y1={gy} x2={trend.W - 14} y2={gy} stroke="#e2e8f0" strokeWidth={1} />
+                  <text x={50} y={gy + 3} textAnchor="end" fontSize={9} fill="#94a3b8">UGX {label}</text>
+                </g>
+              );
+            })}
+            {/* x-axis ticks */}
+            {[{ dx: 0, label: trend.labels.start, anchor: 'start' }, { dx: trend.spanDays, label: `${trend.labels.end} · today`, anchor: 'start' }, { dx: trend.totalDays, label: '+90d forecast', anchor: 'start' }].map((t) => (
+              <g key={t.label}>
+                <line x1={trend.x(t.dx)} y1={trend.H - 24} x2={trend.x(t.dx)} y2={trend.H - 20} stroke="#94a3b8" strokeWidth={1} />
+                <text x={trend.x(t.dx)} y={trend.H - 8} fontSize={9} fill="#94a3b8">{t.label}</text>
+              </g>
+            ))}
+            {/* expenditure area (soft orange) */}
+            <path d={`${trend.toPath(trend.pts.map((p) => ({ dx: p.dx, v: p.exp })))} L${trend.x(trend.last.dx).toFixed(1)},${trend.y(0).toFixed(1)} L${trend.x(0).toFixed(1)},${trend.y(0).toFixed(1)} Z`} fill="#eb3b14" opacity={0.08} />
+            {/* income area (soft green) */}
+            <path d={`${trend.toPath(trend.pts.map((p) => ({ dx: p.dx, v: p.inc })))} L${trend.x(trend.last.dx).toFixed(1)},${trend.y(0).toFixed(1)} L${trend.x(0).toFixed(1)},${trend.y(0).toFixed(1)} Z`} fill="#286b25" opacity={0.12} />
+            {/* dashed forecast overlay */}
+            <line x1={trend.x(trend.last.dx)} y1={trend.y(trend.last.inc)} x2={trend.x(trend.endForecast.dx)} y2={trend.y(trend.endForecast.inc)} stroke="#286b25" strokeWidth={1.5} strokeDasharray="5 4" opacity={0.7} />
+            <line x1={trend.x(trend.last.dx)} y1={trend.y(trend.last.exp)} x2={trend.x(trend.endForecast.dx)} y2={trend.y(trend.endForecast.exp)} stroke="#eb3b14" strokeWidth={1.5} strokeDasharray="5 4" opacity={0.7} />
+            {/* forecast endpoint dots */}
+            <circle cx={trend.x(trend.endForecast.dx)} cy={trend.y(trend.endForecast.inc)} r={3} fill="#286b25" opacity={0.7} />
+            <circle cx={trend.x(trend.endForecast.dx)} cy={trend.y(trend.endForecast.exp)} r={3} fill="#eb3b14" opacity={0.7} />
+            {/* series lines + dots */}
+            <path d={trend.toPath(trend.pts.map((p) => ({ dx: p.dx, v: p.inc })))} fill="none" stroke="#286b25" strokeWidth={2} />
+            <path d={trend.toPath(trend.pts.map((p) => ({ dx: p.dx, v: p.exp })))} fill="none" stroke="#eb3b14" strokeWidth={2} />
+            {trend.pts.map((p, i) => (
+              <circle key={i} cx={trend.x(p.dx)} cy={trend.y(p.inc)} r={1.8} fill="#286b25" />
+            ))}
+            {trend.pts.map((p, i) => (
+              <circle key={i} cx={trend.x(p.dx)} cy={trend.y(p.exp)} r={1.8} fill="#eb3b14" />
+            ))}
+          </svg>
+        ) : (
+          <p className="text-xs text-slate-400 italic py-8 text-center">No transactions match the current filters — adjust filters to render the trend chart.</p>
+        )}
+        {trend && (
+          <p className="text-[10px] text-slate-500 mt-2 border-t border-slate-100 pt-2">
+            Observed run-rate: income {fmtMoney(Math.round(trend.dayInc))}/day vs burn {fmtMoney(Math.round(trend.dayExp))}/day — dashed overlay extrapolates the next 90 days. AI forecast: {forecast.monthsOfRunway} months of runway at {fmtMoney(Math.round(forecast.monthlyBurn / 22))}/day · {forecast.detail}
+          </p>
+        )}
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
           <h3 className="text-base font-bold text-slate-900 mb-4">Income by Payment Channel</h3>
@@ -375,20 +533,20 @@ export function Finance() {
         <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
           <h3 className="text-base font-bold text-slate-900 mb-4">Burn Rate & Forecast</h3>
           <div className="space-y-4">
-            <div className="p-3 bg-aims-green/5 rounded-lg border border-aims-green/20">
-              <p className="text-[10px] font-bold text-aims-green uppercase tracking-wider mb-1">Cash Runway</p>
-              <p className="text-2xl font-extrabold text-slate-900">~42 days</p>
-              <p className="text-[10px] text-slate-500 mt-0.5">At current burn rate of {fmtMoney(Math.round(totalExpenditure / 22))}/day</p>
+            <div className={cn('p-3 rounded-lg border', forecast.gapWarning ? 'bg-red-50 border-red-200' : 'bg-aims-green/5 border-aims-green/20')}>
+              <p className={cn('text-[10px] font-bold uppercase tracking-wider mb-1', forecast.gapWarning ? 'text-red-600' : 'text-aims-green')}>Cash Runway</p>
+              <p className="text-2xl font-extrabold text-slate-900">~{Math.round(forecast.monthsOfRunway * 30)} days</p>
+              <p className="text-[10px] text-slate-500 mt-0.5">At current burn rate of {fmtMoney(Math.round(forecast.monthlyBurn / 22))}/day · {forecast.detail}</p>
             </div>
             <div className="p-3 bg-aims-orange/5 rounded-lg border border-aims-orange/20">
               <p className="text-[10px] font-bold text-aims-orange uppercase tracking-wider mb-1">Quarter-End Forecast</p>
               <p className="text-sm font-bold text-slate-900">Projected expenditure: {fmtMoney(Math.round(totalExpenditure * 1.35))}</p>
-              <p className="text-[10px] text-slate-500 mt-0.5">18M overrun risk in Innovation - recommend freeze on non-essential R&D purchases.</p>
+              <p className="text-[10px] text-slate-500 mt-0.5">{forecast.gapWarning ? '⚠ Projected shortfall — review committed requisitions and pause non-essential spend.' : 'No projected shortfall — reserve building on track.'}</p>
             </div>
             <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Income Outlook</p>
-              <p className="text-sm font-bold text-slate-900">Expected: UGX 420M in next 30 days</p>
-              <p className="text-[10px] text-slate-500 mt-0.5">Ford Foundation decision + WFP concept approval pipeline</p>
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Requisition Commitments</p>
+              <p className="text-sm font-bold text-slate-900">{reqAwaitingEd.length} awaiting ED · {reqApprovedPending.length} approved to disburse</p>
+              <p className="text-[10px] text-slate-500 mt-0.5">Total committed: {fmtMoney(committedOutstanding)} — open the queue to process.</p>
             </div>
           </div>
         </div>
@@ -434,10 +592,21 @@ export function Finance() {
         <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100">
           <span className="text-xs text-slate-500">{filteredTransactions.length} transaction{filteredTransactions.length !== 1 ? 's' : ''}</span>
           <div className="flex gap-2">
-            <button onClick={() => { const rows = filteredTransactions.map((t) => ({ date: t.date, type: t.type, category: t.category, department: t.department, channel: t.channel, amount: `UGX ${t.amount.toLocaleString()}`, description: t.description, ref: t.ref })); if (rows.length === 0) { showToast({ title: 'Nothing to Export', message: 'No transactions match the current filters.', type: 'error' }); return; } exportCsv('aims-transactions', rows); showToast({ title: 'CSV Exported', message: `${rows.length} transaction(s) exported.`, type: 'success' }); }} className="px-3 py-1.5 text-[10px] font-bold text-aims-navy border border-aims-navy/20 rounded-lg hover:bg-aims-navy/5 transition-colors flex items-center gap-1"><span className="material-symbols-outlined text-[12px]">download</span>CSV</button>
-            <button onClick={() => { if (filteredTransactions.length === 0) { showToast({ title: 'Nothing to Export', message: 'No transactions match the current filters.', type: 'error' }); return; } exportTableAsPdf('Transactions — Finance Export', ['Date', 'Type', 'Category', 'Department', 'Channel', 'Amount (UGX)', 'Description', 'Ref'], filteredTransactions.map((t) => [t.date, t.type, t.category, t.department, t.channel, t.amount.toLocaleString(), t.description, t.ref])); showToast({ title: 'Print Layout Ready', message: 'Choose "Save as PDF" in the print dialog.', type: 'success' }); }} className="px-3 py-1.5 text-[10px] font-bold text-aims-navy border border-aims-navy/20 rounded-lg hover:bg-aims-navy/5 transition-colors flex items-center gap-1"><span className="material-symbols-outlined text-[12px]">picture_as_pdf</span>PDF</button>
+            <button onClick={() => { const rows = filteredTransactions.map((t) => ({ date: t.date, type: t.type, category: t.category, department: t.department, channel: t.channel, amount: `UGX ${t.amount.toLocaleString()}`, description: t.description, ref: t.ref })); if (rows.length === 0) { showToast({ title: 'Nothing to Export', message: 'No transactions match the current filters.', type: 'error' }); return; } exportCsv('aims-transactions', rows); financeService.recordExport('csv', rows.length); refresh(); showToast({ title: 'CSV Exported', message: `${rows.length} transaction(s) exported & archived to Data Vault.`, type: 'success' }); }} className="px-3 py-1.5 text-[10px] font-bold text-aims-navy border border-aims-navy/20 rounded-lg hover:bg-aims-navy/5 transition-colors flex items-center gap-1"><span className="material-symbols-outlined text-[12px]">download</span>CSV</button>
+            <button onClick={() => { if (filteredTransactions.length === 0) { showToast({ title: 'Nothing to Export', message: 'No transactions match the current filters.', type: 'error' }); return; } exportTableAsPdf('Transactions — Finance Export', ['Date', 'Type', 'Category', 'Department', 'Channel', 'Amount (UGX)', 'Description', 'Ref'], filteredTransactions.map((t) => [t.date, t.type, t.category, t.department, t.channel, t.amount.toLocaleString(), t.description, t.ref])); financeService.recordExport('pdf', filteredTransactions.length); refresh(); showToast({ title: 'Print Layout Ready', message: 'Choose "Save as PDF" in the print dialog — logged to Data Vault.', type: 'success' }); }} className="px-3 py-1.5 text-[10px] font-bold text-aims-navy border border-aims-navy/20 rounded-lg hover:bg-aims-navy/5 transition-colors flex items-center gap-1"><span className="material-symbols-outlined text-[12px]">picture_as_pdf</span>PDF</button>
           </div>
         </div>
+        {exportLogs.length > 0 && (
+          <div className="mt-3 pt-2 border-t border-dashed border-slate-200 flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span className="text-[10px] font-bold text-aims-green uppercase tracking-wider flex items-center gap-1"><span className="material-symbols-outlined text-[12px]">database</span>Data Vault export log (aims_finance)</span>
+            {[...exportLogs].reverse().slice(0, 4).map((e) => (
+              <span key={e.id} className="text-[10px] text-slate-500 font-mono flex items-center gap-1">
+                <span className={cn('text-[9px] font-bold px-1.5 py-0.5 rounded uppercase', e.fmt === 'csv' ? 'bg-aims-green/10 text-aims-green' : e.fmt === 'pdf' ? 'bg-aims-orange/10 text-aims-orange' : 'bg-slate-100 text-slate-500')}>{e.fmt}</span>
+                {e.count} rows · {new Date(e.ts).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">

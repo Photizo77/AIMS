@@ -40,6 +40,10 @@ export interface PendingFinanceEdit {
   edNote?: string;
 }
 
+export interface FinanceExportLog { id: string; ts: string; fmt: 'csv' | 'pdf' | 'json'; count: number; }
+
+export interface PersistedFinance { income?: FinanceRecord[]; expenses?: FinanceRecord[]; budgets?: BudgetRecord[]; pendingEdits?: PendingFinanceEdit[]; exports?: FinanceExportLog[]; }
+
 // ── Seed data (USD, per finance architecture) ──
 const SEED_INCOME: FinanceRecord[] = [
   { id: 'inc-1', type: 'income', label: 'Donor A (Grant cycles)', amount: 8200000, detail: 'YTD Aug 2026 · 45% of total income · stable vs last quarter' },
@@ -67,12 +71,12 @@ const SEED_BUDGETS: BudgetRecord[] = [
   { id: 'b6', dept: 'Finance', budget: 280000, actual: 180000, forecastPct: 78 },
 ];
 
-interface PersistedFinance { income?: FinanceRecord[]; expenses?: FinanceRecord[]; budgets?: BudgetRecord[]; pendingEdits?: PendingFinanceEdit[] }
 const persistedFinance = loadJSON<PersistedFinance | null>(STORAGE_KEYS.finance, null);
 let income: FinanceRecord[] = (persistedFinance?.income ?? SEED_INCOME).map((r) => ({ ...r }));
 let expenses: FinanceRecord[] = (persistedFinance?.expenses ?? SEED_EXPENSES).map((r) => ({ ...r }));
 let budgets: BudgetRecord[] = (persistedFinance?.budgets ?? SEED_BUDGETS).map((r) => ({ ...r }));
 let pendingEdits: PendingFinanceEdit[] = persistedFinance?.pendingEdits ?? [];
+let exportLogs: FinanceExportLog[] = persistedFinance?.exports ?? [];
 
 let idCounter = 0;
 function nextId(prefix: string): string {
@@ -81,7 +85,7 @@ function nextId(prefix: string): string {
 }
 
 function saveFinance(): void {
-  saveJSON(STORAGE_KEYS.finance, { income, expenses, budgets, pendingEdits });
+  saveJSON(STORAGE_KEYS.finance, { income, expenses, budgets, pendingEdits, exports: exportLogs });
 }
 
 function fmt(n: number): string {
@@ -197,4 +201,14 @@ export const financeService = {
     const match = budgets.find((b) => dept.toLowerCase().includes(b.dept.toLowerCase()) || b.dept.toLowerCase().includes(dept.toLowerCase()));
     return match ? { dept: match.dept, budget: match.budget, actual: match.actual, remaining: Math.max(0, match.budget - match.actual) } : null;
   },
+
+  /** Record an export in the Data Vault export log (aims_finance) */
+  recordExport: (fmt: FinanceExportLog['fmt'], count: number): FinanceExportLog => {
+    const entry: FinanceExportLog = { id: nextId('exp-log'), ts: new Date().toISOString(), fmt, count };
+    exportLogs = [entry, ...exportLogs];
+    saveFinance();
+    return entry;
+  },
+
+  getExportLog: (): FinanceExportLog[] => exportLogs,
 };
