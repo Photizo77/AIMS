@@ -8,8 +8,10 @@
 // ============================================================
 
 import { useEffect, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { grantService } from '@/services/grantService';
+import { grantRiskScore } from '@/lib/aiEngine';
 import {
   buildGrantsSystemPrompt,
   generateLocalAnswer,
@@ -19,6 +21,7 @@ import {
 
 /** Providers supported by the Netlify /api/chat function (keys set in Netlify env vars) */
 export const ASSISTANT_MODELS: { id: string; label: string; hint: string }[] = [
+  { id: 'builtin', label: 'Built-in', hint: 'Local engine — no API key needed' },
   { id: 'deepseek-chat', label: 'DeepSeek', hint: 'DEEPSEEK_API_KEY' },
   { id: 'claude-sonnet-4-20250514', label: 'Claude', hint: 'ANTHROPIC_API_KEY' },
   { id: 'gpt-4o-mini', label: 'GPT-4o Mini', hint: 'OPENAI_API_KEY' },
@@ -35,6 +38,40 @@ interface AssistantMessage extends ChatMessage {
   source: 'ai' | 'local' | 'user';
   /** Which provider answered (ai replies only) */
   modelLabel?: string;
+  /** Optional action chips rendered under the answer (e.g. "View Grant") */
+  actions?: { label: string; href: string }[];
+}
+
+/** Live-data answer for risk-type questions, e.g. "risk score for USAID grant" */
+function liveGrantRiskAnswer(question: string): { content: string; actions: { label: string; href: string }[] } | null {
+  const q = question.toLowerCase();
+  if (!/(risk|risk score|risk assessment|how risky|compliance score)/.test(q)) return null;
+  const words = question.split(/\s+/).map((w) => w.toLowerCase().replace(/[^a-z0-9]/g, '')).filter((w) => w.length > 3);
+  const grants = grantService.getAllGrants();
+  const match = grants.find((g) => {
+    const hay = `${g.funder} ${g.title}`.toLowerCase();
+    return words.some((w) => hay.includes(w));
+  });
+  if (match) {
+    const risk = grantRiskScore(match.id);
+    const lines = [
+      `Live risk assessment for "${match.title}" (${match.funder}) — ${match.id}:`,
+      '',
+      `Risk score: ${risk.score}/100 — ${risk.label}`,
+      ...risk.flags.map((f) => `• ${f}`),
+    ];
+    if (risk.flags.length === 0) lines.push('• No compliance risks detected — looks submission-ready.');
+    lines.push('', 'Open the grant to see the full AI risk & compliance panel.');
+    return { content: lines.join('\n'), actions: [{ label: 'View Grant', href: `/grants/${match.id}` }] };
+  }
+  if (grants.length === 0) {
+    return { content: 'There are no grants in the tracker yet — load the demo dataset or add a grant first.', actions: [] };
+  }
+  const candidates = grants.slice(0, 4);
+  return {
+    content: ['I can pull the live risk score for any grant in AIMS. Which one did you mean?', '', ...candidates.map((g) => `• ${g.funder} — ${g.title}`)].join('\n'),
+    actions: candidates.map((g) => ({ label: `View ${g.funder}`, href: `/grants/${g.id}` })),
+  };
 }
 
 let msgId = 0;
@@ -78,11 +115,12 @@ async function callAiChat(history: ChatMessage[], userText: string, model: strin
 
 export function GrantsAssistant() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<AssistantMessage[]>([WELCOME]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [modelId, setModelId] = useState('deepseek-chat');
+  const [modelId, setModelId] = useState('builtin');
   const listRef = useRef<HTMLDivElement>(null);
 
   // ── Draggable floating button — position is user-controlled & persisted ──
@@ -97,6 +135,18 @@ export function GrantsAssistant() {
   const fabRef = useRef<HTMLButtonElement>(null);
   const dragRef = useRef<{ dx: number; dy: number } | null>(null);
   const movedRef = useRef(false);
+  const fabPosRef = useRef(fabPos);
+  fabPosRef.current = fabPos;
+
+  const persistFabPos = () => {
+    try {
+      if (fabPosRef.current) localStorage.setItem(FAB_STORAGE, JSON.stringify(fabPosRef.current));
+    } catch { /* ignore */ }
+  };
+  const closeAssistant = () => {
+    persistFabPos();
+    setOpen(false);
+  };
 
   const handleFabPointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
     const rect = fabRef.current?.getBoundingClientRect();
@@ -112,10 +162,19 @@ export function GrantsAssistant() {
   };
   const handleFabPointerUp = () => {
     dragRef.current = null;
-    try {
-      if (fabPos) localStorage.setItem(FAB_STORAGE, JSON.stringify(fabPos));
-    } catch { /* ignore */ }
+    persistFabPos();
   };
+
+  // Save the button position whenever the assistant unmounts or the user leaves the page
+  useEffect(() => {
+    const onBeforeUnload = () => persistFabPos();
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', onBeforeUnload);
+      persistFabPos();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (listRef.current) {
@@ -146,14 +205,21 @@ export function GrantsAssistant() {
 
     const history: ChatMessage[] = next.map((m) => ({ role: m.role, content: m.content }));
 
-    const aiResult = await callAiChat(history, trimmed, modelId);
+    // Built-in provider answers purely from the local engine (no API call)
+    const useExternal = modelId !== 'builtin';
+    const aiResult = useExternal ? await callAiChat(history, trimmed, modelId) : null;
+
+    // Local fallback — live-data answers (e.g. grant risk scores) take priority
+    const riskAnswer = liveGrantRiskAnswer(trimmed);
+    const localText = riskAnswer?.content ?? generateLocalAnswer(trimmed);
 
     const assistantMsg: AssistantMessage = {
       id: nextMsgId(),
       role: 'assistant',
       source: aiResult ? 'ai' : 'local',
-      content: aiResult?.reply ?? generateLocalAnswer(trimmed) ?? "Sorry — I couldn't find an answer for that. Try rephrasing.",
+      content: aiResult?.reply ?? localText ?? "Sorry — I couldn't find an answer for that. Try rephrasing.",
       modelLabel: aiResult?.modelLabel,
+      actions: aiResult ? undefined : riskAnswer?.actions,
     };
     setMessages((prev) => [...prev, assistantMsg]);
     setLoading(false);
@@ -211,7 +277,7 @@ export function GrantsAssistant() {
                   <option key={m.id} value={m.id} title={`${m.hint}`}>{m.label}</option>
                 ))}
               </select>
-              <button onClick={() => setOpen(false)} className="p-1 rounded hover:bg-white/20 text-white/80 hover:text-white transition-colors">
+              <button onClick={closeAssistant} title="Close assistant" className="p-1 rounded hover:bg-white/20 text-white/80 hover:text-white transition-colors">
                 <span className="material-symbols-outlined text-[20px]">close</span>
               </button>
             </div>
@@ -224,17 +290,32 @@ export function GrantsAssistant() {
                 <div className={cn('max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap shadow-sm', m.role === 'user' ? 'bg-[#286b25] text-white rounded-br-sm' : 'bg-white border border-slate-200 text-slate-800 rounded-bl-sm')}>
                   {m.content}
                   {m.role === 'assistant' && (
-                    <p className="text-[9px] font-bold uppercase tracking-wide text-slate-400 mt-1.5 flex items-center gap-1">
-                      {m.source === 'ai' ? (
-                        <>
-                          <span className="material-symbols-outlined text-[11px]">auto_awesome</span>Answered by {m.modelLabel ?? 'AI'}
-                        </>
-                      ) : (
-                        <>
-                          <span className="material-symbols-outlined text-[11px]">menu_book</span>Local knowledge base
-                        </>
+                    <>
+                      <p className="text-[9px] font-bold uppercase tracking-wide text-slate-400 mt-1.5 flex items-center gap-1">
+                        {m.source === 'ai' ? (
+                          <>
+                            <span className="material-symbols-outlined text-[11px]">auto_awesome</span>Answered by {m.modelLabel ?? 'AI'}
+                          </>
+                        ) : (
+                          <>
+                            <span className="material-symbols-outlined text-[11px]">menu_book</span>Built-in engine · live AIMS data
+                          </>
+                        )}
+                      </p>
+                      {m.actions && m.actions.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {m.actions.map((a) => (
+                            <button
+                              key={a.href}
+                              onClick={() => { setOpen(false); navigate(a.href); }}
+                              className="shrink-0 text-[10px] font-bold text-white bg-[#286b25] hover:bg-[#1f5520] rounded-full px-2.5 py-1 transition-colors flex items-center gap-1"
+                            >
+                              <span className="material-symbols-outlined text-[11px]">open_in_new</span>{a.label}
+                            </button>
+                          ))}
+                        </div>
                       )}
-                    </p>
+                    </>
                   )}
                 </div>
               </div>
