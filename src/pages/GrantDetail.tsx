@@ -5,7 +5,7 @@
 // ED/CD:  approve → Awarded, request changes → back to Drafting
 // ============================================================
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { exportRecordSheet } from '@/lib/export';
@@ -13,6 +13,8 @@ import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
 import { GRANT_STAGES, formatCurrency, daysUntil, grantProgress, type GrantRecord } from '@/data/grants';
 import { grantService } from '@/services/grantService';
+import { hasModuleAccess } from '@/config/roles';
+import { ACTIVE_STAFF } from '@/data/roster';
 import { openFlagForED } from '@/components/grants/FlagForEDModal';
 import { grantRiskScore, draftProblemStatement } from '@/lib/aiEngine';
 import { ProposalWorkspace } from '@/components/grants/ProposalWorkspace';
@@ -27,6 +29,22 @@ function formatDate(iso: string): string {
 
 function formatDateTime(iso: string): string {
   return formatDate(iso) + ' at ' + new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+}
+
+const DOC_EXT = ['.pdf', '.docx', '.xlsx', '.doc', '.ppt', '.pptx', '.zip', '.png', '.jpg', '.jpeg', '.txt'];
+function fileTypeOf(name: string): string {
+  const ext = '.' + (name.split('.').pop()?.toLowerCase() ?? '');
+  if (ext === '.pdf') return 'PDF';
+  if (ext === '.docx' || ext === '.doc') return 'DOCX';
+  if (ext === '.xlsx') return 'XLSX';
+  if (ext === '.ppt' || ext === '.pptx') return 'PPTX';
+  if (ext === '.zip') return 'ZIP';
+  if (ext === '.png' || ext === '.jpg' || ext === '.jpeg') return 'IMAGE';
+  return 'FILE';
+}
+function fmtFileSize(bytes: number): string {
+  if (bytes >= 1048576) return `${(bytes / 1048576).toFixed(1)} MB`;
+  return `${Math.max(1, Math.round(bytes / 1024))} KB`;
 }
 
 export function GrantDetail() {
@@ -46,6 +64,9 @@ export function GrantDetail() {
   const [newMilestoneTitle, setNewMilestoneTitle] = useState('');
   const [showAddDoc, setShowAddDoc] = useState(false);
   const [newDocTitle, setNewDocTitle] = useState('');
+  const [docFile, setDocFile] = useState<{ name: string; size: string; type: string } | null>(null);
+  const docFileInputRef = useRef<HTMLInputElement>(null);
+  const [shareMember, setShareMember] = useState('');
   const [aiDraft, setAiDraft] = useState<string | null>(null);
   const [drafting, setDrafting] = useState(false);
 
@@ -152,16 +173,75 @@ export function GrantDetail() {
     setCommentText('');
   };
 
+  const handleDocFileChange = (file: File | undefined) => {
+    if (!file) return;
+    const ext = '.' + (file.name.split('.').pop()?.toLowerCase() ?? '');
+    if (!DOC_EXT.includes(ext)) {
+      showToast({ title: 'Unsupported File', message: 'Allowed types: PDF, DOCX, XLSX, PPT, ZIP, images, TXT.', type: 'error' });
+      return;
+    }
+    if (file.size > 25 * 1024 * 1024) {
+      showToast({ title: 'File Too Large', message: 'Files must be 25 MB or smaller.', type: 'error' });
+      return;
+    }
+    setDocFile({ name: file.name, size: fmtFileSize(file.size), type: file.type });
+    if (!newDocTitle.trim()) setNewDocTitle(file.name);
+  };
+
   const handleUploadDoc = () => {
-    if (!newDocTitle.trim()) return;
-    apply(grantService.addDocument(grant.id, newDocTitle.trim(), user.name));
-    showToast({ title: 'Document Uploaded', message: 'Added to grant documents.', type: 'success' });
+    const title = (newDocTitle.trim() || docFile?.name || '').trim();
+    if (!title) {
+      showToast({ title: 'Nothing to Upload', message: 'Give the resource a name or pick a file.', type: 'error' });
+      return;
+    }
+    // Shared resource — every grant writer can add, everyone on the grant can see it
+    apply(grantService.attachResource(grant.id, {
+      title,
+      fileType: docFile ? fileTypeOf(docFile.name) : 'FILE',
+      size: docFile?.size ?? `${(Math.random() * 900 + 100).toFixed(0)} KB`,
+      uploadedBy: user.name,
+    }));
+    showToast({ title: 'Resource Shared', message: `"${title}" added — everyone with access to this grant can see it.`, type: 'success' });
     setNewDocTitle('');
+    setDocFile(null);
     setShowAddDoc(false);
   };
 
+  const handleShareGrant = () => {
+    if (!shareMember.trim()) return;
+    const updated = grantService.addContributor(grant.id, shareMember.trim(), user.name);
+    apply(updated);
+    if (updated?.contributors.includes(shareMember.trim())) {
+      addNotification({
+        recipientName: shareMember.trim(),
+        title: 'Grant Shared With You',
+        message: `${user.name} shared "${grant.title}" with you — you can now view it, add resources and comment.`,
+        type: 'success',
+        link: `/grants/${grant.id}`,
+      });
+      showToast({ title: 'Grant Shared', message: `${shareMember.trim()} is now a contributor and was notified.`, type: 'success' });
+    } else {
+      showToast({ title: 'Already on Team', message: `${shareMember.trim()} is already handling or contributing to this grant.`, type: 'info' });
+    }
+    setShareMember('');
+  };
+
+  const handleRemoveContributor = (name: string) => {
+    const updated = grantService.removeContributor(grant.id, name, user.name);
+    apply(updated);
+    showToast({ title: 'Contributor Removed', message: `${name} removed from the grant team.`, type: 'info' });
+  };
+
+  // Sharing model: everyone with Grants access can contribute resources & discussion,
+  // while checklist/proposal actions stay with the handler (or ED/CD).
+  const hasGrantsAccess = hasModuleAccess(user.role, 'grants');
+  const canAddResource = hasGrantsAccess && grant.stage !== 'declined';
+  const canComment = canAddResource;
   const canEditChecklist = isGrantTeam && !writerLocked;
-  const canComment = isGrantTeam && !writerLocked;
+  const canManageTeam = (isHandler || isED) && grant.stage !== 'declined';
+  const shareCandidates = ACTIVE_STAFF
+    .filter((s) => s.status === 'active' && s.name !== grant.handler && !grant.contributors.includes(s.name))
+    .map((s) => s.name);
 
   return (
     <div className="space-y-6">
@@ -248,10 +328,30 @@ export function GrantDetail() {
               <div key={c} className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg border border-slate-100">
                 <div className="w-7 h-7 rounded-full bg-aims-green text-white flex items-center justify-center text-[10px] font-bold">{c.split(' ').map((n) => n[0]).join('')}</div>
                 <div><p className="text-xs font-bold text-slate-900">{c}</p><p className="text-[9px] font-bold uppercase text-slate-400">Contributor</p></div>
+                {canManageTeam && (
+                  <button onClick={() => handleRemoveContributor(c)} title="Remove contributor" className="text-slate-300 hover:text-red-500 ml-0.5"><span className="material-symbols-outlined text-[15px]">close</span></button>
+                )}
               </div>
             ))}
-            {grant.contributors.length === 0 && <p className="text-xs text-slate-400 italic">No contributors yet.</p>}
+            {grant.contributors.length === 0 && <p className="text-xs text-slate-400 italic">No contributors yet — share the grant so the team can add resources.</p>}
           </div>
+          {canManageTeam && (
+            <div className="mt-3 pt-3 border-t border-slate-100">
+              <div className="flex gap-2 flex-wrap items-end">
+                <div className="min-w-[220px] flex-1">
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Share grant with a colleague</label>
+                  <select value={shareMember} onChange={(e) => setShareMember(e.target.value)} className="w-full text-xs border border-slate-200 rounded-lg px-2.5 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-aims-navy/30">
+                    <option value="">Select colleague…</option>
+                    {shareCandidates.map((n) => <option key={n} value={n}>{n}</option>)}
+                  </select>
+                </div>
+                <button onClick={handleShareGrant} disabled={!shareMember.trim()} className={cn('px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors', shareMember.trim() ? 'bg-aims-green text-white hover:bg-aims-green/90' : 'bg-slate-100 text-slate-400 cursor-not-allowed')}>
+                  <span className="material-symbols-outlined text-[15px]">share</span>Share
+                </button>
+              </div>
+              <p className="text-[10px] text-slate-400 italic mt-1.5">Everyone on the grant team can view and add shared resources & comments — one shared space for the whole team.</p>
+            </div>
+          )}
         </div>
         <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
           <h3 className="text-base font-bold text-slate-900 mb-3">Progress</h3>
@@ -359,14 +459,17 @@ export function GrantDetail() {
             </div>
           )}
 
-          {/* Documents */}
+          {/* Documents — shared resources */}
           {activeTab === 'documents' && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <p className="text-xs text-slate-500">{writerLocked ? 'Read-only at this stage.' : 'Upload proposal drafts, budgets and supporting files.'}</p>
-                {canEditChecklist && (
+                <div>
+                  <p className="text-xs text-slate-500">Shared resources — proposal drafts, budgets, letters and supporting files for the whole grant team.</p>
+                  <p className="text-[10px] text-aims-green font-bold mt-0.5 flex items-center gap-1"><span className="material-symbols-outlined text-[12px]">groups</span>Every grant writer can add here · everyone with access to this grant sees everything</p>
+                </div>
+                {canAddResource && (
                   <button onClick={() => setShowAddDoc(true)} className="px-3 py-1.5 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90 flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[14px]">upload_file</span>Upload Document
+                    <span className="material-symbols-outlined text-[14px]">upload_file</span>Add Resource
                   </button>
                 )}
               </div>
@@ -438,15 +541,35 @@ export function GrantDetail() {
         </div>
       )}
 
-      {/* Add Document Modal */}
+      {/* Add Resource Modal — shared with the whole grant team */}
       {showAddDoc && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
-            <h3 className="text-lg font-bold text-slate-900 mb-4">Upload Document</h3>
-            <input type="text" value={newDocTitle} onChange={(e) => setNewDocTitle(e.target.value)} placeholder="e.g. Proposal Draft v4.docx" className="w-full border border-slate-200 rounded-lg p-2 text-sm mb-4" />
-            <div className="flex justify-end gap-2">
-              <button onClick={() => setShowAddDoc(false)} className="px-4 py-2 text-sm font-bold text-slate-500">Cancel</button>
-              <button onClick={handleUploadDoc} disabled={!newDocTitle.trim()} className={cn('px-4 py-2 rounded-lg text-sm font-bold', newDocTitle.trim() ? 'bg-aims-navy text-white' : 'bg-slate-100 text-slate-400 cursor-not-allowed')}>Upload</button>
+            <div className="flex items-center justify-between mb-1">
+              <h3 className="text-lg font-bold text-slate-900">Add Shared Resource</h3>
+              <button onClick={() => { setShowAddDoc(false); setNewDocTitle(''); setDocFile(null); }} className="text-slate-400 hover:text-slate-600"><span className="material-symbols-outlined">close</span></button>
+            </div>
+            <p className="text-xs text-slate-500 mb-4">Attach a file or paste a link-name — the resource is visible to everyone with access to this grant.</p>
+            <input type="text" value={newDocTitle} onChange={(e) => setNewDocTitle(e.target.value)} placeholder="Resource name (or use the file name)…" className="w-full border border-slate-200 rounded-lg p-2 text-sm mb-3" />
+            <button onClick={() => docFileInputRef.current?.click()} className="w-full py-2.5 border-2 border-dashed border-slate-300 rounded-lg text-xs font-bold text-slate-500 hover:border-aims-navy/40 hover:text-aims-navy transition-colors flex items-center justify-center gap-1.5">
+              <span className="material-symbols-outlined text-[16px]">upload_file</span>{docFile ? 'Replace file…' : 'Choose a file (PDF, DOCX, XLSX…)'}
+            </button>
+            <input ref={docFileInputRef} type="file" accept=".pdf,.docx,.xlsx,.doc,.ppt,.pptx,.zip,.png,.jpg,.jpeg,.txt" className="hidden" onChange={(e) => handleDocFileChange(e.target.files?.[0])} />
+            {docFile && (
+              <div className="mt-2 flex items-center gap-2 px-3 py-2 bg-aims-green/10 border border-aims-green/30 rounded-lg">
+                <span className="material-symbols-outlined text-aims-green text-[18px]">description</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold text-slate-900 truncate">{docFile.name}</p>
+                  <p className="text-[10px] text-slate-500">{docFile.size} · {fileTypeOf(docFile.name)}</p>
+                </div>
+                <button onClick={() => setDocFile(null)} className="text-red-400 hover:text-red-600"><span className="material-symbols-outlined text-[16px]">close</span></button>
+              </div>
+            )}
+            <div className="flex justify-end gap-2 mt-4">
+              <button onClick={() => { setShowAddDoc(false); setNewDocTitle(''); setDocFile(null); }} className="px-4 py-2 text-sm font-bold text-slate-500">Cancel</button>
+              <button onClick={handleUploadDoc} disabled={!newDocTitle.trim() && !docFile} className={cn('px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-1.5', newDocTitle.trim() || docFile ? 'bg-aims-navy text-white' : 'bg-slate-100 text-slate-400 cursor-not-allowed')}>
+                <span className="material-symbols-outlined text-[15px]">share</span>Share Resource
+              </button>
             </div>
           </div>
         </div>

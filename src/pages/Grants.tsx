@@ -2,9 +2,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
 import { CHIP } from '@/lib/uiTheme';
-import { MOCK_GRANTS, GRANT_STAGES, formatCurrency, daysUntil, grantProgress, type GrantRecord } from '@/data/grants';
+import { GRANT_STAGES, formatCurrency, daysUntil, grantProgress, type GrantRecord } from '@/data/grants';
+import { grantService } from '@/services/grantService';
 import { GrantsPipelineBoard } from '@/components/grants/GrantsPipelineBoard';
 import { FormsShortcut } from '@/components/forms/FormsShortcut';
 import { AIPanel } from '@/components/ai/AIPanel';
@@ -34,11 +36,15 @@ function formatDate(dateStr: string): string {
 export function Grants() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { showToast } = useNotifications();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showClosed, setShowClosed] = useState(false);
   const [stageFilter, setStageFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('list');
+  const [scope, setScope] = useState<'mine' | 'shared'>('mine');
+  const [showAdd, setShowAdd] = useState(false);
+  const [newGrant, setNewGrant] = useState({ title: '', funder: '', pillar: '', description: '', deadline: '', amount: '', assignMe: true });
 
   if (!user) return <div className="p-8 text-center text-slate-500">Loading…</div>;
 
@@ -61,9 +67,13 @@ export function Grants() {
 
   // ── Grant Writers / everyone else: MY GRANTS personal workspace ──
   const userName = user.name;
-  const myGrants = MOCK_GRANTS.filter((g) => g.handler === userName || g.contributors.includes(userName));
+  // Live store (not the static seed) so grants added by any writer appear instantly
+  const allLiveGrants = grantService.getAllGrants();
+  const myGrants = allLiveGrants.filter((g) => g.handler === userName || g.contributors.includes(userName));
+  const showAll = scope === 'shared';
+  const visibleBase = showAll ? allLiveGrants : myGrants;
 
-  const visible = myGrants.filter((g) => {
+  const visible = visibleBase.filter((g) => {
     const isClosed = g.stage === 'awarded' || g.stage === 'declined';
     if (!showClosed && isClosed) return false;
     if (stageFilter && g.stage !== stageFilter) return false;
@@ -81,11 +91,43 @@ export function Grants() {
 
   const getDeadlineColor = (days: number) => days <= 7 ? 'text-red-500 bg-red-50 border-red-200' : days <= 30 ? 'text-aims-orange bg-aims-orange/10 border-aims-orange/20' : 'text-slate-500 bg-slate-50 border-slate-200';
 
+  const pillarSuggestions = Array.from(new Set(allLiveGrants.map((g) => g.pillar).filter(Boolean))).slice(0, 10);
+
+  const handleAddGrant = () => {
+    const amount = Number(String(newGrant.amount).replace(/,/g, ''));
+    const assignMe = newGrant.assignMe;
+    if (!newGrant.title.trim() || !newGrant.funder.trim() || !newGrant.deadline || !(amount > 0)) {
+      showToast({ title: 'Missing Details', message: 'Provide at least a title, funder, deadline and requested amount.', type: 'error' });
+      return;
+    }
+    const created = grantService.createGrant({
+      title: newGrant.title,
+      funder: newGrant.funder,
+      pillar: newGrant.pillar,
+      description: newGrant.description,
+      deadline: newGrant.deadline,
+      amountRequested: amount,
+      handler: assignMe ? user.name : 'Unassigned',
+      createdBy: user.name,
+    });
+    setShowAdd(false);
+    setNewGrant({ title: '', funder: '', pillar: '', description: '', deadline: '', amount: '', assignMe: true });
+    showToast({ title: 'Grant Added', message: `"${created.title}" added to the shared pipeline${assignMe ? ' — assigned to you.' : ' — leave it open for the team to claim.'}`, type: 'success' });
+    navigate(`/grants/${created.id}`);
+  };
+
   return (
     <div className="space-y-6">
       <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
-        <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">My Grants</h1>
-        <p className="text-base font-medium text-white">Grants you are actively working on — deadlines, milestones & timelines</p>
+        <div className="flex items-start justify-between flex-wrap gap-4">
+          <div>
+            <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">My Grants</h1>
+            <p className="text-base font-medium text-white">Add opportunities, collaborate with the team and share resources on every grant</p>
+          </div>
+          <button onClick={() => setShowAdd(true)} className="px-5 py-2.5 bg-white text-aims-navy rounded-xl text-xs font-extrabold hover:bg-aims-mint/90 transition-colors flex items-center gap-1.5 shadow-sm">
+            <span className="material-symbols-outlined text-[16px]">add_circle</span>Add Grant
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -122,17 +164,28 @@ export function Grants() {
         <div className="bg-white rounded-xl border border-slate-200 p-12 text-center shadow-sm">
           <span className="material-symbols-outlined text-[48px] text-slate-300 mb-3">volunteer_activism</span>
           <p className="text-sm font-bold text-slate-700 mb-1">No grants match your filters</p>
-          <p className="text-xs text-slate-400">You are not currently assigned as Handler or Contributor on any grants in this view.</p>
+          <p className="text-xs text-slate-400">{showAll ? 'Nothing in the shared pipeline matches yet — add the first grant opportunity.' : 'You are not currently assigned as Handler or Contributor on any grants in this view.'}</p>
+          {!showAll && (
+            <button onClick={() => setShowAdd(true)} className="mt-4 px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90 flex items-center gap-1.5 mx-auto">
+              <span className="material-symbols-outlined text-[15px]">add_circle</span>Add Grant
+            </button>
+          )}
         </div>
       )}
 
       {/* View toggle */}
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center bg-slate-100 rounded-lg p-1">
-          <button onClick={() => setViewMode('kanban')} className={cn('px-4 py-1.5 rounded-md text-xs font-bold transition-all', viewMode === 'kanban' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700')}><span className="material-symbols-outlined text-[14px] align-middle mr-1">view_kanban</span>Kanban</button>
-          <button onClick={() => setViewMode('list')} className={cn('px-4 py-1.5 rounded-md text-xs font-bold transition-all', viewMode === 'list' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700')}><span className="material-symbols-outlined text-[14px] align-middle mr-1">view_list</span>List</button>
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center bg-slate-100 rounded-lg p-1">
+            <button onClick={() => setScope('mine')} className={cn('px-4 py-1.5 rounded-md text-xs font-bold transition-all', scope === 'mine' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700')}>My Grants</button>
+            <button onClick={() => setScope('shared')} className={cn('px-4 py-1.5 rounded-md text-xs font-bold transition-all', scope === 'shared' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700')}>All Shared Grants</button>
+          </div>
+          <div className="flex items-center bg-slate-100 rounded-lg p-1">
+            <button onClick={() => setViewMode('kanban')} className={cn('px-4 py-1.5 rounded-md text-xs font-bold transition-all', viewMode === 'kanban' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700')}><span className="material-symbols-outlined text-[14px] align-middle mr-1">view_kanban</span>Kanban</button>
+            <button onClick={() => setViewMode('list')} className={cn('px-4 py-1.5 rounded-md text-xs font-bold transition-all', viewMode === 'list' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700')}><span className="material-symbols-outlined text-[14px] align-middle mr-1">view_list</span>List</button>
+          </div>
         </div>
-        <p className="text-[10px] text-slate-400 italic">Showing grants where you are Handler or Contributor</p>
+        <p className="text-[10px] text-slate-400 italic">{showAll ? 'Every grant in the shared pipeline — open any grant to view, add resources or comment' : 'Showing grants where you are Handler or Contributor'}</p>
       </div>
 
       {/* Kanban — My Grants by stage */}
@@ -175,6 +228,14 @@ export function Grants() {
           const progress = grantProgress(g);
           const isExpanded = expandedId === g.id;
           const isHandler = g.handler === userName;
+          const isContributor = g.contributors.includes(userName);
+          const membership = isHandler
+            ? { label: 'You are Handler', cls: 'bg-aims-green/10 text-aims-green border-aims-green/20' }
+            : isContributor
+              ? { label: 'You are Contributor', cls: 'bg-aims-navy/10 text-aims-navy border-aims-navy/20' }
+              : g.handler === 'Unassigned'
+                ? { label: 'Unassigned — claim it', cls: 'bg-aims-orange/10 text-aims-orange border-aims-orange/20' }
+                : { label: 'Shared grant', cls: 'bg-slate-100 text-slate-500 border-slate-200' };
           const stageColor = GRANT_STAGES.find((s) => s.key === g.stage)?.color ?? 'navy';
           const timeline = buildTimeline(g);
           const nextMilestone = g.milestones.find((m) => !m.completed);
@@ -186,7 +247,7 @@ export function Grants() {
                   <div className="flex-1 min-w-[240px]">
                     <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                       <span className={cn('inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide', CHIP[stageColor])}>{g.stage.replace('_', ' ')}</span>
-                      <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded border', isHandler ? 'bg-aims-green/10 text-aims-green border-aims-green/20' : 'bg-slate-100 text-slate-500 border-slate-200')}>{isHandler ? 'You are Handler' : 'You are Contributor'}</span>
+                      <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded border', membership.cls)}>{membership.label}</span>
                       <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-aims-navy/10 text-aims-navy uppercase">{g.pillar}</span>
                     </div>
                     <p className="text-base font-extrabold text-slate-900">{g.title}</p>
@@ -245,6 +306,70 @@ export function Grants() {
           );
         })}
       </div>
+      )}
+
+      {/* Add Grant Modal — any grant writer can add a shared opportunity */}
+      {showAdd && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowAdd(false)} />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-xl max-h-[92vh] flex flex-col overflow-hidden">
+            <div className="bg-grad-navy px-6 py-4 text-white shrink-0">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-aims-mint flex items-center gap-1.5"><span className="material-symbols-outlined text-[14px]">volunteer_activism</span>Add Grant Opportunity</p>
+                  <h2 className="text-lg font-extrabold text-white mt-0.5">New Grant</h2>
+                  <p className="text-xs text-white/85">Added to the shared pipeline — the whole grants team can see it, add resources and comment</p>
+                </div>
+                <button onClick={() => setShowAdd(false)} className="text-white/80 hover:text-white shrink-0"><span className="material-symbols-outlined">close</span></button>
+              </div>
+            </div>
+            <div className="p-5 space-y-4 overflow-y-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="sm:col-span-2">
+                  <label className="block"><span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Grant Title *</span>
+                    <input value={newGrant.title} onChange={(e) => setNewGrant((s) => ({ ...s, title: e.target.value }))} placeholder="e.g. Climate-Smart Irrigation Scale-Up" className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-aims-navy/30" />
+                  </label>
+                </div>
+                <label className="block">
+                  <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Funder *</span>
+                  <input value={newGrant.funder} onChange={(e) => setNewGrant((s) => ({ ...s, funder: e.target.value }))} placeholder="e.g. USAID, EU, Mastercard Foundation" className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-aims-navy/30" />
+                </label>
+                <label className="block">
+                  <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Pillar / Programme</span>
+                  <input value={newGrant.pillar} onChange={(e) => setNewGrant((s) => ({ ...s, pillar: e.target.value }))} placeholder="e.g. Land Rights, Climate, Livelihoods" list="pillar-suggestions" className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-aims-navy/30" />
+                  <datalist id="pillar-suggestions">{pillarSuggestions.map((p) => <option key={p} value={p} />)}</datalist>
+                </label>
+                <div className="sm:col-span-2">
+                  <label className="block"><span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Description</span>
+                    <textarea value={newGrant.description} onChange={(e) => setNewGrant((s) => ({ ...s, description: e.target.value }))} rows={3} placeholder="What the opportunity funds, who it serves and why ARDHI is a strong fit…" className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-aims-navy/30 resize-y" />
+                  </label>
+                </div>
+                <label className="block">
+                  <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Deadline *</span>
+                  <input type="date" value={newGrant.deadline} onChange={(e) => setNewGrant((s) => ({ ...s, deadline: e.target.value }))} className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-aims-navy/30" />
+                </label>
+                <label className="block">
+                  <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Requested Amount (UGX) *</span>
+                  <input value={newGrant.amount} onChange={(e) => setNewGrant((s) => ({ ...s, amount: e.target.value }))} placeholder="e.g. 500,000,000" className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-aims-navy/30" />
+                </label>
+              </div>
+              <label className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-100 cursor-pointer">
+                <input type="checkbox" checked={newGrant.assignMe} onChange={(e) => setNewGrant((s) => ({ ...s, assignMe: e.target.checked }))} className="w-4 h-4 rounded accent-aims-green" />
+                <span className="text-xs font-bold text-slate-700">Assign to me as Handler</span>
+                <span className="text-[10px] text-slate-400 ml-auto">Untick to leave it unassigned so anyone on the team can claim it</span>
+              </label>
+            </div>
+            <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between gap-3 shrink-0">
+              <p className="text-[10px] text-slate-400 italic">Stored in aims_grants · appears instantly for the whole team</p>
+              <div className="flex items-center gap-2">
+                <button onClick={() => setShowAdd(false)} className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
+                <button onClick={handleAddGrant} className="px-5 py-2 bg-aims-green text-white text-xs font-bold rounded-lg hover:bg-aims-green/90 flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[15px]">add_circle</span>Add Grant
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

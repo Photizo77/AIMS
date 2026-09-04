@@ -49,6 +49,61 @@ export const grantService = {
 
   getGrantById: (id: string): GrantRecord | undefined => grants.find((g) => g.id === id),
 
+  /** ANY grant writer can add a new opportunity to the shared pipeline */
+  createGrant: (input: {
+    title: string;
+    funder: string;
+    pillar?: string;
+    description?: string;
+    deadline: string;
+    amountRequested: number;
+    /** Who the grant starts with — assign to self or leave 'Unassigned' for the team to pick up */
+    handler: string;
+    createdBy: string;
+  }): GrantRecord => {
+    const now = nowIso();
+    const grant: GrantRecord = {
+      id: nextId('g'),
+      title: input.title.trim(),
+      funder: input.funder.trim(),
+      pillar: input.pillar?.trim() || 'Cross-cutting',
+      handler: input.handler === 'Unassigned' ? 'Unassigned' : input.handler.trim(),
+      contributors: [],
+      stage: 'identified',
+      deadline: input.deadline,
+      amountRequested: input.amountRequested || 0,
+      description: input.description?.trim() || undefined,
+      milestones: [],
+      activity: [{ id: nextId('a'), actor: input.createdBy, action: `Added a new grant opportunity to the shared pipeline (${input.funder.trim()})`, timestamp: now }],
+      comments: [],
+      documents: [],
+    };
+    grants = [grant, ...grants];
+    saveGrants();
+    return grant;
+  },
+
+  /** Share a grant with a colleague — they join as contributor and can add resources/comments */
+  addContributor: (grantId: string, name: string, actor: string): GrantRecord | undefined => {
+    const g = grants.find((x) => x.id === grantId);
+    if (!g || !name) return undefined;
+    if (name === g.handler || g.contributors.includes(name)) return g;
+    g.contributors = [...g.contributors, name];
+    addActivity(g, actor, `Shared "${g.title}" with ${name} — joined as contributor`);
+    saveGrants();
+    return g;
+  },
+
+  /** Remove a contributor from the shared grant */
+  removeContributor: (grantId: string, name: string, actor: string): GrantRecord | undefined => {
+    const g = grants.find((x) => x.id === grantId);
+    if (!g) return undefined;
+    g.contributors = g.contributors.filter((c) => c !== name);
+    addActivity(g, actor, `Removed ${name} from the grant team`);
+    saveGrants();
+    return g;
+  },
+
   /** EXPRESS INTEREST — auto-assigns the current writer as handler (stage stays Identified) */
   expressInterest: (grantId: string, userName: string): GrantRecord | undefined => {
     const g = grants.find((x) => x.id === grantId);
@@ -156,6 +211,27 @@ export const grantService = {
       { id: nextId('d'), title, fileType: title.endsWith('.pdf') ? 'PDF' : title.endsWith('.xlsx') ? 'XLSX' : 'DOCX', size: `${(Math.random() * 900 + 100).toFixed(0)} KB`, uploadedBy: userName, uploadedAt: new Date().toISOString().slice(0, 10), version: (g.documents?.length ?? 0) + 1 },
     ];
     addActivity(g, userName, `Uploaded document: ${title}`);
+    saveGrants();
+    return g;
+  },
+
+  /** Attach a shared resource/file with real metadata (any grant-writer role can add) */
+  attachResource: (grantId: string, input: { title: string; fileType: string; size: string; uploadedBy: string }): GrantRecord | undefined => {
+    const g = grants.find((x) => x.id === grantId);
+    if (!g) return undefined;
+    g.documents = [
+      ...(g.documents ?? []),
+      {
+        id: nextId('d'),
+        title: input.title,
+        fileType: input.fileType || 'FILE',
+        size: input.size,
+        uploadedBy: input.uploadedBy,
+        uploadedAt: new Date().toISOString().slice(0, 10),
+        version: (g.documents?.length ?? 0) + 1,
+      },
+    ];
+    addActivity(g, input.uploadedBy, `Shared a resource on "${g.title}": ${input.title}`);
     saveGrants();
     return g;
   },
