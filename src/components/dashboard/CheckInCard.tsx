@@ -1,10 +1,11 @@
 // src/components/dashboard/CheckInCard.tsx
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { useAttendance } from '@/context/AttendanceContext';
 import { cn } from '@/lib/utils';
 import { logGeofenceAttempt } from '@/services/attendanceService';
+import { detectLocalIPv4s, matchesOfficeNetwork } from '@/config/geofence';
 
 // Office geofence: 0°19'12.0"N, 32°34'48.0"E — 200 metre radius
 const OFFICE_LAT = 0.32;
@@ -28,42 +29,62 @@ export function CheckInCard() {
   const [selectedMode, setSelectedMode] = useState<'physical' | 'remote'>('physical');
   const [isLocating, setIsLocating] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [netInfo, setNetInfo] = useState<{ onOffice: boolean; ips: string[] } | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    detectLocalIPv4s(3000).then((ips) => {
+      if (mounted) setNetInfo({ onOffice: ips.some((ip) => matchesOfficeNetwork(ip)), ips: ips.filter((ip) => !ip.startsWith('127.')) });
+    });
+    return () => { mounted = false; };
+  }, []);
 
   const handleCheckIn = () => {
     if (selectedMode === 'physical') {
-      if (!navigator.geolocation) {
-        setLocationError('Geolocation is not supported by your browser.');
-        showToast({ title: 'Location Unavailable', message: 'Your browser does not support GPS.', type: 'error' });
-        return;
-      }
       setIsLocating(true);
       setLocationError(null);
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          const distance = getDistanceMeters(latitude, longitude, OFFICE_LAT, OFFICE_LNG);
+      // 1) OFFICE NETWORK CHECK first — on 192.168.100.x = verified on-site.
+      detectLocalIPv4s().then((ips) => {
+        const officeIp = ips.find((ip) => matchesOfficeNetwork(ip));
+        if (officeIp) {
           setIsLocating(false);
-          if (distance <= MAX_RADIUS_METERS) {
-            checkIn('physical', 'ARDHI Office, Kampala', true);
-          } else {
-            // BLOCKED — log the failed attempt (appears in Attendance → Anomalies & Violations)
-            if (user) logGeofenceAttempt(user.id, user.name, distance, `${latitude.toFixed(4)}°N, ${longitude.toFixed(4)}°E`);
-            setLocationError(`You must be within ${MAX_RADIUS_METERS}m of the ARDHI office to check in. You are ${Math.round(distance)}m away.`);
-            showToast({ title: 'Outside Office Radius', message: `Physical check-in blocked — you are ${Math.round(distance)}m from the office (limit 200m).`, type: 'error' });
-          }
-        },
-        (error) => {
+          checkIn('physical', `ARDHI Office Network (${officeIp})`, true);
+          return;
+        }
+        // 2) GPS FALLBACK — must be within 200 m of the office.
+        if (!navigator.geolocation) {
           setIsLocating(false);
-          let msg = 'Unable to retrieve your location.';
-          if (error.code === error.PERMISSION_DENIED) msg = 'Location permission denied. Please allow location access to check in.';
-          if (error.code === error.POSITION_UNAVAILABLE) msg = 'Location information unavailable.';
-          if (error.code === error.TIMEOUT) msg = 'Location request timed out.';
-          if (user) logGeofenceAttempt(user.id, user.name, -1, msg);
-          setLocationError(msg);
-          showToast({ title: 'Location Error', message: msg, type: 'error' });
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-      );
+          setLocationError('Geolocation is not supported and the device is not on the office network (192.168.100.x).');
+          showToast({ title: 'Location Unavailable', message: 'Use the office network or a GPS-capable browser.', type: 'error' });
+          return;
+        }
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            const distance = getDistanceMeters(latitude, longitude, OFFICE_LAT, OFFICE_LNG);
+            setIsLocating(false);
+            if (distance <= MAX_RADIUS_METERS) {
+              checkIn('physical', 'ARDHI Office, Kampala', true);
+            } else {
+              // BLOCKED — log the failed attempt (appears in Attendance → Anomalies & Violations)
+              if (user) logGeofenceAttempt(user.id, user.name, distance, `${latitude.toFixed(4)}°N, ${longitude.toFixed(4)}°E`);
+              setLocationError(`You must be within ${MAX_RADIUS_METERS}m of the ARDHI office (or on the office network) to check in. You are ${Math.round(distance)}m away.`);
+              showToast({ title: 'Outside Office Radius', message: `Physical check-in blocked — ${Math.round(distance)}m from the office (limit 200m).`, type: 'error' });
+            }
+          },
+          (error) => {
+            setIsLocating(false);
+            let msg = 'Unable to retrieve your location.';
+            if (error.code === error.PERMISSION_DENIED) msg = 'Location permission denied — allow location access or join the office network (192.168.100.x).';
+            if (error.code === error.POSITION_UNAVAILABLE) msg = 'Location unavailable — connect to the office network (192.168.100.x) to check in.';
+            if (error.code === error.TIMEOUT) msg = 'Location request timed out — try the office network.';
+            if (user) logGeofenceAttempt(user.id, user.name, -1, msg);
+            setLocationError(msg);
+            showToast({ title: 'Location Error', message: msg, type: 'error' });
+          },
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+      });
     } else {
       checkIn('remote', 'Remote Location', false);
     }
@@ -94,7 +115,9 @@ export function CheckInCard() {
               <p className="text-[10px] font-bold mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-aims-green/10 text-aims-green">
                 {checkInMode === 'physical'
                   ? locationVerified
-                    ? '✓ Geofence verified · within 200 m of office'
+                    ? location?.startsWith('ARDHI Office Network')
+                      ? '✓ Office network verified (192.168.100.x)'
+                      : '✓ Geofence verified · within 200 m of office'
                     : 'Physical (location pending)'
                   : 'Remote work'}
                 {location ? ` · ${location}` : ''}
@@ -124,6 +147,16 @@ export function CheckInCard() {
           {locationError && (
             <p className="text-[10px] font-bold text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-1.5 max-w-[280px] text-right">
               {locationError}
+            </p>
+          )}
+
+          {netInfo && (
+            <p className={cn('text-[10px] font-semibold rounded-lg px-3 py-1.5 max-w-[280px] text-right', netInfo.onOffice ? 'bg-aims-green/10 text-aims-green' : 'bg-slate-100 text-slate-500')}>
+              {netInfo.onOffice
+                ? `✓ On the office network (${netInfo.ips.join(', ')}) — physical check-in allowed`
+                : netInfo.ips.length > 0
+                  ? `Network: ${netInfo.ips.join(', ')} — not the office LAN (GPS will be used)`
+                  : 'Office network not detectable in this browser (GPS will be used)'}
             </p>
           )}
 
