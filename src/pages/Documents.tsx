@@ -8,7 +8,7 @@
 // ============================================================
 
 import { useEffect, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
@@ -137,22 +137,32 @@ export function Documents() {
   };
 
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { docId: routeDocId } = useParams();
 
-  // Deep link from global search (?doc=id) — jump to the category and open the preview
+  // Deep link from global search (/documents/:docId or ?doc=id) — jump to the category and open the preview
   useEffect(() => {
-    const docId = searchParams.get('doc');
-    if (!docId) return;
-    const doc = listDocs().find((d) => d.id === docId);
+    const id = searchParams.get('doc') ?? routeDocId ?? '';
+    if (!id) return;
+    const doc = listDocs().find((d) => d.id === id);
     const allowed = doc ? getCategoryAccess(userRole, doc.category) !== 'none' : false;
-    const next = new URLSearchParams(searchParams.toString());
-    next.delete('doc');
-    setSearchParams(next, { replace: true });
     if (doc && allowed) {
       setActiveCategory(doc.category);
       setPreviewDoc(doc);
     }
+    // Normalise the URL (drop :docId / ?doc=) so refresh & back behave cleanly
+    if (routeDocId) {
+      const next = new URLSearchParams(searchParams.toString());
+      next.delete('doc');
+      const qs = next.toString();
+      navigate(qs ? `/documents?${qs}` : '/documents', { replace: true });
+    } else {
+      const next = new URLSearchParams(searchParams.toString());
+      next.delete('doc');
+      setSearchParams(next, { replace: true });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams, userRole]);
+  }, [searchParams, routeDocId, userRole]);
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {

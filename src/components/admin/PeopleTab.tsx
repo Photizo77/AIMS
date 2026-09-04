@@ -18,7 +18,7 @@ const MOCK_EMPLOYEES: (User & { position: string })[] = ACTIVE_STAFF.map((s) => 
   position: s.position, status: s.status, createdAt: '2025-01-15',
 }));
 
-export function PeopleTab() {
+export function PeopleTab({ focusUserId }: { focusUserId?: string }) {
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterDept, setFilterDept] = useState('all');
@@ -35,9 +35,9 @@ export function PeopleTab() {
 
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Global-search deep link (?user=id) — open that person's profile
+  // Deep link to a person (route /hr/:userId or legacy ?user=id) — open their profile
   useEffect(() => {
-    const uid = searchParams.get('user');
+    const uid = searchParams.get('user') ?? focusUserId ?? '';
     if (!uid) return;
     const found = employees.find((e) => e.id === uid);
     if (found) setSelectedEmployee(found);
@@ -45,7 +45,7 @@ export function PeopleTab() {
     next.delete('user');
     setSearchParams(next, { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  }, [searchParams, focusUserId]);
 
   const contractsOf = (emp: (User & { position: string }) | DirectoryEntry): ContractRecord[] => {
     const byId = contractsFor(emp.id);

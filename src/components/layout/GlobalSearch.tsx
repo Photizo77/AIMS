@@ -11,7 +11,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
-import { ROLE_LABELS } from '@/config/roles';
+import { ROLE_LABELS, hasModuleAccess } from '@/config/roles';
 import { getVisibleNavItems } from '@/config/navigation';
 import { grantService } from '@/services/grantService';
 import { innovationService } from '@/services/innovationService';
@@ -112,50 +112,65 @@ export function GlobalSearch() {
     const q = query.trim().toLowerCase();
     if (!q) return [];
     const out: { kind: Kind; items: Result[] }[] = [];
+    const role = user?.role;
 
     // Grants — titles, funders, descriptions
-    const grants: Result[] = grantService.getAllGrants()
-      .filter((g) => g.title.toLowerCase().includes(q) || g.funder.toLowerCase().includes(q) || (g.description ?? '').toLowerCase().includes(q))
-      .map((g) => ({ key: `g-${g.id}`, kind: 'grant', title: g.title, subtitle: `${g.funder} · ${g.stage} · ${g.pillar ?? ''}`.replace(/\s+/g, ' ').trim(), href: `/grants/${g.id}` }));
+    const grants: Result[] = hasModuleAccess(role ?? 'ED', 'grants')
+      ? grantService.getAllGrants()
+        .filter((g) => g.title.toLowerCase().includes(q) || g.funder.toLowerCase().includes(q) || (g.description ?? '').toLowerCase().includes(q))
+        .map((g) => ({ key: `g-${g.id}`, kind: 'grant', title: g.title, subtitle: `${g.funder} · ${g.stage} · ${g.pillar ?? ''}`.replace(/\s+/g, ' ').trim(), href: `/grants/${g.id}` }))
+      : [];
     if (grants.length) out.push({ kind: 'grant', items: grants });
 
     // Innovation projects — titles, descriptions, leads
-    const projects: Result[] = innovationService.getAllProjects()
-      .filter((p) => p.lifecycle?.status !== 'archived')
-      .filter((p) => p.title.toLowerCase().includes(q) || p.description.toLowerCase().includes(q) || p.leadName.toLowerCase().includes(q))
-      .map((p) => ({ key: `p-${p.id}`, kind: 'project', title: p.title, subtitle: `Innovation · ${p.lifecycle?.status === 'active' || !p.lifecycle ? p.stage : p.lifecycle?.status} · ${p.leadName}`, href: `/innovations/${p.id}` }));
+    const projects: Result[] = hasModuleAccess(role ?? 'ED', 'innovations')
+      ? innovationService.getAllProjects()
+        .filter((p) => p.lifecycle?.status !== 'archived')
+        .filter((p) => p.title.toLowerCase().includes(q) || p.description.toLowerCase().includes(q) || p.leadName.toLowerCase().includes(q))
+        .map((p) => ({ key: `p-${p.id}`, kind: 'project', title: p.title, subtitle: `Innovation · ${p.lifecycle?.status === 'active' || !p.lifecycle ? p.stage : p.lifecycle?.status} · ${p.leadName}`, href: `/innovations/${p.id}` }))
+      : [];
     if (projects.length) out.push({ kind: 'project', items: projects });
 
-    // People — names, roles, departments (roster + onboarding directory)
+    // People — names, roles, departments (roster + onboarding directory).
+    // Only shown to roles that can open the HR People Directory (the CD stays summary-only).
     const people: Result[] = [];
-    STAFF_ROSTER.forEach((s) => {
-      const hay = `${s.name} ${s.position} ${s.department} ${ROLE_LABELS[s.role]} ${s.email}`.toLowerCase();
-      if (hay.includes(q)) people.push({ key: `s-${s.id}`, kind: 'person', title: s.name, subtitle: `${ROLE_LABELS[s.role]} · ${s.department} · ${s.position}`, href: `/hr?tab=directory&user=${encodeURIComponent(s.id)}` });
-    });
-    getDirectoryEntries().forEach((e) => {
-      const hay = `${e.name} ${e.position} ${e.department} ${ROLE_LABELS[e.role]} ${e.email}`.toLowerCase();
-      if (hay.includes(q)) people.push({ key: `e-${e.id}`, kind: 'person', title: e.name, subtitle: `${ROLE_LABELS[e.role]} · ${e.department} · ${e.position}`, href: `/hr?tab=directory&user=${encodeURIComponent(e.id)}` });
-    });
+    if (role && role !== 'CD' && hasModuleAccess(role, 'hr_admin')) {
+      STAFF_ROSTER.forEach((s) => {
+        const hay = `${s.name} ${s.position} ${s.department} ${ROLE_LABELS[s.role]} ${s.email}`.toLowerCase();
+        if (hay.includes(q)) people.push({ key: `s-${s.id}`, kind: 'person', title: s.name, subtitle: `${ROLE_LABELS[s.role]} · ${s.department} · ${s.position}`, href: `/hr/${encodeURIComponent(s.id)}` });
+      });
+      getDirectoryEntries().forEach((e) => {
+        const hay = `${e.name} ${e.position} ${e.department} ${ROLE_LABELS[e.role]} ${e.email}`.toLowerCase();
+        if (hay.includes(q)) people.push({ key: `e-${e.id}`, kind: 'person', title: e.name, subtitle: `${ROLE_LABELS[e.role]} · ${e.department} · ${e.position}`, href: `/hr/${encodeURIComponent(e.id)}` });
+      });
+    }
     if (people.length) out.push({ kind: 'person', items: people });
 
     // Documents — filenames + metadata (category, uploader, tags)
-    const allowed = allowedDocCategories(user?.role);
-    const docs: Result[] = listDocs()
-      .filter((d) => allowed.has(d.category))
-      .filter((d) => `${d.title} ${d.fileType} ${d.uploadedBy} ${d.tags.join(' ')}`.toLowerCase().includes(q))
-      .map((d) => ({ key: `d-${d.id}`, kind: 'document', title: d.title, subtitle: `Document · ${d.category.replace(/_/g, ' ')} · ${d.uploadedBy}`, href: `/documents?doc=${encodeURIComponent(d.id)}` }));
-    // HR-confidential personnel files (ED + HR only)
-    if (user && (user.role === 'ED' || user.role === 'COMPANY_ADMIN')) {
-      listHrDocs()
-        .filter((d) => `${d.title} ${d.fileType} ${d.uploadedBy} ${d.tags.join(' ')}`.toLowerCase().includes(q))
-        .forEach((d) => docs.push({ key: `hr-${d.id}`, kind: 'document', title: d.title, subtitle: `Document · HR confidential — employee files · ${d.uploadedBy}`, href: '/documents' }));
-    }
+    const docs: Result[] = hasModuleAccess(role ?? 'ED', 'documents')
+      ? (() => {
+          const allowed = allowedDocCategories(role);
+          const hits: Result[] = listDocs()
+            .filter((d) => allowed.has(d.category))
+            .filter((d) => `${d.title} ${d.fileType} ${d.uploadedBy} ${d.tags.join(' ')}`.toLowerCase().includes(q))
+            .map((d) => ({ key: `d-${d.id}`, kind: 'document', title: d.title, subtitle: `Document · ${d.category.replace(/_/g, ' ')} · ${d.uploadedBy}`, href: `/documents/${encodeURIComponent(d.id)}` }));
+          // HR-confidential personnel files (ED + HR only)
+          if (role === 'ED' || role === 'COMPANY_ADMIN') {
+            listHrDocs()
+              .filter((d) => `${d.title} ${d.fileType} ${d.uploadedBy} ${d.tags.join(' ')}`.toLowerCase().includes(q))
+              .forEach((d) => hits.push({ key: `hr-${d.id}`, kind: 'document', title: d.title, subtitle: `Document · HR confidential — employee files · ${d.uploadedBy}`, href: '/documents' }));
+          }
+          return hits;
+        })()
+      : [];
     if (docs.length) out.push({ kind: 'document', items: docs });
 
     // Knowledge base — articles & resources
-    const knowledge: Result[] = KNOWLEDGE_RESOURCES
-      .filter((r) => `${r.title} ${r.description} ${r.category} ${r.type}`.toLowerCase().includes(q))
-      .map((r) => ({ key: `k-${r.id}`, kind: 'knowledge', title: r.title, subtitle: `Knowledge Base · ${r.category} · ${r.type}`, href: '/knowledge' }));
+    const knowledge: Result[] = hasModuleAccess(role ?? 'ED', 'knowledge')
+      ? KNOWLEDGE_RESOURCES
+        .filter((r) => `${r.title} ${r.description} ${r.category} ${r.type}`.toLowerCase().includes(q))
+        .map((r) => ({ key: `k-${r.id}`, kind: 'knowledge', title: r.title, subtitle: `Knowledge Base · ${r.category} · ${r.type}`, href: '/knowledge' }))
+      : [];
     if (knowledge.length) out.push({ kind: 'knowledge', items: knowledge });
 
     return out;

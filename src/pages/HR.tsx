@@ -7,7 +7,7 @@
 // ============================================================
 
 import { Component, useState, type ReactNode } from 'react';
-import { useLocation, useSearchParams } from 'react-router-dom';
+import { useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
 import { PeopleTab } from '@/components/admin/PeopleTab';
@@ -82,7 +82,8 @@ export function HR() {
   const { user } = useAuth();
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState<AdminTab>(() => initialTab((location.state as { tab?: string } | null)?.tab ?? searchParams.get('tab') ?? undefined));
+  const { userId: routeUserId } = useParams();
+  const [activeTab, setActiveTab] = useState<AdminTab>(() => initialTab(routeUserId ? 'directory' : ((location.state as { tab?: string } | null)?.tab ?? searchParams.get('tab') ?? undefined)));
 
   // Country Director gets the consolidated HR & Admin Summary (no individual records)
   if (user?.role === 'CD') {
@@ -130,7 +131,7 @@ export function HR() {
       <div id="hr-tab-content" className="scroll-mt-20 bg-slate-50 rounded-xl p-5">
         <TabBoundary key={activeTab} name={activeTab}>
           {activeTab === 'overview' && <HROverview onGo={(tab) => goTab(tab as AdminTab)} />}
-          {activeTab === 'directory' && <PeopleTab />}
+          {activeTab === 'directory' && <PeopleTab focusUserId={routeUserId} />}
           {activeTab === 'payslips' && <PayslipsTab />}
           {activeTab === 'leave' && <LeaveTab />}
           {activeTab === 'contracts' && <ContractsTab />}

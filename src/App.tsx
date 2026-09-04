@@ -69,12 +69,14 @@ export function App() {
                 
                 <Route path="/attendance" element={<ProtectedRoute module="attendance"><Attendance /></ProtectedRoute>} />
                 <Route path="/hr" element={<ProtectedRoute module="hr_admin"><HR /></ProtectedRoute>} />
+                <Route path="/hr/:userId" element={<ProtectedRoute module="hr_admin"><HR /></ProtectedRoute>} />
                 <Route path="/grants" element={<ProtectedRoute module="grants"><Grants /></ProtectedRoute>} />
                 <Route path="/grants/:grantId" element={<ProtectedRoute module="grants"><GrantDetail /></ProtectedRoute>} />
                 <Route path="/finance" element={<ProtectedRoute module="finance"><Finance /></ProtectedRoute>} />
                 <Route path="/procurement" element={<ProtectedRoute module="procurement"><Procurement /></ProtectedRoute>} />
                 <Route path="/approvals" element={<ProtectedRoute module="approvals"><Approvals /></ProtectedRoute>} />
                 <Route path="/documents" element={<ProtectedRoute module="documents"><Documents /></ProtectedRoute>} />
+                <Route path="/documents/:docId" element={<ProtectedRoute module="documents"><Documents /></ProtectedRoute>} />
                 <Route path="/inventory" element={<ProtectedRoute module="inventory"><Inventory /></ProtectedRoute>} />
                 <Route path="/analytics" element={<ProtectedRoute module="analytics"><Analytics /></ProtectedRoute>} />
                 <Route path="/research" element={<ProtectedRoute module="research"><Research /></ProtectedRoute>} />
