@@ -45,6 +45,11 @@ export function saveJSON(key: string, value: unknown): void {
     localStorage.setItem(key, JSON.stringify(value));
   } catch { /* ignore */ }
   notifyDataChanged(key);
+  // Announce the save so the sync engine can push the collection to the
+  // AIMS backend when that domain's server sync is enabled.
+  try {
+    window.dispatchEvent(new CustomEvent(SYNC_SAVE_EVENT, { detail: { key, value } }));
+  } catch { /* ignore */ }
 }
 
 // ── Live update bus ──
@@ -52,6 +57,9 @@ export function saveJSON(key: string, value: unknown): void {
 // re-reads the store and refreshes automatically (same tab, or other tabs
 // via the native 'storage' event).
 export const DATA_CHANGED_EVENT = 'aims:data-changed';
+
+/** Dispatched after every saveJSON — carries { key, value } for backend sync. */
+export const SYNC_SAVE_EVENT = 'aims:sync-save';
 
 export function notifyDataChanged(key?: string): void {
   try {

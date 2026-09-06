@@ -48,7 +48,7 @@ export function setCachedUser(user: ApiUser | null): void {
 
 // ── Request helper ──
 export interface ApiOk<T> { ok: true; status: number; data: T; }
-export interface ApiErr { ok: false; status: number; error: string; }
+export interface ApiErr { ok: false; status: number; error: string; detail?: Record<string, unknown> | null; }
 export type ApiResult<T> = ApiOk<T> | ApiErr;
 
 const REQUEST_TIMEOUT_MS = 15000;
@@ -82,7 +82,7 @@ export async function apiRequest<T = unknown>(
     if (!res.ok) {
       const message =
         payload?.message || payload?.error || `Request failed (${res.status})`;
-      return { ok: false, status: res.status, error: message };
+      return { ok: false, status: res.status, error: message, detail: payload };
     }
 
     return { ok: true, status: res.status, data: (payload?.data as T) ?? (payload as T) };

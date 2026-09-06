@@ -2,6 +2,7 @@
 import { useRef, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
+import { ServerSyncPanel } from '@/components/sync/ServerSyncPanel';
 import { cn } from '@/lib/utils';
 import { exportAllData, exportModuleData, importAllData, validateVaultFile, downloadFile, toCSV, vaultFilename, DATA_VAULT_VERSION, DATA_VAULT_BASELINE, STORAGE_KEYS, flashAllSystemData } from '@/lib/storage';
 import { grantService } from '@/services/grantService';
@@ -225,6 +226,11 @@ export function Settings() {
             </button>
           </div>
         </div>
+      </div>
+
+      {/* SERVER SYNC — AIMS backend integration */}
+      <div className="mb-6">
+        <ServerSyncPanel />
       </div>
 
       {/* Restore confirmation modal — validating & confirming an uploaded backup */}

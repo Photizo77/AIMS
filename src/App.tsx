@@ -5,6 +5,7 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { NotificationProvider } from '@/context/NotificationContext';
 import { AttendanceProvider } from '@/context/AttendanceContext';
+import { SyncEngine } from '@/components/sync/SyncEngine';
 import { roleLanding } from '@/config/navigation';
 
 // Auth & Layout
@@ -46,6 +47,7 @@ function RoleHome() {
 export function App() {
   return (
     <AuthProvider>
+      <SyncEngine />
       <NotificationProvider>
         <AttendanceProvider>
           <BrowserRouter>
