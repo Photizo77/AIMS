@@ -22,6 +22,13 @@ The project is imported into Vercel from the GitHub repository
 | `OPENAI_API_KEY` | GPT enhancement |
 | `DEEPSEEK_API_KEY` | DeepSeek enhancement |
 | `QWEN_API_KEY` | Qwen enhancement |
+| `VITE_API_URL` | AIMS backend base URL (e.g. `https://aims-backend-five.vercel.app`). When set, sign-in authenticates against the backend (JWT) with persona fallback when the server is unreachable. When empty/unset the app runs in demo mode. |
+
+> AIMS API integration: `src/lib/api.ts` is the single client seam. Setting
+> `VITE_API_URL` switches login to the real backend; auth tokens persist and
+> sessions are restored via `/auth/me`. Data records remain in the browser
+> storage layer (`src/lib/storage.ts`) — see its `collections` API counterpart
+> for the next integration step.
 
 ## 2. GitHub Actions Pipeline (explicit CI/CD)
 
