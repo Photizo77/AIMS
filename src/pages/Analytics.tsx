@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useNotifications } from '@/context/NotificationContext';
+import { demoMode } from '@/lib/storage';
 
 type ReportPeriod = 'monthly' | 'quarterly' | 'annual';
 
@@ -9,6 +10,7 @@ export function Analytics() {
   const { showToast } = useNotifications();
   const [period, setPeriod] = useState<ReportPeriod>('monthly');
   const [generating, setGenerating] = useState(false);
+  const demo = demoMode();
 
   const handleGenerate = () => {
     setGenerating(true);
@@ -47,14 +49,22 @@ export function Analytics() {
         </div>
       </div>
 
-      {/* METRICS OVERVIEW */}
+      {/* METRICS OVERVIEW — demo figures only in demo mode; otherwise clean until data is entered */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {[
-          { label: 'Grants Submitted', value: '12', change: '+3 vs last period', positive: true },
-          { label: 'Total Revenue', value: 'UGX 1.2B', change: '+18% vs last period', positive: true },
-          { label: 'Staff Retention', value: '94%', change: '-1% vs last period', positive: false },
-          { label: 'Avg. Approval Time', value: '3.2 days', change: '-0.8 days improvement', positive: true },
-        ].map((m, i) => (
+        {(demo
+          ? [
+            { label: 'Grants Submitted', value: '12', change: '+3 vs last period', positive: true },
+            { label: 'Total Revenue', value: 'UGX 1.2B', change: '+18% vs last period', positive: true },
+            { label: 'Staff Retention', value: '94%', change: '-1% vs last period', positive: false },
+            { label: 'Avg. Approval Time', value: '3.2 days', change: '-0.8 days improvement', positive: true },
+          ]
+          : [
+            { label: 'Grants Submitted', value: '—', change: 'No data yet — appears once grants are recorded', positive: true },
+            { label: 'Total Revenue', value: '—', change: 'No cash recorded yet in aims_finance', positive: true },
+            { label: 'Staff Retention', value: '—', change: 'Calculated from HR records', positive: true },
+            { label: 'Avg. Approval Time', value: '—', change: 'Calculated from requisition decisions', positive: true },
+          ]
+        ).map((m, i) => (
           <div key={i} className="bg-white rounded-xl border border-slate-200 p-4">
             <p className="text-xs text-slate-500 mb-1">{m.label}</p>
             <p className="text-2xl font-extrabold text-slate-900">{m.value}</p>

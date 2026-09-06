@@ -10,6 +10,7 @@ import { FormsShortcut } from '@/components/forms/FormsShortcut';
 import { AIPanel } from '@/components/ai/AIPanel';
 import { requisitionPriceFlags, cashFlowForecast, type AiInsight } from '@/lib/aiEngine';
 import { getAllRequisitions } from '@/services/requisitionService';
+import { demoMode } from '@/lib/storage';
 
 interface Transaction {
   id: string;
@@ -40,6 +41,11 @@ const MOCK_TRANSACTIONS: Transaction[] = [
   { id: 't14', date: '2026-08-03', type: 'expenditure', category: 'Venue Rental', department: 'Grants', channel: 'Bank Transfer', amount: 2500000, description: 'Workshop venue Gulu - 5 days', ref: 'DISB-2026-082' },
   { id: 't15', date: '2026-08-01', type: 'expenditure', category: 'Training', department: 'HR', channel: 'Mobile Money', amount: 2800000, description: 'Onboarding materials Q3 cohort', ref: 'DISB-2026-081' },
 ];
+
+// Transaction ledger is illustrative demo content — shown only when the demo
+// dataset is active. After a flash the analytics page starts completely empty
+// until real income/expenditure records are entered in Financial Records.
+const TRANSACTION_POOL = demoMode() ? MOCK_TRANSACTIONS : [];
 
 function fmtMoney(n: number): string {
   if (n >= 1000000000) return `UGX ${(n / 1000000000).toFixed(1)}B`;
@@ -104,7 +110,7 @@ export function Finance() {
   };
 
   const filteredTransactions = useMemo(() => {
-    return MOCK_TRANSACTIONS.filter((t) => {
+    return TRANSACTION_POOL.filter((t) => {
       if (filterType !== 'all' && t.type !== filterType) return false;
       if (filterDept && t.department !== filterDept) return false;
       if (filterChannel && t.channel !== filterChannel) return false;
@@ -135,25 +141,14 @@ export function Finance() {
   const finExpense = financeService.totalExpense();
   const finNet = finIncome - finExpense;
 
-  const budgetVsActual = useMemo(() => {
-    const depts: Record<string, { budget: number; actual: number }> = {
-      Grants: { budget: 450000000, actual: 0 },
-      Innovation: { budget: 180000000, actual: 0 },
-      Finance: { budget: 85000000, actual: 0 },
-      HR: { budget: 120000000, actual: 0 },
-      Procurement: { budget: 95000000, actual: 0 },
-    };
-    filteredTransactions.filter((t) => t.type === 'expenditure').forEach((t) => {
-      if (depts[t.department]) depts[t.department].actual += t.amount;
-    });
-    return Object.entries(depts).map(([dept, v]) => ({
-      dept,
-      budget: v.budget,
-      actual: v.actual,
-      pct: Math.round((v.actual / v.budget) * 100),
-      variance: v.budget - v.actual,
-    }));
-  }, [filteredTransactions]);
+  // Department budgets — live from the persisted aims_finance store (not demo)
+  const budgetVsActual = financeService.getBudgets().map((b) => ({
+    dept: b.dept,
+    budget: b.budget,
+    actual: b.actual,
+    pct: b.budget > 0 ? Math.round((b.actual / b.budget) * 100) : 0,
+    variance: b.budget - b.actual,
+  }));
 
   const incomeByChannel = useMemo(() => {
     const byChannel: Record<string, number> = {};
@@ -359,7 +354,7 @@ export function Finance() {
               const topChannel = incomeByChannel[0];
               return (
                 <>
-                  <strong>{topUtil?.dept ?? 'Finance'}</strong> at {topUtil?.pct ?? 0}% budget utilization with {Math.round(forecast.monthsOfRunway * 30)} days of runway{topUtil && topUtil.variance < 0 ? <> — <strong>{fmtMoney(Math.abs(topUtil.variance))} over budget</strong></> : ''}. {topChannel ? <><strong>{topChannel.channel} income</strong> leading at {fmtMoney(topChannel.amount)} this period</> : 'No income recorded this period'}. Forecast burn of {fmtMoney(Math.round(forecast.monthlyBurn / 22))}/day {forecast.gapWarning ? <strong>— gap warning: burn exceeds inflow, review committed requisitions.</strong> : 'is within sustainable inflow — reserve building on track.'}
+                  <strong>{topUtil?.dept ?? 'Finance'}</strong> at {topUtil?.pct ?? 0}% budget utilization with {Math.round(forecast.monthsOfRunway * 30)} days of runway{topUtil && topUtil.variance < 0 ? <> — <strong>{fmtUSD(Math.abs(topUtil.variance))} over budget</strong></> : ''}. {topChannel ? <><strong>{topChannel.channel} income</strong> leading at {fmtMoney(topChannel.amount)} this period</> : 'No income recorded this period'}. Forecast burn of {fmtMoney(Math.round(forecast.monthlyBurn / 22))}/day {forecast.gapWarning ? <strong>— gap warning: burn exceeds inflow, review committed requisitions.</strong> : 'is within sustainable inflow — reserve building on track.'}
                 </>
               );
             })()}
@@ -418,6 +413,9 @@ export function Finance() {
           </div>
         </div>
         <div className="space-y-3">
+          {budgetVsActual.length === 0 && (
+            <div className="p-6 text-center text-sm text-slate-400 italic bg-slate-50 rounded-xl border border-slate-100">No budgets entered yet — department budgets and actuals appear here from aims_finance once Finance adds them.</div>
+          )}
           {budgetVsActual.map((b) => (
             <div key={b.dept}>
               <div className="flex items-center justify-between mb-1.5">
@@ -426,8 +424,8 @@ export function Finance() {
                   <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded border', getBudgetBadge(b.pct))}>{b.pct}% used</span>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs font-bold text-slate-900">{fmtMoney(b.actual)}</span>
-                  <span className="text-xs text-slate-400"> / {fmtMoney(b.budget)}</span>
+                  <span className="text-xs font-bold text-slate-900">{fmtUSD(b.actual)}</span>
+                  <span className="text-xs text-slate-400"> / {fmtUSD(b.budget)}</span>
                 </div>
               </div>
               <div className="relative w-full bg-slate-100 rounded-full h-2.5">
@@ -435,7 +433,7 @@ export function Finance() {
                 <div className="absolute top-0 h-2.5 w-0.5 bg-slate-500" style={{ left: '100%' }} title="Budget ceiling" />
               </div>
               <div className="flex justify-between mt-1 text-[10px]">
-                <span className="text-slate-500">{b.variance > 0 ? `${fmtMoney(b.variance)} remaining` : `${fmtMoney(Math.abs(b.variance))} over budget`}</span>
+                <span className="text-slate-500">{b.variance > 0 ? `${fmtUSD(b.variance)} remaining` : `${fmtUSD(Math.abs(b.variance))} over budget`}</span>
                 <span className={cn('font-bold', b.variance > 0 ? 'text-aims-green' : 'text-red-500')}>{b.variance > 0 ? 'On track' : 'Over budget'}</span>
               </div>
             </div>

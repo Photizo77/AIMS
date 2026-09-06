@@ -6,7 +6,11 @@ import { cn } from '@/lib/utils';
 import { useLiveData } from '@/lib/useLiveData';
 import { loadJSON, saveJSON, STORAGE_KEYS, demoMode } from '@/lib/storage';
 import { exportCsv, exportTableAsPdf } from '@/lib/export';
-import { useRequisitions, mutateRequisitions } from '@/services/requisitionService';
+import { useRequisitions, mutateRequisitions, getAllRequisitions } from '@/services/requisitionService';
+import { attendanceGet } from '@/services/attendanceService';
+import { leaveGet } from '@/services/leaveService';
+import { contractGet } from '@/services/contractService';
+import { getDirectoryEntries } from '@/services/employeeService';
 import { CHIP, ACCENT, FILL, type ColorKey } from '@/lib/uiTheme';
 import { ExecutiveBrief } from '@/components/ai/ExecutiveBrief';
 import { useNotifications } from '@/context/NotificationContext';
@@ -25,7 +29,7 @@ import { financeService } from '@/services/financeService';
 import { userOpsGet } from '@/services/userOpsService';
 import { ACTIVE_STAFF } from '@/data/roster';
 import { DATA_VAULT_VERSION, DATA_VAULT_BASELINE } from '@/lib/storage';
-import { GRANT_STAGES } from '@/data/grants';
+import { GRANT_STAGES, daysUntil } from '@/data/grants';
 
 
 // ── Company feed (persisted) ──
@@ -267,13 +271,50 @@ export function Dashboard() {
 }
 
 function CDDashboard() {
+  useLiveData(); // every stored value below re-renders on any AIMS write
   const navigate = useNavigate();
   const [approvalFilters, setApprovalFilters] = useState<Record<string, string>>({});
-  const cdApprovals = [
-    { id: 'req-041', title: 'Q3 Field Equipment Procurement', type: 'Requisition', amount: 'UGX 12.4M', status: 'ED Review', daysInQueue: 2 },
-    { id: 'pay-089', title: 'August Payroll Batch', type: 'Payslip Batch', amount: 'UGX 186M', status: 'ED Review', daysInQueue: 1 },
-    { id: 'req-038', title: 'Community Workshop Venue Rental', type: 'Requisition', amount: 'UGX 3.2M', status: 'Awaiting Finance', daysInQueue: 4 },
-  ];
+
+  // ── LIVE aggregates — real stores only, zero until you enter data ──
+  const usd = (n: number) => (n >= 1000000 ? `$${(n / 1000000).toFixed(1)}M` : n >= 1000 ? `$${(n / 1000).toFixed(0)}K` : `$${n}`);
+  const ugx = (n: number) => (n >= 1000000000 ? `UGX ${(n / 1000000000).toFixed(1)}B` : n >= 1000000 ? `UGX ${(n / 1000000).toFixed(0)}M` : n >= 1000 ? `UGX ${(n / 1000).toFixed(0)}K` : `UGX ${n}`);
+  const rosterCount = ACTIVE_STAFF.length;
+  const directoryEntries = getDirectoryEntries();
+  const activeHires = directoryEntries.filter((d) => d.status === 'active').length;
+  const onboardingCount = directoryEntries.filter((d) => d.status === 'onboarding').length;
+  const headcount = rosterCount + activeHires;
+  const presence = attendanceGet.presence();
+  const presentToday = presence.filter((p) => p.mode === 'physical' || p.mode === 'remote').length;
+  const remoteToday = presence.filter((p) => p.mode === 'remote').length;
+  const onLeaveToday = presence.filter((p) => p.mode === 'leave').length;
+  const absentToday = presence.filter((p) => p.mode === 'absent').length;
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const lateToday = attendanceGet.history().filter((h) => h.date === todayStr && h.status === 'late').length;
+  const leavePendingCount = leaveGet.pending().length;
+  const renewalsDueCount = contractGet().filter((c) => c.status === 'expiring' || c.status === 'expired').length;
+  const finIncome = financeService.totalIncome();
+  const finExpense = financeService.totalExpense();
+  const finNet = finIncome - finExpense;
+  const allGrants = grantService.getAllGrants();
+  const openGrants = allGrants.filter((g) => g.stage !== 'declined');
+  const securedValue = openGrants.filter((g) => g.stage === 'awarded').reduce((s, g) => s + (g.amountAwarded ?? g.amountRequested ?? 0), 0);
+  const pipelineValue = openGrants.filter((g) => g.stage !== 'awarded').reduce((s, g) => s + (g.amountRequested ?? 0), 0);
+  const grantsDue7d = openGrants.filter((g) => g.stage !== 'awarded' && daysUntil(g.deadline) <= 7 && daysUntil(g.deadline) >= 0).length;
+  const awardedCount = openGrants.filter((g) => g.stage === 'awarded').length;
+  const winRate = awardedCount > 0 ? Math.round((awardedCount / Math.max(1, openGrants.length)) * 100) : null;
+  const queueReqs = getAllRequisitions().filter((r) => r.status === 'pushed' || r.status === 'approved' || r.status === 'returned');
+  const execProjects = innovationService.getAllProjects().filter(isExecutingProject);
+  const stalledCount = execProjects.filter((p) => p.daysInStage > 14).length;
+  const feedPostsLive = readFeedPosts();
+
+  const cdApprovals = queueReqs.map((r) => ({
+    id: r.id,
+    title: r.title,
+    type: 'Requisition',
+    amount: ugx(r.amount ?? 0),
+    status: r.status === 'pushed' ? 'ED Review' : r.status === 'approved' ? 'Awaiting Finance' : r.status,
+    daysInQueue: r.daysInStatus ?? 0,
+  }));
   const filteredCdApprovals = cdApprovals.filter((item) => {
     const q = (approvalFilters.keyword ?? '').toLowerCase();
     if (q && !item.title.toLowerCase().includes(q) && !item.id.toLowerCase().includes(q)) return false;
@@ -285,19 +326,27 @@ function CDDashboard() {
       <DashHeader gradient="bg-grad-navy" title="Country Director Dashboard" subtitle="Strategic oversight, governance & organizational leadership — view everything, flag for ED, approve nothing" />
       <SharedLibraryWidget />
 
-      {/* At a Glance strip */}
+      {/* At a Glance strip — live values from attendance & finance stores */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-green p-4 shadow-sm"><p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Income</p><p className="text-2xl font-extrabold text-slate-900 mt-1">UGX 1.2B</p><p className="text-[10px] text-slate-400 mt-0.5">MTD · headline KPI</p></div>
-        <div className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-mint p-4 shadow-sm"><p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Org Health Score</p><p className="text-2xl font-extrabold text-aims-green mt-1">94%</p><p className="text-[10px] text-slate-400 mt-0.5">composite indicator</p></div>
+        <button onClick={() => navigate('/attendance')} className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-green p-4 shadow-sm text-left hover:shadow-md transition-shadow group">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Attendance Today</p>
+          <p className="text-2xl font-extrabold text-aims-green mt-1">{presentToday}/{headcount}</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">{remoteToday} remote · {lateToday} late · {onLeaveToday} leave · {absentToday} absent · <span className="text-aims-green font-bold group-hover:underline">oversight</span></p>
+        </button>
+        <button onClick={() => navigate('/finance/analytics')} className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-mint p-4 shadow-sm text-left hover:shadow-md transition-shadow group">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Income (YTD)</p>
+          <p className="text-2xl font-extrabold text-slate-900 mt-1">{usd(finIncome)}</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">aims_finance · USD · <span className="text-aims-navy font-bold group-hover:underline">analytics</span></p>
+        </button>
         <button onClick={() => openFlagForED({ recordLabel: 'General — Country Director Review', sourceModule: 'dashboard' })} className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-orange p-4 shadow-sm text-left hover:shadow-md transition-shadow group">
           <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Unresolved Flags</p>
           <p className="text-2xl font-extrabold text-aims-orange mt-1">{flagService.getOpenFlags().length}</p>
-          <p className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1">tone-alerted · <span className="text-aims-orange font-bold group-hover:underline">Raise new</span></p>
+          <p className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1">priority interrupts · <span className="text-aims-orange font-bold group-hover:underline">Raise new</span></p>
         </button>
         <button onClick={() => navigate('/approvals?view=readonly')} className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-navy p-4 shadow-sm text-left hover:shadow-md transition-shadow group">
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Approvals In Progress</p>
-          <p className="text-2xl font-extrabold text-aims-navy mt-1">3</p>
-          <p className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1">currently with ED · <span className="text-aims-navy font-bold group-hover:underline">track</span></p>
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Requisitions In Flight</p>
+          <p className="text-2xl font-extrabold text-aims-navy mt-1">{queueReqs.length}</p>
+          <p className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1">{queueReqs.length === 0 ? 'none awaiting decision' : 'with ED / awaiting finance'} · <span className="text-aims-navy font-bold group-hover:underline">track</span></p>
         </button>
       </div>
 
@@ -312,7 +361,9 @@ function CDDashboard() {
         </div>
         <div className="bg-slate-50 rounded-lg border border-slate-100 p-4">
           <p className="text-sm text-slate-700 leading-relaxed">
-            "Expenditure is tracking 12% below the annual plan through Q3 — reserve building is ahead of the Sustainability Plan's Year 3 target. One urgent CD flag awaits ED action."
+            {finIncome === 0 && finExpense === 0
+              ? 'The system is clean — no cash-flow records have been entered yet. Income and expenditure appear here automatically (USD) once Finance records them in aims_finance.'
+              : `Live cash position: income ${usd(finIncome)} vs expenditure ${usd(finExpense)} (net ${usd(finNet)}). ${flagService.getOpenFlags().length} open CD flag(s) · ${queueReqs.length} requisition(s) in the pipeline · ${stalledCount} stalled project(s) · ${grantsDue7d} grant(s) due within 7 days.`}
           </p>
         </div>
       </div>
@@ -320,69 +371,65 @@ function CDDashboard() {
 
       <Section title="Approvals in Progress" subtitle="Visibility into ED's review pipeline — read only">
         <AdvancedFilterBar dateLabel="Submitted" statusOptions={['ED Review', 'Awaiting Finance', 'Awaiting HR', 'Disbursed']} onFilterChange={setApprovalFilters} ownerOptions={['Finance Dept', 'HR Admin', 'Grants Team', 'Procurement']} showAmountRange exportRows={filteredCdApprovals} exportFileName="cd-approvals-in-progress" />
-        <div className="space-y-2">
-          {filteredCdApprovals.map((item) => (
-            <div key={item.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
-              <div><p className="text-sm font-bold text-slate-900">{item.title}</p><p className="text-xs text-slate-500">{item.type} • {item.amount} • {item.id}</p></div>
-              <div className="text-right">
-                <span className={cn('inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide', item.daysInQueue >= 3 ? 'bg-aims-orange/15 text-aims-orange' : 'bg-aims-navy/10 text-aims-navy')}>{item.status}</span>
-                <p className="text-[10px] text-slate-400 mt-1">{item.daysInQueue}d in queue</p>
+        {filteredCdApprovals.length === 0 ? (
+          <div className="p-8 text-center text-sm text-slate-400 italic bg-slate-50 rounded-xl border border-slate-100">No requisitions in the approval pipeline yet — they appear here live as Finance pushes them to the ED.</div>
+        ) : (
+          <div className="space-y-2">
+            {filteredCdApprovals.map((item) => (
+              <div key={item.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
+                <div><p className="text-sm font-bold text-slate-900">{item.title}</p><p className="text-xs text-slate-500">{item.type} • {item.amount} • {item.id}</p></div>
+                <div className="text-right">
+                  <span className={cn('inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide', item.daysInQueue >= 3 ? 'bg-aims-orange/15 text-aims-orange' : 'bg-aims-navy/10 text-aims-navy')}>{item.status}</span>
+                  <p className="text-[10px] text-slate-400 mt-1">{item.daysInQueue}d in queue</p>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </Section>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Section title="Grant Portfolio" subtitle="Secured funding vs. pipeline opportunities">
-          <div className="space-y-5"><Bar label="Secured Funding" value={850} max={1200} display="UGX 850M" color="navy" /><Bar label="Pipeline Opportunities" value={350} max={1200} display="UGX 350M" color="mint" /></div>
-          <div className="mt-5 pt-4 border-t border-slate-100 flex justify-between"><span className="text-sm font-semibold text-slate-600">Win Rate (YTD)</span><span className="text-xl font-extrabold text-aims-green">68%</span></div>
+        <Section title="Grant Portfolio" subtitle={`Secured funding vs. pipeline opportunities — live from aims_grants${grantsDue7d > 0 ? ` · ${grantsDue7d} due within 7 days` : ''}`}>
+          <div className="space-y-5"><Bar label="Secured Funding" value={securedValue} max={Math.max(securedValue, pipelineValue, 1)} display={securedValue > 0 ? ugx(securedValue) : 'UGX 0 — none yet'} color="navy" /><Bar label="Pipeline Opportunities" value={pipelineValue} max={Math.max(securedValue, pipelineValue, 1)} display={pipelineValue > 0 ? ugx(pipelineValue) : 'UGX 0 — none yet'} color="mint" /></div>
+          <div className="mt-5 pt-4 border-t border-slate-100 flex justify-between"><span className="text-sm font-semibold text-slate-600">Win Rate (YTD)</span><span className="text-xl font-extrabold text-aims-green">{winRate === null ? '—' : `${winRate}%`}</span></div>
+          {openGrants.length === 0 && <p className="text-[10px] text-slate-400 italic mt-2">No grants recorded yet — they appear here once the team enters grant data.</p>}
         </Section>
-        <Section title="Financial Health" subtitle="Consolidated income vs. expenditure">
-          <div className="space-y-5"><Bar label="Total Income" value={1200} max={1400} display="UGX 1.2B" color="green" /><Bar label="Total Expenditure" value={850} max={1400} display="UGX 850M" color="orange" /></div>
-          <div className="mt-5 pt-4 border-t border-slate-100 flex justify-between"><span className="text-sm font-semibold text-slate-600">Net Surplus</span><span className="text-xl font-extrabold text-aims-green">UGX 350M</span></div>
+        <Section title="Financial Health" subtitle="Consolidated income vs. expenditure — live from aims_finance (USD)">
+          <div className="space-y-5"><Bar label="Total Income" value={finIncome} max={Math.max(finIncome, finExpense, 1)} display={finIncome > 0 ? usd(finIncome) : '$0 — none yet'} color="green" /><Bar label="Total Expenditure" value={finExpense} max={Math.max(finIncome, finExpense, 1)} display={finExpense > 0 ? usd(finExpense) : '$0 — none yet'} color="orange" /></div>
+          <div className="mt-5 pt-4 border-t border-slate-100 flex justify-between"><span className="text-sm font-semibold text-slate-600">Net Surplus</span><span className={cn('text-xl font-extrabold', finNet >= 0 ? 'text-aims-green' : 'text-red-500')}>{finIncome === 0 && finExpense === 0 ? '—' : usd(finNet)}</span></div>
         </Section>
       </div>
       <Section title="HR & Admin Summary" subtitle="Workforce indicators — no individual record access">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="p-4 bg-slate-50 rounded-lg border border-slate-100"><p className="text-xs text-slate-500 mb-1">Total Headcount</p><p className="text-2xl font-extrabold text-slate-900">142</p></div>
-          <div className="p-4 bg-slate-50 rounded-lg border border-slate-100"><p className="text-xs text-slate-500 mb-1">Contracts Renewing (30d)</p><p className="text-2xl font-extrabold text-aims-orange">5</p></div>
-          <div className="p-4 bg-slate-50 rounded-lg border border-slate-100"><p className="text-xs text-slate-500 mb-1">Appraisals Completed (Q2)</p><p className="text-2xl font-extrabold text-aims-green">87%</p></div>
-          <div className="p-4 bg-slate-50 rounded-lg border border-slate-100"><p className="text-xs text-slate-500 mb-1">Present Today</p><p className="text-2xl font-extrabold text-aims-navy">128</p></div>
+          <div className="p-4 bg-slate-50 rounded-lg border border-slate-100"><p className="text-xs text-slate-500 mb-1">Total Headcount</p><p className="text-2xl font-extrabold text-slate-900">{headcount}</p>{onboardingCount > 0 && <p className="text-[10px] text-aims-orange mt-0.5">{onboardingCount} new hire(s) in onboarding</p>}</div>
+          <div className="p-4 bg-slate-50 rounded-lg border border-slate-100"><p className="text-xs text-slate-500 mb-1">Contracts Renewing</p><p className="text-2xl font-extrabold text-aims-orange">{renewalsDueCount}</p></div>
+          <div className="p-4 bg-slate-50 rounded-lg border border-slate-100"><p className="text-xs text-slate-500 mb-1">Leave Requests Pending</p><p className="text-2xl font-extrabold text-aims-green">{leavePendingCount}</p></div>
+          <div className="p-4 bg-slate-50 rounded-lg border border-slate-100"><p className="text-xs text-slate-500 mb-1">Present Today</p><p className="text-2xl font-extrabold text-aims-navy">{presentToday}/{headcount}</p></div>
         </div>
       </Section>
-      <Section title="Innovations & Tasks" subtitle="View-only access to innovation pipeline">
+      <Section title="Innovations & Tasks" subtitle="View-only access to innovation pipeline — live from aims_projects">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead><tr className="border-b border-slate-200"><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Project</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Stage</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Lead</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Progress</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider text-right">Action</th></tr></thead>
             <tbody className="divide-y divide-slate-100">
-              {[
-                { id: 'inv-001', title: 'Solar-Powered Grain Dryer', stage: 'Prototype', lead: 'Pius Odong', progress: 62 },
-                { id: 'inv-002', title: 'Community Land Mapping Drone', stage: 'Testing', lead: 'Florence Adong', progress: 78 },
-                { id: 'inv-003', title: 'Mobile USSD Farmer Advisory', stage: 'Concept', lead: 'Pius Odong', progress: 35 },
-                { id: 'inv-004', title: 'Biogas Digester Pilot', stage: 'Research', lead: 'Florence Adong', progress: 15 },
-                { id: 'inv-005', title: 'Post-Harvest Loss Tracker App', stage: 'Production', lead: 'Pius Odong', progress: 91 },
-                { id: 'inv-006', title: 'Soil Moisture IoT Sensor', stage: 'Deployed', lead: 'Florence Adong', progress: 100 },
-              ].map((p) => (
+              {execProjects.map((p) => (
                 <tr key={p.id} className="hover:bg-slate-50 transition-colors">
                   <td className="py-2.5 font-bold text-slate-900">{p.title}</td>
                   <td className="py-2.5"><span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-aims-navy/10 text-aims-navy">{p.stage}</span></td>
-                  <td className="py-2.5 text-slate-600">{p.lead}</td>
-                  <td className="py-2.5"><div className="flex items-center gap-2"><div className="w-16 bg-slate-100 rounded-full h-1.5"><div className="h-1.5 rounded-full bg-aims-green" style={{ width: `${p.progress}%` }} /></div><span className="text-xs font-bold text-slate-900">{p.progress}%</span></div></td>
+                  <td className="py-2.5 text-slate-600">{p.leadName}</td>
+                  <td className="py-2.5"><div className="flex items-center gap-2"><div className="w-16 bg-slate-100 rounded-full h-1.5"><div className="h-1.5 rounded-full bg-aims-green" style={{ width: `${p.progressPercent}%` }} /></div><span className="text-xs font-bold text-slate-900">{p.progressPercent}%</span></div></td>
                   <td className="py-2.5 text-right"><button onClick={() => navigate(`/innovations/${p.id}`)} className="text-xs font-bold text-aims-navy hover:underline flex items-center gap-1 justify-end"><span className="material-symbols-outlined text-[14px]">open_in_new</span>View</button></td>
                 </tr>
               ))}
+              {execProjects.length === 0 && <tr><td colSpan={5} className="py-8 text-center text-xs text-slate-400 italic">No innovation projects yet — approved proposals appear here once entered.</td></tr>}
             </tbody>
           </table>
         </div>
       </Section>
       <Section title="Executive Feed" subtitle="Institutional announcements & governance communication">
         <div className="space-y-3">
-          {[
-            { author: 'Board Secretariat', time: '2h ago', content: 'Q2 Board Meeting minutes approved and filed. Next session scheduled for September 15.' },
-            { author: 'Executive Director', time: '5h ago', content: 'All department heads have submitted Q3 budget proposals. Consolidated review underway.' },
-            { author: 'Grants Manager', time: '1d ago', content: 'Climate-Smart Farming grant proposal submitted to USAID. Decision expected within 30 days.' },
-          ].map((post, i) => (
-            <div key={i} className="p-3 bg-slate-50 rounded-lg border border-slate-100"><div className="flex items-center justify-between mb-1"><p className="text-sm font-bold text-slate-900">{post.author}</p><p className="text-[10px] text-slate-400">{post.time}</p></div><p className="text-sm text-slate-600">{post.content}</p></div>
+          {feedPostsLive.length === 0 && <p className="text-xs text-slate-400 italic">No announcements posted yet — company feed posts appear here.</p>}
+          {feedPostsLive.map((post, i) => (
+            <div key={i} className="p-3 bg-slate-50 rounded-lg border border-slate-100"><div className="flex items-center justify-between mb-1"><p className="text-sm font-bold text-slate-900">{post.author}</p><p className="text-[10px] text-slate-400">{new Date(post.time).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p></div><p className="text-sm text-slate-600">{post.content}</p></div>
           ))}
         </div>
       </Section>
@@ -397,8 +444,35 @@ function EDDashboard() {
   const [expandedApproval, setExpandedApproval] = useState<string | null>(null);
 
   // Live requisition queue — decisions below really update the store.
+  useLiveData(); // every value below re-renders on any AIMS write
   const liveReqs = useRequisitions();
   const edQueue = liveReqs.filter((r) => r.status === 'pushed' || r.status === 'returned');
+
+  // ── LIVE aggregates (finance, attendance, grants, projects) ──
+  const usd = (n: number) => (n >= 1000000 ? `$${(n / 1000000).toFixed(1)}M` : n >= 1000 ? `$${(n / 1000).toFixed(0)}K` : `$${n}`);
+  const edRoster = ACTIVE_STAFF.length;
+  const edPresence = attendanceGet.presence();
+  const edAttRows = edPresence.map((p) => ({
+    name: p.name,
+    dept: p.dept,
+    checkIn: p.checkIn && p.checkIn !== '—' ? p.checkIn : '—',
+    checkOut: '—',
+    status: (p.mode === 'physical' ? 'present' : p.mode === 'remote' ? 'remote' : p.mode === 'leave' ? 'leave' : 'absent') as 'present' | 'late' | 'absent' | 'leave' | 'remote',
+    location: p.location && p.location !== '—' ? p.location : '—',
+  }));
+  const edHistoryToday = attendanceGet.history().filter((h) => h.date === new Date().toISOString().slice(0, 10));
+  const attPresentCount = edAttRows.filter((a) => a.status === 'present' || a.status === 'remote').length;
+  const attLateCount = edHistoryToday.filter((h) => h.status === 'late').length;
+  const attLeaveCount = edAttRows.filter((a) => a.status === 'leave').length;
+  const attAbsentCount = edAttRows.filter((a) => a.status === 'absent').length;
+  const edFinIncome = financeService.totalIncome();
+  const edFinExpense = financeService.totalExpense();
+  const edFinNet = edFinIncome - edFinExpense;
+  const edCommitted = liveReqs.filter((r) => r.status === 'pushed' || r.status === 'approved').reduce((s, r) => s + (r.amount ?? 0), 0);
+  const edGrantsOpen = grantService.getAllGrants().filter((g) => g.stage !== 'declined' && g.stage !== 'awarded');
+  const edGrantsDue7 = edGrantsOpen.filter((g) => daysUntil(g.deadline) <= 7 && daysUntil(g.deadline) >= 0).length;
+  const edExecProjects = innovationService.getAllProjects().filter(isExecutingProject);
+  const edFlaggedProjects = edExecProjects.filter((p) => p.daysInStage > 14);
 
   const decide = (id: string, action: 'approved' | 'rejected', comment: string) => {
     mutateRequisitions((list) => {
@@ -413,15 +487,7 @@ function EDDashboard() {
     showToast({ title: action === 'approved' ? 'Requisition Approved' : 'Requisition Rejected', message: `${id} ${action} with your comment recorded.`, type: action === 'approved' ? 'success' : 'info' });
   };
 
-  const attendanceToday = [
-    { name: 'Sarah Aciro', dept: 'Grants', checkIn: '07:58', checkOut: '—', status: 'present' as const, location: 'Onsite' },
-    { name: 'Janet Apio', dept: 'Grants', checkIn: '08:32', checkOut: '—', status: 'late' as const, location: 'Onsite' },
-    { name: 'Pius Odong', dept: 'Innovation', checkIn: '07:45', checkOut: '—', status: 'present' as const, location: 'Remote' },
-    { name: 'David Okello', dept: 'Finance', checkIn: '—', checkOut: '—', status: 'absent' as const, location: '—' },
-    { name: 'Grace Nakamya', dept: 'HR', checkIn: '07:50', checkOut: '—', status: 'present' as const, location: 'Onsite' },
-    { name: 'Isaac Tumusiime', dept: 'Procurement', checkIn: '08:15', checkOut: '—', status: 'late' as const, location: 'Onsite' },
-    { name: 'Florence Adong', dept: 'Research', checkIn: '07:55', checkOut: '—', status: 'present' as const, location: 'Onsite' },
-  ];
+  const attendanceToday = edAttRows; // live rows from aims_attendance (today's register)
 
   // Company feed — persisted, real posts
   const [feedPosts, setFeedPosts] = useState<FeedPost[]>(() => readFeedPosts());
@@ -442,21 +508,21 @@ function EDDashboard() {
       <DashHeader gradient="bg-grad-navy" title="Executive Director Dashboard" subtitle="Operational execution, team leadership & daily management — sole approval authority" />
       <CheckInCard />
 
-      {/* At a Glance strip */}
+      {/* At a Glance strip — live counts */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <button onClick={() => navigate('/approvals')} className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-orange p-4 shadow-sm text-left hover:shadow-md transition-shadow group">
           <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Approvals Pending</p>
-          <p className="text-2xl font-extrabold text-aims-orange mt-1">2</p>
-          <p className="text-[10px] text-slate-400 mt-0.5">1 overdue (SLA aging) · <span className="text-aims-orange font-bold group-hover:underline">open queue</span></p>
+          <p className="text-2xl font-extrabold text-aims-orange mt-1">{edQueue.length}</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">{edQueue.filter((r) => r.daysInStatus >= 5).length} overdue (SLA aging) · <span className="text-aims-orange font-bold group-hover:underline">open queue</span></p>
         </button>
         <button onClick={() => navigate('/attendance')} className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-green p-4 shadow-sm text-left hover:shadow-md transition-shadow group">
           <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Attendance Today</p>
-          <p className="text-2xl font-extrabold text-aims-green mt-1">128/142</p>
-          <p className="text-[10px] text-slate-400 mt-0.5">4 remote · 1 leave · 2 absent · <span className="text-aims-green font-bold group-hover:underline">oversight</span></p>
+          <p className="text-2xl font-extrabold text-aims-green mt-1">{attPresentCount}/{edRoster}</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">{attLateCount} late · {attLeaveCount} leave · {attAbsentCount} absent · <span className="text-aims-green font-bold group-hover:underline">oversight</span></p>
         </button>
         <button onClick={() => navigate('/grants')} className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-navy p-4 shadow-sm text-left hover:shadow-md transition-shadow group">
           <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Grants Due (7d)</p>
-          <p className="text-2xl font-extrabold text-aims-navy mt-1">3</p>
+          <p className="text-2xl font-extrabold text-aims-navy mt-1">{edGrantsDue7}</p>
           <p className="text-[10px] text-slate-400 mt-0.5">approaching deadline · <span className="text-aims-navy font-bold group-hover:underline">portfolio</span></p>
         </button>
         <button onClick={() => navigate('/approvals')} className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-red-500 p-4 shadow-sm text-left hover:shadow-md transition-shadow group">
@@ -535,24 +601,26 @@ function EDDashboard() {
       </Section>
 
       <Section title="Payslip Authorization" subtitle="Generate, review, and authorize payroll batches"><PayslipReviewPanel /></Section>
-      <Section title="Monthly Cash Flow" subtitle="Income vs. expenditure with pending requisitions">
-        <div className="space-y-5"><Bar label="Total Income" value={1200} max={1400} display="UGX 1.2B" color="green" /><Bar label="Total Expenditure" value={850} max={1400} display="UGX 850M" color="orange" /></div>
-        <div className="mt-5 pt-4 border-t border-slate-100 flex justify-between items-center"><div><span className="text-sm font-semibold text-slate-600">Net Surplus</span><p className="text-[10px] text-slate-400">Pending requisitions: UGX 20.4M</p></div><span className="text-xl font-extrabold text-aims-green">UGX 350M</span></div>
+      <Section title="Monthly Cash Flow" subtitle="Income vs. expenditure — live from aims_finance (USD), updates as Finance records cash">
+        <div className="space-y-5"><Bar label="Total Income" value={edFinIncome} max={Math.max(edFinIncome, edFinExpense, 1)} display={edFinIncome > 0 ? usd(edFinIncome) : '$0 — none entered yet'} color="green" /><Bar label="Total Expenditure" value={edFinExpense} max={Math.max(edFinIncome, edFinExpense, 1)} display={edFinExpense > 0 ? usd(edFinExpense) : '$0 — none entered yet'} color="orange" /></div>
+        <div className="mt-5 pt-4 border-t border-slate-100 flex justify-between items-center"><div><span className="text-sm font-semibold text-slate-600">Net Surplus</span><p className="text-[10px] text-slate-400">{edCommitted > 0 ? `Committed requisitions in flight: UGX ${(edCommitted / 1000000).toFixed(0)}M` : 'No requisitions committed yet'}</p></div><span className={cn('text-xl font-extrabold', edFinNet >= 0 ? 'text-aims-green' : 'text-red-500')}>{edFinIncome === 0 && edFinExpense === 0 ? '—' : usd(edFinNet)}</span></div>
       </Section>
 
-      <Section title="Attendance Oversight" subtitle="Real-time presence and historical records">
+      <Section title="Attendance Oversight" subtitle="Real-time presence — live from the attendance register">
         <AdvancedFilterBar dateLabel="Date" statusOptions={['Present', 'Late', 'Absent', 'Leave', 'Remote']} ownerOptions={['Grants', 'Finance', 'HR', 'Innovation', 'Research', 'Procurement']} exportRows={attendanceToday} exportFileName="ed-attendance-oversight" />
         <div className="flex items-center gap-3 mb-4">
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-aims-green/10 rounded-lg border border-aims-green/20"><span className="material-symbols-outlined text-aims-green text-[18px]">check_circle</span><span className="text-sm font-bold text-aims-green">128 Present</span></div>
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-aims-orange/10 rounded-lg border border-aims-orange/20"><span className="material-symbols-outlined text-aims-orange text-[18px]">schedule</span><span className="text-sm font-bold text-aims-orange">9 Late</span></div>
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-red-50 rounded-lg border border-red-100"><span className="material-symbols-outlined text-red-500 text-[18px]">cancel</span><span className="text-sm font-bold text-red-500">5 Absent</span></div>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-aims-green/10 rounded-lg border border-aims-green/20"><span className="material-symbols-outlined text-aims-green text-[18px]">check_circle</span><span className="text-sm font-bold text-aims-green">{attPresentCount} Present</span></div>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-aims-orange/10 rounded-lg border border-aims-orange/20"><span className="material-symbols-outlined text-aims-orange text-[18px]">schedule</span><span className="text-sm font-bold text-aims-orange">{attLateCount} Late</span></div>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-aims-mint/30 rounded-lg border border-aims-mint/60"><span className="material-symbols-outlined text-aims-navy text-[18px]">event_available</span><span className="text-sm font-bold text-aims-navy">{attLeaveCount} On Leave</span></div>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-red-50 rounded-lg border border-red-100"><span className="material-symbols-outlined text-red-500 text-[18px]">cancel</span><span className="text-sm font-bold text-red-500">{attAbsentCount} Absent</span></div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm"><thead><tr className="border-b border-slate-200"><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Employee</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Department</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Check In</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Check Out</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Status</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Location</th></tr></thead>
             <tbody className="divide-y divide-slate-100">
               {attendanceToday.map((emp, i) => (
-                <tr key={i} className="hover:bg-slate-50 transition-colors"><td className="py-2.5 font-bold text-slate-900">{emp.name}</td><td className="py-2.5 text-slate-600">{emp.dept}</td><td className="py-2.5 text-slate-600 font-mono text-xs">{emp.checkIn}</td><td className="py-2.5 text-slate-600 font-mono text-xs">{emp.checkOut}</td><td className="py-2.5"><span className={cn('inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide', emp.status === 'present' ? 'bg-aims-green/15 text-aims-green' : emp.status === 'late' ? 'bg-aims-orange/15 text-aims-orange' : 'bg-red-50 text-red-500')}>{emp.status}</span></td><td className="py-2.5 text-slate-500 text-xs">{emp.location}</td></tr>
+                <tr key={i} className="hover:bg-slate-50 transition-colors"><td className="py-2.5 font-bold text-slate-900">{emp.name}</td><td className="py-2.5 text-slate-600">{emp.dept}</td><td className="py-2.5 text-slate-600 font-mono text-xs">{emp.checkIn}</td><td className="py-2.5 text-slate-600 font-mono text-xs">{emp.checkOut}</td><td className="py-2.5"><span className={cn('inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide', emp.status === 'present' ? 'bg-aims-green/15 text-aims-green' : emp.status === 'late' ? 'bg-aims-orange/15 text-aims-orange' : emp.status === 'leave' ? 'bg-aims-mint/30 text-aims-navy' : emp.status === 'remote' ? 'bg-aims-navy/10 text-aims-navy' : 'bg-red-50 text-red-500')}>{emp.status}</span></td><td className="py-2.5 text-slate-500 text-xs">{emp.location}</td></tr>
               ))}
+              {attendanceToday.length === 0 && <tr><td colSpan={6} className="py-8 text-center text-sm text-slate-400 italic">No attendance records today — check-ins appear here live as staff check in.</td></tr>}
             </tbody>
           </table>
         </div>
@@ -583,30 +651,21 @@ function EDDashboard() {
         </div>
       </Section>
 
-      <Section title="Innovation Pipeline Flags" subtitle="Projects requiring your attention — flagged by CD or stalled in stage">
+      <Section title="Innovation Pipeline Flags" subtitle="Projects needing attention — stalled in stage or flagged — live from aims_projects">
         <div className="space-y-3">
-          {[
-            { id: 'inv-003', title: 'Mobile USSD Farmer Advisory', stage: 'Concept', lead: 'Pius Odong', daysInStage: 18, flagFrom: 'Dr. Sarah Namukasa', flagType: 'concern', flagComment: 'Timeline overlaps with harvest season. Confirm farmer availability.', flagDate: 'Aug 15' },
-            { id: 'inv-005', title: 'Post-Harvest Loss Tracker App', stage: 'Production', lead: 'Pius Odong', daysInStage: 22, flagFrom: null, flagType: null, flagComment: null, flagDate: null },
-            { id: 'inv-008', title: 'Weather Station Network', stage: 'Research', lead: 'Isaac Tumusiime', daysInStage: 12, flagFrom: 'Dr. Sarah Namukasa', flagType: 'review', flagComment: 'Budget allocation unclear for sensor procurement phase.', flagDate: 'Aug 18' },
-          ].map((p) => (
-            <div key={p.id} className={cn('rounded-lg border p-4', p.flagFrom ? 'bg-aims-orange/5 border-aims-orange/20' : 'bg-red-50/50 border-red-200')}>
+          {edFlaggedProjects.length === 0 && (
+            <div className="p-8 text-center text-sm text-slate-400 italic bg-slate-50 rounded-xl border border-slate-100">No flagged or stalled innovation projects right now — they appear here automatically once projects stall or are flagged.</div>
+          )}
+          {edFlaggedProjects.map((p) => (
+            <div key={p.id} className="rounded-lg border p-4 bg-red-50/50 border-red-200">
               <div className="flex items-start justify-between mb-2">
                 <div>
                   <p className="text-sm font-bold text-slate-900">{p.title}</p>
-                  <p className="text-xs text-slate-500">{p.stage} • Lead: {p.lead} • <span className={cn('font-bold', p.daysInStage > 14 ? 'text-red-500' : p.daysInStage >= 7 ? 'text-aims-orange' : 'text-slate-600')}>{p.daysInStage}d in stage</span></p>
+                  <p className="text-xs text-slate-500">{p.stage} • Lead: {p.leadName} • <span className="font-bold text-red-500">{p.daysInStage}d in stage</span></p>
                 </div>
                 <button onClick={() => navigate(`/innovations/${p.id}`)} className="text-xs font-bold text-aims-navy hover:underline flex items-center gap-1 flex-shrink-0"><span className="material-symbols-outlined text-[14px]">open_in_new</span>Open</button>
               </div>
-              {p.flagFrom && (
-                <div className="bg-white rounded p-2.5 border border-aims-orange/10 mt-2">
-                  <div className="flex items-center gap-1.5 mb-1"><span className="material-symbols-outlined text-aims-orange text-[14px]">flag</span><span className="text-[10px] font-bold text-aims-orange uppercase tracking-wide">{p.flagType} Flag from {p.flagFrom} ({p.flagDate})</span></div>
-                  <p className="text-xs text-slate-700 italic">"{p.flagComment}"</p>
-                </div>
-              )}
-              {!p.flagFrom && (
-                <div className="flex items-center gap-1.5 mt-2"><span className="material-symbols-outlined text-red-500 text-[14px]">warning</span><span className="text-xs font-bold text-red-500">Stalled: No activity for {p.daysInStage} days — may need intervention</span></div>
-              )}
+              <div className="flex items-center gap-1.5 mt-2"><span className="material-symbols-outlined text-red-500 text-[14px]">warning</span><span className="text-xs font-bold text-red-500">Stalled: No activity for {p.daysInStage} days — may need intervention</span></div>
             </div>
           ))}
         </div>
