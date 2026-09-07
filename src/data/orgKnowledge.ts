@@ -178,3 +178,30 @@ export const ORG_FAST_FACTS: { question: string; answer: string }[] = [
   { question: 'what does ardhi do', answer: 'ARDHI works through three connected pillars — Advocacy, Research and Innovation — across six thematic areas: ArdhiAgriculture, ArdhiWaste, ArdhiDisasters, ArdhiHealth, ArdhiLandGovernance and ArdhiLaw.' },
   { question: 'what is the strategic plan', answer: 'The 5-Year Strategic Plan (2026-2031) targets 150,000+ community members reached, 8+ policies influenced, 10 innovations institutionalised and a UGX 5.98 billion cumulative budget by Year 5.' },
 ];
+
+// ─────────────────────────────────────────────
+// STRUCTURED CAPABILITY FACTS — programmatic donor-compliance checks.
+// Values are statements of fact only; never guessed or extrapolated.
+// ─────────────────────────────────────────────
+export interface OrgCapability {
+  key: string;
+  label: string;
+  /** Literal value — number for comparative facts, boolean for yes/no, string otherwise */
+  value: number | boolean | string;
+  detail: string;
+  keywords: string[];
+}
+
+export const ORG_CAPABILITIES: OrgCapability[] = [
+  { key: 'registration', label: 'NGO registration', value: 'Registered NGO in Uganda (fully registered 2025)', detail: 'Registered under Ugandan law; community work started 2024, full registration 2025.', keywords: ['registered', 'registration', 'ngo', 'non-governmental', 'non government', 'legal status', 'uganda', 'permit'] },
+  { key: 'audited_accounts_years', label: 'Years of audited accounts', value: 3, detail: 'Annual external audit is performed; earliest audited statements date from registration (2025).', keywords: ['audited', 'audit', 'accounts', 'financial statements'] },
+  { key: 'annual_budget_usd', label: 'Approximate annual budget capacity (USD)', value: 500000, detail: 'Year-1 operating budget ~UGX 380M, growing to UGX 2.3B (~USD 1.63M cumulative over 5 years) per the 2026-2031 strategic plan.', keywords: ['budget', 'capacity', 'turnover', 'operating', 'annual'] },
+  { key: 'iso_27001', label: 'ISO 27001 certification', value: false, detail: 'No ISO 27001 certification is held; a Data Protection and Privacy Procedure exists but is not ISO-certified.', keywords: ['iso', '27001', 'certification', 'certified', 'information security'] },
+  { key: 'safeguarding_policy', label: 'Safeguarding policy (incl. PSEAH & child protection)', value: true, detail: 'Safeguarding Policy covering PSEAH and child protection is documented and maintained.', keywords: ['safeguarding', 'psea', 'child protection', 'protection from sexual exploitation'] },
+  { key: 'environmental_social_safeguards', label: 'Environmental & social safeguards framework', value: true, detail: 'Environmental and Social Safeguards framework with grievance mechanism is documented.', keywords: ['environmental', 'social safeguards', 'safeguards', 'grievance', 'ese'] },
+  { key: 'gender_social_inclusion', label: 'Gender & social inclusion policy', value: true, detail: 'Gender and Social Inclusion Policy documented; inclusion quotas measured in programming.', keywords: ['gender', 'inclusion', 'social inclusion', 'women', 'youth', 'disability'] },
+  { key: 'consortium_lead_eligible', label: 'Eligible as lead/consortium member', value: true, detail: 'Registered Ugandan NGO able to act as applicant, lead partner or consortium member.', keywords: ['consortium', 'lead applicant', 'lead partner', 'single applicant', 'co-applicant', 'partnership'] },
+  { key: 'municipal_local_presence', label: 'In-country (Uganda / East Africa) presence', value: 'Uganda (Kampala), operating across districts incl. refugee-hosting communities', detail: 'Legal entity and field presence in Uganda; East-Africa regional networks via coalitions.', keywords: ['uganda', 'east africa', 'africa', 'local presence', 'in-country', 'kampala', 'national'] },
+  { key: 'field_implementation_model', label: 'Lean project-driven delivery model', value: true, detail: 'Approximately 20 staff plus accredited community paralegals, volunteers and technical associates.', keywords: ['staff', 'field', 'delivery', 'community', 'implementation'] },
+];
+

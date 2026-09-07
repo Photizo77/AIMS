@@ -7,6 +7,8 @@ import { cn } from '@/lib/utils';
 import { CHIP } from '@/lib/uiTheme';
 import { GRANT_STAGES, formatCurrency, daysUntil, grantProgress, type GrantRecord } from '@/data/grants';
 import { grantService, importGrantOpportunities } from '@/services/grantService';
+import { GrantEnrichmentPanel } from '@/components/grants/GrantEnrichmentPanel';
+import type { GrantEnrichmentData } from '@/lib/grantEnrichment';
 import { GrantsPipelineBoard } from '@/components/grants/GrantsPipelineBoard';
 import { FormsShortcut } from '@/components/forms/FormsShortcut';
 import { AIPanel } from '@/components/ai/AIPanel';
@@ -55,6 +57,34 @@ export function Grants() {
       type: count > 0 ? 'success' : 'info',
     });
     if (count > 0) window.setTimeout(() => window.location.reload(), 700);
+  }
+
+  // Apply enriched fields into the Add Grant form (only fills fields left blank)
+  function handleEnrichApply(d: GrantEnrichmentData) {
+    const deadlineOnly = (raw: string | null): string => {
+      const iso = (raw ?? '').match(/^(\d{4}-\d{2}-\d{2})/);
+      if (iso) return iso[1];
+      if (raw) {
+        const t = new Date(raw).getTime();
+        if (!Number.isNaN(t) && t > 0) return new Date(t).toISOString().slice(0, 10);
+      }
+      return '';
+    };
+    const ugxAmount = (d.award_value_ceiling ?? '').replace(/[^0-9.]/g, '');
+    setNewGrant((s) => ({
+      ...s,
+      title: s.title || (d.grant_title ?? ''),
+      funder: s.funder || (d.funder_donor ?? ''),
+      pillar: s.pillar || (d.thematic_focus ? d.thematic_focus.slice(0, 45) : ''),
+      description: s.description || (d.what_it_funds_abstract ?? ''),
+      deadline: s.deadline || deadlineOnly(d.submission_deadline),
+      amount: s.amount || (ugxAmount ? ugxAmount : ''),
+    }));
+    showToast({
+      title: 'Enriched Grant Applied',
+      message: 'Title, funder, pillar, dates and amounts from the source page were copied into this form (blank fields only).',
+      type: 'success',
+    });
   }
 
   if (!user) return <div className="p-8 text-center text-slate-500">Loading…</div>;
@@ -347,6 +377,7 @@ export function Grants() {
               </div>
             </div>
             <div className="p-5 space-y-4 overflow-y-auto">
+              <GrantEnrichmentPanel onApply={handleEnrichApply} compact />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="sm:col-span-2">
                   <label className="block"><span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Grant Title *</span>
