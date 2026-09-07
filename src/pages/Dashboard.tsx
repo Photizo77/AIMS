@@ -487,7 +487,7 @@ function EDDashboard() {
     showToast({ title: action === 'approved' ? 'Requisition Approved' : 'Requisition Rejected', message: `${id} ${action} with your comment recorded.`, type: action === 'approved' ? 'success' : 'info' });
   };
 
-  const attendanceToday = edAttRows; // live rows from aims_attendance (today's register)
+  const attendanceToday = edAttRows.filter((a) => a.status !== 'absent'); // table shows actual check-ins only — absent staff stay counted in the chips above
 
   // Company feed — persisted, real posts
   const [feedPosts, setFeedPosts] = useState<FeedPost[]>(() => readFeedPosts());
@@ -801,29 +801,36 @@ function FinanceDashboard() {
 
   const fmtUSD = (n: number) => (n >= 1000000 ? `${(n / 1000000).toFixed(1)}M` : n >= 1000 ? `${(n / 1000).toFixed(0)}K` : `${n}`);
 
-  // Requisition pipeline (mirrors the Requisition Queue workspace)
-  const awaitingED = [
-    { id: 'req-047', title: 'Proc Req #47 — Office Equipment (DELL Laptops × 15)', amount: 85000, days: 2, dept: 'Ops' },
-    { id: 'req-045', title: 'Cap Req #5 — IT Infrastructure (Server & Storage)', amount: 340000, days: 0, dept: 'IT' },
-  ];
-  const returnedToMe = [
-    { id: 'req-043', title: 'Proc Req #43 — Travel Budget (Conference)', amount: 52000, days: 1, edNote: 'Requires quote from alternative vendor. Current quote is 12% above market rate. Resubmit by Aug 30 with competitive bid. -Ed' },
-  ];
-  const draftCount = 4;
-  const pendingCount = awaitingED.length;
-  const returnedCount = returnedToMe.length;
+  // Requisition pipeline — live from the requisition store (this officer's own)
+  useLiveData();
+  const myReqs = getAllRequisitions().filter((r) => r.requester === user?.name);
+  const awaitingList = myReqs.filter((r) => r.status === 'pushed');
+  const returnedList = myReqs.filter((r) => r.status === 'returned');
+  const draftList = myReqs.filter((r) => r.status === 'draft');
+  const awaitingED = awaitingList.map((r) => ({ id: r.id, title: r.title, amount: r.amount ?? 0, days: r.daysInStatus ?? 0, dept: r.dept }));
+  const returnedToMe = returnedList.map((r) => ({ id: r.id, title: r.title, amount: r.amount ?? 0, days: r.daysInStatus ?? 0, edNote: r.edDecision?.comment ?? 'Revision requested by the ED.' }));
+  const draftCount = draftList.length;
+  const pendingCount = awaitingList.length;
+  const returnedCount = returnedList.length;
 
+  // Live disbursements, budgets and cash
+  const disbursed = getAllRequisitions().filter((r) => r.status === 'disbursed');
+  const disbursedAmount = disbursed.reduce((s, r) => s + (r.amount ?? 0), 0);
   const totalIncome = financeService.totalIncome();
   const totalExpense = financeService.totalExpense();
   const net = totalIncome - totalExpense;
+  const fmtUGX = (n: number) => (n >= 1000000000 ? `UGX ${(n / 1000000000).toFixed(1)}B` : n >= 1000000 ? `UGX ${(n / 1000000).toFixed(0)}M` : n >= 1000 ? `UGX ${(n / 1000).toFixed(0)}K` : `UGX ${n}`);
+  const utilAvg = budgets.length > 0 ? Math.round(budgets.reduce((s, b) => s + (b.budget > 0 ? Math.min(100, (b.actual / b.budget) * 100) : 0), 0) / budgets.length) : 0;
+  const over90 = budgets.filter((b) => b.budget > 0 && (b.actual / b.budget) * 100 >= 90).length;
+  const hotBudget = budgets.length > 0 ? [...budgets].sort((a, b) => (b.forecastPct ?? 0) - (a.forecastPct ?? 0))[0] : null;
 
   const getAgingColor = (days: number) => (days >= 3 ? 'bg-red-50 text-red-600 border-red-200' : days >= 1 ? 'bg-aims-orange/15 text-aims-orange border-aims-orange/30' : 'bg-aims-green/15 text-aims-green border-aims-green/30');
 
   const headline = [
-    { label: 'Pending Requisitions (Mine)', value: String(draftCount + pendingCount + returnedCount), sub: `${returnedCount} need your revision`, icon: 'request_quote', color: 'orange' as ColorKey, onClick: () => navigate('/approvals') },
-    { label: 'Disbursed This Month', value: '$2.4M', sub: 'across 47 requisitions', icon: 'payments', color: 'green' as ColorKey, onClick: () => navigate('/finance') },
-    { label: 'Budget Utilization', value: '68%', sub: 'quarterly · 1 dept over 90%', icon: 'monitoring', color: 'navy' as ColorKey, onClick: () => navigate('/finance') },
-    { label: 'Cash Position', value: '$5.2M', sub: 'liquid · ▲ 8% vs. last month', icon: 'account_balance', color: 'mint' as ColorKey, onClick: () => navigate('/finance') },
+    { label: 'Pending Requisitions (Mine)', value: String(draftCount + pendingCount + returnedCount), sub: returnedCount > 0 ? `${returnedCount} need your revision` : pendingCount > 0 ? `${pendingCount} with the ED` : 'none in flight', icon: 'request_quote', color: 'orange' as ColorKey, onClick: () => navigate('/approvals') },
+    { label: 'Disbursed', value: disbursed.length > 0 ? fmtUGX(disbursedAmount) : 'UGX 0', sub: disbursed.length > 0 ? `across ${disbursed.length} disbursed requisition(s)` : 'none disbursed yet', icon: 'payments', color: 'green' as ColorKey, onClick: () => navigate('/finance') },
+    { label: 'Budget Utilization', value: budgets.length > 0 ? `${utilAvg}%` : '—', sub: budgets.length > 0 ? (over90 > 0 ? `quarterly · ${over90} dept over 90%` : 'within healthy range') : 'no budgets entered yet', icon: 'monitoring', color: 'navy' as ColorKey, onClick: () => navigate('/finance') },
+    { label: 'Cash Flow (YTD)', value: totalIncome === 0 && totalExpense === 0 ? '—' : `$${net >= 0 ? '' : '-'}${fmtUSD(Math.abs(net))}`, sub: totalIncome === 0 && totalExpense === 0 ? 'no cash recorded yet in aims_finance' : 'net income less expenditure · USD', icon: 'account_balance', color: 'mint' as ColorKey, onClick: () => navigate('/finance') },
   ];
 
   return (
@@ -855,6 +862,7 @@ function FinanceDashboard() {
             <p className="text-xs font-bold text-slate-900 flex items-center gap-1.5"><span className="material-symbols-outlined text-aims-navy text-[16px]">hourglass_top</span>Requisitions to ED (aging)</p>
             <span className="text-[10px] font-extrabold text-aims-navy">{pendingCount}</span>
           </div>
+          {awaitingED.length === 0 && <p className="text-[11px] text-slate-400 italic py-1">No requisitions with the ED right now.</p>}
           {awaitingED.map((r) => (
             <div key={r.id} className="flex items-center justify-between text-[11px] py-1 border-b border-slate-50 last:border-0">
               <span className="text-slate-600 truncate max-w-[200px]">{r.title}</span>
@@ -869,6 +877,7 @@ function FinanceDashboard() {
             <p className="text-xs font-bold text-slate-900 flex items-center gap-1.5"><span className="material-symbols-outlined text-red-500 text-[16px]">assignment_return</span>Returned / Needs Revision</p>
             <span className="text-[10px] font-extrabold text-red-600">{returnedCount}</span>
           </div>
+          {returnedToMe.length === 0 && <p className="text-[11px] text-slate-400 italic py-1">Nothing returned for revision right now.</p>}
           {returnedToMe.map((r) => (
             <div key={r.id} className="py-1 border-b border-slate-50 last:border-0">
               <div className="flex items-center justify-between">
@@ -885,8 +894,8 @@ function FinanceDashboard() {
           <div className="flex items-center justify-between mb-2">
             <p className="text-xs font-bold text-slate-900 flex items-center gap-1.5"><span className="material-symbols-outlined text-aims-orange text-[16px]">warning</span>Budget Utilization Warning</p>
           </div>
-          <p className="text-[11px] text-slate-600">HR & Admin pacing <strong className="text-aims-orange">4% ahead</strong> of quarterly schedule (77% used, 95% year-end forecast).</p>
-          <p className="text-[10px] text-slate-400 mt-1">Recommend contingency review by month-end.</p>
+          <p className="text-[11px] text-slate-600">{budgets.length === 0 ? 'No department budgets entered yet — utilization appears here once Finance records budgets in aims_finance.' : hotBudget ? `${hotBudget.dept} pacing toward a ${hotBudget.forecastPct ?? Math.round((hotBudget.actual / Math.max(1, hotBudget.budget)) * 100)}% year-end forecast${(hotBudget.forecastPct ?? 0) >= 90 ? ' — review needed' : ''}.` : 'Budget utilisation within healthy range.'}</p>
+          <p className="text-[10px] text-slate-400 mt-1">{budgets.length > 0 && over90 > 0 ? `${over90} department(s) over 90% — recommend review.` : budgets.length > 0 ? 'All departments within healthy range.' : 'Live from aims_finance.'}</p>
           <button onClick={() => navigate('/finance')} className="mt-2 text-[11px] font-bold text-aims-navy hover:underline flex items-center gap-0.5">Review budgets <span className="material-symbols-outlined text-[12px]">arrow_forward</span></button>
         </div>
       </div>
@@ -930,8 +939,9 @@ function FinanceDashboard() {
             <div className="p-3 bg-aims-green/5 rounded-lg border border-aims-green/20"><p className="text-[10px] font-bold text-slate-500 uppercase">Monthly Income</p><p className="text-xl font-extrabold text-aims-green mt-1">{fmtUSD(totalIncome)}</p></div>
             <div className="p-3 bg-aims-orange/5 rounded-lg border border-aims-orange/20"><p className="text-[10px] font-bold text-slate-500 uppercase">Monthly Expenses</p><p className="text-xl font-extrabold text-aims-orange mt-1">{fmtUSD(totalExpense)}</p></div>
             <div className="p-3 bg-aims-navy/5 rounded-lg border border-aims-navy/20"><p className="text-[10px] font-bold text-slate-500 uppercase">Net Position</p><p className={cn('text-xl font-extrabold mt-1', net >= 0 ? 'text-aims-green' : 'text-red-500')}>{net >= 0 ? '+' : ''}{fmtUSD(net)}</p></div>
-            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100"><p className="text-[10px] font-bold text-slate-500 uppercase">Forecast (12/31)</p><p className="text-xl font-extrabold text-aims-navy mt-1">+$3.1M</p></div>
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100"><p className="text-[10px] font-bold text-slate-500 uppercase">Forecast (12/31)</p><p className="text-xl font-extrabold text-aims-navy mt-1">—</p></div>
           </div>
+          {totalIncome === 0 && totalExpense === 0 && <p className="text-[10px] text-slate-400 italic mt-2">Cash cards are empty until Finance records income/expenditure in aims_finance.</p>}
           <button onClick={() => navigate('/finance')} className="w-full mt-3 py-2 border border-aims-navy/20 text-aims-navy text-xs font-bold rounded-lg hover:bg-aims-navy/5 flex items-center justify-center gap-1.5">
             <span className="material-symbols-outlined text-[16px]">analytics</span>Drill to Full Analytics
           </button>
@@ -939,8 +949,11 @@ function FinanceDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Section title="Budget Utilization by Department" subtitle="Year-end forecast vs. healthy range 75-90%">
+        <Section title="Budget Utilization by Department" subtitle="Live from aims_finance budgets — healthy range 75-90%">
           <div className="space-y-3">
+            {budgets.length === 0 && (
+              <div className="p-6 text-center text-sm text-slate-400 italic bg-slate-50 rounded-xl border border-slate-100">No department budgets entered yet — bars appear once Finance records budgets in aims_finance.</div>
+            )}
             {budgets.map((b) => {
               const pct = Math.round((b.actual / b.budget) * 100);
               const warn = b.forecastPct >= 90;
@@ -960,17 +973,26 @@ function FinanceDashboard() {
           </button>
         </Section>
 
-        <Section title="AI Insight" subtitle="Auto-generated anomaly flags — updated daily">
+        <Section title="AI Insight" subtitle="Auto-generated from live finance & requisition data">
           <div className="space-y-3">
-            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-              <p className="text-xs text-slate-700"><span className="font-extrabold text-aims-navy">① Waste pillar procurement</span> is pacing 15% above quarterly phasing. Recommend review of the Q4 spending plan to maintain budget alignment.</p>
-            </div>
-            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-              <p className="text-xs text-slate-700"><span className="font-extrabold text-aims-navy">② HR & Admin</span> trending toward 95% budget utilization by year-end — current pace suggests a $180K overage. Recommend review of the contingency staffing plan by month-end.</p>
-            </div>
-            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-              <p className="text-xs text-slate-700"><span className="font-extrabold text-aims-navy">③ 3 requisitions returned from ED</span> for revision in the past week. Consider reviewing feedback patterns to improve first-pass approval rate.</p>
-            </div>
+            {budgets.length === 0 && returnedCount === 0 && disbursed.length === 0 && (
+              <div className="p-6 text-center text-sm text-slate-400 italic bg-slate-50 rounded-xl border border-slate-100">No anomalies yet — insights appear automatically as real finance and requisition data is entered.</div>
+            )}
+            {hotBudget && (hotBudget.forecastPct ?? 0) >= 90 && (
+              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
+                <p className="text-xs text-slate-700"><span className="font-extrabold text-aims-navy">① {hotBudget.dept}</span> trending toward a {(hotBudget.forecastPct ?? 0)}% year-end budget forecast — recommend review.</p>
+              </div>
+            )}
+            {budgets.length > 0 && over90 > 0 && (
+              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
+                <p className="text-xs text-slate-700"><span className="font-extrabold text-aims-navy">② {over90} department(s) over 90%</span> utilisation — review spending plans to maintain alignment.</p>
+              </div>
+            )}
+            {returnedCount > 0 && (
+              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
+                <p className="text-xs text-slate-700"><span className="font-extrabold text-aims-navy">③ {returnedCount} requisition(s) returned by the ED</span> for revision — review feedback to improve first-pass approval.</p>
+              </div>
+            )}
             <button onClick={() => navigate('/finance')} className="text-[11px] font-bold text-aims-navy hover:underline flex items-center gap-0.5">Open cash flow analytics <span className="material-symbols-outlined text-[12px]">arrow_forward</span></button>
           </div>
         </Section>

@@ -7,6 +7,7 @@
 // ============================================================
 
 import { MOCK_GRANTS, type GrantRecord } from '@/data/grants';
+import { GRANT_OPPORTUNITIES, toIsoDate, titleFromLink } from '@/data/grantOpportunities';
 import { loadJSON, saveJSON, STORAGE_KEYS, demoMode } from '@/lib/storage';
 
 const persistedGrants = loadJSON<GrantRecord[] | null>(STORAGE_KEYS.grants, null);
@@ -30,6 +31,58 @@ export function loadDemoGrants(): void {
   saveGrants();
 }
 
+/**
+ * Import the live grant opportunity watchlist into aims_grants (real records).
+ * Idempotent: already-imported topic codes / source links are skipped.
+ * Returns the number of new grants added.
+ */
+export function importGrantOpportunities(): number {
+  const codes = new Set(grants.filter((g) => g.topicCode).map((g) => (g.topicCode as string).toLowerCase()));
+  const links = new Set(grants.filter((g) => g.link).map((g) => (g.link as string).toLowerCase()));
+  let added = 0;
+  GRANT_OPPORTUNITIES.forEach((op) => {
+    if (op.code) {
+      if (codes.has(op.code.toLowerCase())) return;
+    } else if (op.link && links.has(op.link.toLowerCase())) {
+      return;
+    }
+    const closingDate = toIsoDate(op.closing) || toIsoDate(op.opening) || new Date(Date.now() + 366 * 86400000).toISOString().slice(0, 10);
+    const isClosed = op.status === 'Closed' || op.status === 'Page Not Found';
+    const fallbackTitle = op.link ? titleFromLink(op.link, op.theme) : 'Grant Opportunity';
+    const now = nowIso();
+    const meta: GrantRecord = {
+      id: nextId('g'),
+      title: (op.title ?? fallbackTitle).trim(),
+      funder: op.source === 'Horizon Europe' ? 'European Commission — Horizon Europe' : 'ARDHI watchlist',
+      pillar: (op.theme ?? 'Open').trim() || 'Open',
+      handler: 'Unassigned',
+      contributors: [],
+      stage: isClosed ? 'declined' : 'identified',
+      deadline: closingDate,
+      amountRequested: 0,
+      description: [
+        op.title ? '' : `Opportunity tracked by ARDHI — ${op.source}.`,
+        `Tracker status: ${op.status ?? '—'}.`,
+        op.opening ? `Planned opening: ${op.opening}.` : '',
+        op.closing ? `Closing date: ${op.closing}.` : '',
+        op.link ? `Source: ${op.link}` : `EU Action: ${op.code ?? '—'}`,
+      ].filter(Boolean).join('\n'),
+      milestones: [],
+      activity: [{ id: nextId('a'), actor: 'System', action: `Imported from the grant opportunity watchlist (${op.source})`, timestamp: now }],
+      comments: [],
+      documents: [],
+      topicCode: op.code,
+      sourceStatus: op.status,
+      link: op.link,
+      plannedOpening: op.opening,
+    };
+    grants = [meta, ...grants];
+    added += 1;
+  });
+  if (added > 0) saveGrants();
+  return added;
+}
+
 let idCounter = 0;
 function nextId(prefix: string): string {
   idCounter += 1;
@@ -46,6 +99,19 @@ function addActivity(g: GrantRecord, actor: string, action: string): void {
 
 function saveGrants(): void {
   saveJSON(STORAGE_KEYS.grants, grants);
+}
+
+// Baseline dataset: when the grants store is empty (first run or after a flash),
+// load the live grant opportunity watchlist once so the shared grants appear
+// automatically under the grants pipeline.
+if (grants.length === 0) {
+  try {
+    const marker = 'aims_grant_watchlist_imported';
+    if (!localStorage.getItem(marker)) {
+      importGrantOpportunities();
+      localStorage.setItem(marker, '1');
+    }
+  } catch { /* ignore */ }
 }
 
 export const grantService = {

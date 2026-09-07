@@ -15,6 +15,11 @@ export interface GrantRecord {
   documents?: GrantDocument[];
   comments?: GrantComment[];
   edNotes?: string;
+  /** Optional opportunity-tracker metadata (watchlist imports) */
+  topicCode?: string;
+  sourceStatus?: string;
+  link?: string;
+  plannedOpening?: string;
 }
 
 export const GRANT_STAGES: { key: GrantStage; label: string; color: 'green' | 'navy' | 'orange' | 'mint' | 'red' }[] = [

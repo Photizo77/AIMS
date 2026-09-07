@@ -6,7 +6,7 @@ import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
 import { CHIP } from '@/lib/uiTheme';
 import { GRANT_STAGES, formatCurrency, daysUntil, grantProgress, type GrantRecord } from '@/data/grants';
-import { grantService } from '@/services/grantService';
+import { grantService, importGrantOpportunities } from '@/services/grantService';
 import { GrantsPipelineBoard } from '@/components/grants/GrantsPipelineBoard';
 import { FormsShortcut } from '@/components/forms/FormsShortcut';
 import { AIPanel } from '@/components/ai/AIPanel';
@@ -46,6 +46,17 @@ export function Grants() {
   const [showAdd, setShowAdd] = useState(false);
   const [newGrant, setNewGrant] = useState({ title: '', funder: '', pillar: '', description: '', deadline: '', amount: '', assignMe: true });
 
+  // Import the live grant opportunity watchlist (Horizon Europe + ARDHI tracker)
+  function handleImportWatchlist() {
+    const count = importGrantOpportunities();
+    showToast({
+      title: count > 0 ? `${count} Grant${count > 1 ? 's' : ''} Imported` : 'Watchlist Up to Date',
+      message: count > 0 ? 'Live opportunity watchlist added to aims_grants — reloading the view.' : 'The grant watchlist was already imported — no duplicates were added.',
+      type: count > 0 ? 'success' : 'info',
+    });
+    if (count > 0) window.setTimeout(() => window.location.reload(), 700);
+  }
+
   if (!user) return <div className="p-8 text-center text-slate-500">Loading…</div>;
 
   // ── CD / ED / Admins: FULL org-wide pipeline board ──
@@ -53,8 +64,15 @@ export function Grants() {
     return (
       <div className="space-y-6">
         <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
-          <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">Grants Pipeline</h1>
-          <p className="text-base font-medium text-white">Organization-wide grant tracking from identification to award</p>
+          <div className="flex items-start justify-between flex-wrap gap-4">
+            <div>
+              <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">Grants Pipeline</h1>
+              <p className="text-base font-medium text-white">Organization-wide grant tracking from identification to award</p>
+            </div>
+            <button onClick={handleImportWatchlist} className="px-5 py-2.5 bg-white/15 border border-white/40 text-white rounded-xl text-xs font-extrabold hover:bg-white/25 transition-colors flex items-center gap-1.5 shrink-0">
+              <span className="material-symbols-outlined text-[16px]">playlist_add</span>Import Grant Watchlist
+            </button>
+          </div>
         </div>
         <FormsShortcut module="grants" title="Grant Forms — Proposal Cover Sheet · Budget · Milestone Checklist · Closeout Report" />
         <AIPanel title="AI Insights — Funder Matching" insights={funderMatches()} />
@@ -124,9 +142,14 @@ export function Grants() {
             <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">My Grants</h1>
             <p className="text-base font-medium text-white">Add opportunities, collaborate with the team and share resources on every grant</p>
           </div>
-          <button onClick={() => setShowAdd(true)} className="px-5 py-2.5 bg-white text-aims-navy rounded-xl text-xs font-extrabold hover:bg-aims-mint/90 transition-colors flex items-center gap-1.5 shadow-sm">
-            <span className="material-symbols-outlined text-[16px]">add_circle</span>Add Grant
-          </button>
+          <div className="flex items-center gap-2 flex-wrap">
+            <button onClick={handleImportWatchlist} className="px-4 py-2.5 bg-white/15 border border-white/40 text-white rounded-xl text-xs font-extrabold hover:bg-white/25 transition-colors flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-[16px]">playlist_add</span>Import Watchlist
+            </button>
+            <button onClick={() => setShowAdd(true)} className="px-5 py-2.5 bg-white text-aims-navy rounded-xl text-xs font-extrabold hover:bg-aims-mint/90 transition-colors flex items-center gap-1.5 shadow-sm">
+              <span className="material-symbols-outlined text-[16px]">add_circle</span>Add Grant
+            </button>
+          </div>
         </div>
       </div>
 
