@@ -3,29 +3,12 @@ import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
+import { useLiveData } from '@/lib/useLiveData';
 import { AttendanceManagement } from '@/components/admin/AttendanceManagement';
 import { AttendanceSummary } from '@/components/admin/AttendanceSummary';
 import { OFFICE_GEOFENCE, haversineDistance, detectLocalIPv4s, matchesOfficeNetwork } from '@/config/geofence';
-import { recordUserCheckIn, recordUserCheckOut, logGeofenceAttempt } from '@/services/attendanceService';
-
-interface AttendanceRecord {
-  id: string;
-  date: string;
-  checkIn: string;
-  checkOut: string | null;
-  mode: 'physical' | 'remote';
-  location: string;
-  status: 'present' | 'late' | 'absent' | 'leave';
-  hours: string;
-}
-
-const MOCK_HISTORY: AttendanceRecord[] = [
-  { id: 'a1', date: '2026-08-22', checkIn: '07:58', checkOut: '17:02', mode: 'physical', location: 'ARDHI Office, Kampala', status: 'present', hours: '9h 4m' },
-  { id: 'a2', date: '2026-08-21', checkIn: '08:15', checkOut: '17:30', mode: 'remote', location: 'Plot 45, Kira Road', status: 'late', hours: '9h 15m' },
-  { id: 'a3', date: '2026-08-20', checkIn: '07:52', checkOut: '16:45', mode: 'physical', location: 'ARDHI Office, Kampala', status: 'present', hours: '8h 53m' },
-  { id: 'a4', date: '2026-08-19', checkIn: '', checkOut: null, mode: 'physical', location: '', status: 'leave', hours: '—' },
-  { id: 'a5', date: '2026-08-18', checkIn: '07:55', checkOut: '17:10', mode: 'physical', location: 'ARDHI Office, Kampala', status: 'present', hours: '9h 15m' },
-];
+import { attendanceGet, recordUserCheckIn, recordUserCheckOut, logGeofenceAttempt } from '@/services/attendanceService';
+import { leaveGet } from '@/services/leaveService';
 
 const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
   present: { label: 'Present', cls: 'bg-aims-green/15 text-aims-green' },
@@ -43,6 +26,32 @@ export function Attendance() {
   const [isLocating, setIsLocating] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState('');
+
+  // ── LIVE personal stats + history (real aims_attendance register) ──
+  useLiveData();
+  const histRows = attendanceGet.history()
+    .filter((h) => h.staffId === user?.id || h.name === user?.name)
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .map((h) => ({
+      id: h.id,
+      date: h.date,
+      checkIn: h.checkIn || '—',
+      checkOut: h.checkOut || '—',
+      mode: h.mode,
+      location: h.mode === 'physical' ? 'ARDHI Office' : h.mode === 'remote' ? 'Remote' : '—',
+      status: h.status,
+      hours: h.duration ?? '—',
+    }));
+  const monthPrefix = new Date().toISOString().slice(0, 7);
+  const monthRows = histRows.filter((r) => r.date.startsWith(monthPrefix));
+  const daysPresent = monthRows.filter((r) => r.status === 'present' || r.status === 'late').length;
+  const lateCount = monthRows.filter((r) => r.status === 'late').length;
+  const totalHours = monthRows.reduce((sum, r) => {
+    const m = r.hours.match(/(\d+(?:\.\d+)?)h(?:\s*(\d+)m)?/i);
+    return sum + (m ? Number(m[1]) + (m[2] ? Number(m[2]) / 60 : 0) : 0);
+  }, 0);
+  const myBalance = leaveGet.balances().find((b) => b.name === user?.name);
+  const leaveRemaining = myBalance ? Math.max(0, (myBalance.annual ?? 0) + (myBalance.sick ?? 0) + (myBalance.study ?? 0)) : 0;
 
   const handleCheckIn = () => {
     if (checkInMode === 'physical') {
@@ -120,7 +129,7 @@ export function Attendance() {
     showToast({ title: 'Checked Out', message: 'You have successfully checked out.', type: 'success' });
   };
 
-  const filteredHistory = MOCK_HISTORY.filter((r) => {
+  const filteredHistory = histRows.filter((r) => {
     if (filterStatus && r.status !== filterStatus) return false;
     return true;
   });
@@ -231,26 +240,26 @@ export function Attendance() {
         </div>
       </div>
 
-      {/* Stats */}
+      {/* Stats — live from your real attendance register & leave balance */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-green p-4 shadow-sm">
           <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Days Present</p>
-          <p className="text-2xl font-extrabold text-slate-900 mt-1">18</p>
-          <p className="text-[10px] text-slate-400 mt-0.5">this month</p>
+          <p className="text-2xl font-extrabold text-slate-900 mt-1">{daysPresent}</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">this month{daysPresent === 0 ? ' · none yet' : ''}</p>
         </div>
         <div className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-orange p-4 shadow-sm">
           <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Late Arrivals</p>
-          <p className="text-2xl font-extrabold text-slate-900 mt-1">2</p>
+          <p className="text-2xl font-extrabold text-slate-900 mt-1">{lateCount}</p>
           <p className="text-[10px] text-slate-400 mt-0.5">this month</p>
         </div>
         <div className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-navy p-4 shadow-sm">
           <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Hours</p>
-          <p className="text-2xl font-extrabold text-slate-900 mt-1">162h</p>
-          <p className="text-[10px] text-slate-400 mt-0.5">this month</p>
+          <p className="text-2xl font-extrabold text-slate-900 mt-1">{Math.round(totalHours)}h</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">this month{totalHours === 0 ? ' · none yet' : ''}</p>
         </div>
         <div className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-mint p-4 shadow-sm">
           <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Leave Balance</p>
-          <p className="text-2xl font-extrabold text-slate-900 mt-1">12</p>
+          <p className="text-2xl font-extrabold text-slate-900 mt-1">{leaveRemaining}</p>
           <p className="text-[10px] text-slate-400 mt-0.5">days remaining</p>
         </div>
       </div>
