@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="Climate education in secondary schools">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0b5c1c"/>
+      <stop offset="100%" stop-color="#1e6327"/>
+    </linearGradient>
+    <linearGradient id="hill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2f7c34"/>
+      <stop offset="100%" stop-color="#155020"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" fill="url(#sky)"/>
+  <circle cx="152" cy="46" r="22" fill="#abf4a7" opacity="0.85"/>
+  <circle cx="152" cy="46" r="34" fill="#abf4a7" opacity="0.18"/>
+  <path d="M0 128c30-16 58-8 84 2s52 6 78-6 38-8 38-8v84H0z" fill="url(#hill)"/>
+  <path d="M0 152c34-14 62-4 90 6s56 4 80-6 30-6 30-6v54H0z" fill="#0f4419" opacity="0.85"/>
+  <!-- school building -->
+  <rect x="40" y="104" width="56" height="34" rx="3" fill="#e8ede4"/>
+  <path d="M36 104l32-20 32 20z" fill="#c0c9bb"/>
+  <rect x="52" y="114" width="12" height="12" rx="1.5" fill="#1e6327"/>
+  <rect x="72" y="114" width="12" height="12" rx="1.5" fill="#1e6327"/>
+  <rect x="62" y="128" width="12" height="10" rx="1.5" fill="#1e6327"/>
+  <!-- trees -->
+  <g fill="#8dd888">
+    <circle cx="26" cy="126" r="11"/>
+    <circle cx="170" cy="122" r="13"/>
+    <circle cx="118" cy="132" r="9"/>
+  </g>
+  <g fill="#0f4419">
+    <rect x="24" y="134" width="4" height="14"/>
+    <rect x="168" y="132" width="5" height="16"/>
+    <rect x="116" y="139" width="4" height="11"/>
+  </g>
+  <!-- two figures with a recycling bin -->
+  <circle cx="140" cy="152" r="6" fill="#e8ede4"/>
+  <path d="M132 176v-12a8 8 0 0 1 16 0v12z" fill="#e8ede4"/>
+  <circle cx="158" cy="154" r="6" fill="#abf4a7"/>
+  <path d="M150 178v-12a8 8 0 0 1 16 0v12z" fill="#abf4a7"/>
+  <rect x="92" y="158" width="16" height="20" rx="2" fill="#abf4a7" opacity="0.9"/>
+  <path d="M96 158l4-6 4 6" fill="none" stroke="#0f4419" stroke-width="2" stroke-linecap="round"/>
+  <path d="M97 166h6M100 163v6" stroke="#0f4419" stroke-width="1.6" stroke-linecap="round"/>
+</svg>

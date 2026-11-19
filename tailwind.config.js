@@ -72,6 +72,22 @@ export default {
         'soft-mint':                 '#c1dbc3',
         'brand-orange':              '#eb3b14',
         'orange-red':                '#eb3b14',
+
+        // ── Sign-in screen identity (ARDHI green system) ──
+        'login-primary':             '#004a13',
+        'login-primary-container':   '#1e6327',
+        'login-on-primary':          '#ffffff',
+        'login-primary-fixed':       '#abf4a7',
+        'login-on-primary-container':'#95dd92',
+        'login-tertiary-container':  '#1a6422',
+        'login-bg':                  '#e8ede4',
+        'login-surface-lowest':      '#ffffff',
+        'login-surface-low':         '#f1f3ff',
+        'login-surface-high':        '#e1e8fd',
+        'login-on-surface':          '#141b2b',
+        'login-on-surface-variant':  '#40493e',
+        'login-secondary':           '#575f67',
+        'login-outline-variant':     '#c0c9bb',
       },
       borderRadius: {
         DEFAULT: '0.5rem',
@@ -97,6 +113,7 @@ export default {
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
         code: ['Inter', 'monospace'],
+        jakarta: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
       },
       fontSize: {
         'display-lg':          ['48px', { lineHeight: '56px', letterSpacing: '-0.02em', fontWeight: '700' }],
