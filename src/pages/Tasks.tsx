@@ -18,6 +18,7 @@ import { getAllRequisitions } from '@/services/requisitionService';
 import { stageTransitionConfidence, type AiInsight } from '@/lib/aiEngine';
 import { AIPanel } from '@/components/ai/AIPanel';
 import { KanbanCard, KanbanColumnBody, KanbanColumnHeader } from '@/components/ui/KanbanBoard';
+import { PageHero } from '@/components/ui/PageHero';
 import { DashboardAiInsights } from '@/components/dashboard/DashboardAiInsights';
 import { FormsShortcut } from '@/components/forms/FormsShortcut';
 import { ProposalModal } from '@/components/innovations/ProposalModal';
@@ -170,12 +171,16 @@ export function Tasks() {
       {/* AI insight strip — compact, immediately after the stats */}
       <DashboardAiInsights scope="innovations" title="AI Insights — Pipeline & Readiness" />
 
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <p className="text-xs text-slate-500">{scope === 'mine' ? 'Your innovation projects, proposals and tasks' : 'Organization-wide innovation pipeline oversight'}</p>
-        <button onClick={openNewProposal} className="px-4 py-2 bg-aims-navy text-white rounded-lg text-xs font-extrabold hover:bg-aims-navy/90 transition-colors flex items-center gap-1.5 shadow-sm">
-          <span className="material-symbols-outlined text-[16px]">add_circle</span>New Innovation
-        </button>
-      </div>
+      <PageHero
+        title="Innovations &amp; Tasks"
+        subtitle={scope === 'mine' ? 'Your innovation projects, proposals and tasks' : 'Organization-wide innovation pipeline oversight'}
+        icon="lightbulb"
+        actions={
+          <button onClick={openNewProposal} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-bold bg-white text-aims-navy hover:bg-aims-mint transition-colors">
+            <span className="material-symbols-outlined text-[15px]">add_circle</span>New Innovation
+          </button>
+        }
+      />
 
       <FormsShortcut module="innovations" title="Innovation Forms — Project Proposal · Feasibility Study" />
 

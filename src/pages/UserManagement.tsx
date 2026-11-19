@@ -26,6 +26,7 @@ import { OffboardingTab } from '@/components/admin/OffboardingTab';
 import { openEmployeeOnboarding } from '@/components/hr/EmployeeOnboardingForm';
 import { OnboardStepModal } from '@/components/admin/OnboardStepModal';
 import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
+import { PageHero } from '@/components/ui/PageHero';
 import { listPendingSubmissions, listOnboarding, approveSubmission, rejectSubmission } from '@/services/employeeService';
 import { printBlankEmployeeForm, employeeFormShareLink } from '@/lib/employeeFormTemplate';
 
@@ -132,15 +133,17 @@ export function UserManagement() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-xl font-extrabold text-slate-900">User Management &amp; Provisioning</h1>
-          <p className="text-xs text-slate-500 mt-0.5">Directory, onboarding, offboarding, roles and account audit</p>
-        </div>
-        <button onClick={copyShareLink} className="px-4 py-2 border border-aims-navy/25 text-aims-navy text-xs font-bold rounded-lg hover:bg-aims-navy/5 flex items-center gap-1.5">
-          <span className="material-symbols-outlined text-[16px]">link</span>Share employee form
-        </button>
-      </div>
+      <PageHero
+        title="User Management &amp; Provisioning"
+        subtitle="Directory, onboarding, offboarding, roles and account audit"
+        icon="manage_accounts"
+        meta={`${users.length} account(s)`}
+        actions={
+          <button onClick={copyShareLink} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-bold bg-white/15 border border-white/25 text-white hover:bg-white/25 transition-colors">
+            <span className="material-symbols-outlined text-[15px]">link</span>Share employee form
+          </button>
+        }
+      />
 
       <div className="flex gap-1 bg-slate-100 p-1 rounded-xl overflow-x-auto">
         {TABS.map((tab) => (

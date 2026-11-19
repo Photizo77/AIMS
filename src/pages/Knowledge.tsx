@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { KNOWLEDGE_RESOURCES } from '@/data/knowledgeResources';
+import { PageHero } from '@/components/ui/PageHero';
 
 const TYPE_CONFIG: Record<string, { icon: string; color: string; bg: string }> = {
   document: { icon: 'description', color: 'text-aims-navy', bg: 'bg-blue-50' },
@@ -22,10 +23,7 @@ export function Knowledge() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-extrabold text-slate-900">Knowledge Base</h1>
-        <p className="text-sm text-slate-500 mt-1">Documents, videos, audio recordings, and photos</p>
-      </div>
+      <PageHero title="Knowledge Base" subtitle="Documents, videos, audio recordings, and photos" icon="menu_book" />
 
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <input type="text" placeholder="Search resources..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-aims-green/50" />

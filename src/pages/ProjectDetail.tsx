@@ -265,13 +265,13 @@ export function ProjectDetail() {
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
       {/* Header */}
-      <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
+      <div className="bg-grad-navy rounded-xl px-5 py-4 text-white shadow-sm">
         <button onClick={() => navigate(-1)} className="text-xs font-bold text-white/80 hover:text-white mb-2 flex items-center gap-1">
           <span className="material-symbols-outlined text-[14px]">arrow_back</span> Back to Pipeline
         </button>
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-white mb-2">{project.title}</h1>
+            <h1 className="text-lg font-extrabold tracking-tight text-white leading-tight mb-2">{project.title}</h1>
             <div className="flex items-center gap-4 text-sm font-medium text-white/90 flex-wrap">
               <span className="px-2 py-0.5 rounded bg-white/20 text-white text-xs font-bold uppercase">{INNOVATION_STAGE_LABELS[project.stage]}</span>
               {lifecycle && (

@@ -14,6 +14,7 @@ import { useLiveData } from '@/lib/useLiveData';
 import { exportCsv } from '@/lib/export';
 import { crmGet, addContact, updateContact, removeContact, type NewContactInput } from '@/services/crmService';
 import type { CRMContact, CRMContactType } from '@/types';
+import { PageHero } from '@/components/ui/PageHero';
 
 const TYPE_COLORS: Record<string, string> = { donor: 'bg-green-100 text-green-700', government: 'bg-blue-100 text-blue-700', partner: 'bg-purple-100 text-purple-700', vendor: 'bg-amber-100 text-amber-700', media: 'bg-pink-100 text-pink-700', other: 'bg-slate-100 text-slate-600' };
 
@@ -78,10 +79,7 @@ export function CRM() {
   return (
     <div>
       <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
-        <div>
-          <h1 className="text-2xl font-extrabold text-slate-900">Contact Relationship Manager</h1>
-          <p className="text-sm text-slate-500 mt-1">Donors, partners, government contacts, media and vendors</p>
-        </div>
+        <PageHero title="Contact Relationship Manager" subtitle="Donors, partners, government contacts, media and vendors" icon="handshake" />
         <div className="flex gap-2 flex-wrap">
           <button onClick={exportCsvList} className="px-4 py-2 border border-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50 flex items-center gap-1.5"><span className="material-symbols-outlined text-[15px]">download</span>Export CSV</button>
           <button onClick={openNew} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90 flex items-center gap-1.5"><span className="material-symbols-outlined text-[15px]">person_add</span>Add Contact</button>

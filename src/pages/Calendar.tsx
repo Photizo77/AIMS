@@ -8,6 +8,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { PageHero } from '@/components/ui/PageHero';
 import { grantService } from '@/services/grantService';
 import { innovationService } from '@/services/innovationService';
 
@@ -66,17 +67,18 @@ export function Calendar() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-xl font-extrabold text-slate-900">Org Calendar</h1>
-          <p className="text-xs text-slate-500 mt-0.5">Grant deadlines, project milestones, leave &amp; reorders — one view</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button onClick={() => setMonthOffset((o) => o - 1)} className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-slate-700 text-xs font-bold">‹ Prev</button>
-          <span className="text-sm font-bold text-slate-900 px-2">{viewDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}</span>
-          <button onClick={() => setMonthOffset((o) => o + 1)} className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-slate-700 text-xs font-bold">Next ›</button>
-        </div>
-      </div>
+      <PageHero
+        title="Org Calendar"
+        subtitle="Grant deadlines, project milestones, leave &amp; reorders — one view"
+        icon="calendar_month"
+        actions={
+          <div className="flex items-center gap-2">
+            <button onClick={() => setMonthOffset((o) => o - 1)} className="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-white/15 border border-white/25 text-white hover:bg-white/25">‹ Prev</button>
+            <span className="text-xs font-bold text-white px-1">{viewDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}</span>
+            <button onClick={() => setMonthOffset((o) => o + 1)} className="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-white/15 border border-white/25 text-white hover:bg-white/25">Next ›</button>
+          </div>
+        }
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Month grid */}

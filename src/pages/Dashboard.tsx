@@ -25,6 +25,7 @@ import { flagService } from '@/services/flagService';
 import { SharedLibraryWidget } from '@/components/dashboard/SharedLibraryWidget';
 import { DashboardAiInsights } from '@/components/dashboard/DashboardAiInsights';
 import { KanbanCard, KanbanColumnBody, KanbanColumnHeader } from '@/components/ui/KanbanBoard';
+import { PageHero } from '@/components/ui/PageHero';
 import { innovationService, isExecutingProject } from '@/services/innovationService'; // Importing our centralized service
 import { grantService } from '@/services/grantService';
 import { financeService } from '@/services/financeService';
@@ -322,6 +323,7 @@ function CDDashboard() {
   });
   return (
     <div className="space-y-6">
+      <PageHero title="Country Director Dashboard" subtitle="Strategic oversight & governance — view everything, flag for the ED, approve nothing" icon="dashboard" />
       {/* At a Glance strip — stat cards lead the page (no hero banner) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <button onClick={() => navigate('/attendance')} className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-green p-4 shadow-sm text-left hover:shadow-md transition-shadow group">
@@ -490,6 +492,7 @@ function EDDashboard() {
 
   return (
     <div className="space-y-6">
+      <PageHero title="Executive Director Dashboard" subtitle="Operational execution & team leadership — sole approval authority" icon="dashboard" />
       {/* At a Glance strip — stat cards lead the page (no hero banner) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <button onClick={() => navigate('/approvals')} className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-orange p-4 shadow-sm text-left hover:shadow-md transition-shadow group">
@@ -729,6 +732,7 @@ function AdminDashboard() {
 
   return (
     <div className="space-y-6">
+      <PageHero title="Admin Dashboard" subtitle="People, payroll, inventory and account provisioning" icon="admin_panel_settings" />
       {/* At a Glance strip — stat cards lead the page (no hero banner) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {atAGlance.map((s) => (
@@ -822,6 +826,7 @@ function FinanceDashboard() {
 
   return (
     <div className="space-y-6">
+      <PageHero title="Finance Operational Center" subtitle="Income, expenditure, budgets and the approval pipeline" icon="account_balance" />
       {/* Headline stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {headline.map((s) => (
@@ -1026,6 +1031,7 @@ function GrantDashboard() {
   const pipelineLabel = pipelineTotal >= 1000000000 ? `UGX ${(pipelineTotal / 1000000000).toFixed(1)}B` : `UGX ${(pipelineTotal / 1000000).toFixed(0)}M`;
   return (
     <div className="space-y-6">
+      <PageHero title="Grants & Proposals" subtitle="Discover, claim and track grants — AI-assisted drafting & deadline tracking" icon="volunteer_activism" />
       {/* Stage counts — stat cards lead the page (no hero banner) */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         {GRANT_STAGES.map((s) => {
@@ -1114,6 +1120,7 @@ function InnovatorDashboard() {
 
   return (
     <div className="space-y-6">
+      <PageHero title="Innovation Pipeline" subtitle="Research execution, prototyping and production tracking" icon="lightbulb" />
       {/* Stage counts — stat cards lead the page (no hero banner) */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         {STAGES.map((s) => {
@@ -1228,6 +1235,7 @@ function SysAdminDashboard() {
   }));
   return (
     <div className="space-y-6">
+      <PageHero title="System Telemetry" subtitle="Platform stability, security and configuration" icon="monitoring" />
       {/* Stat cards lead the page — real account/audit figures only */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <button onClick={() => navigate('/user-management')} className="text-left bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-navy p-4 shadow-sm hover:shadow-md transition-shadow">
@@ -1400,6 +1408,7 @@ function HRDashboard() {
 
   return (
     <div className="space-y-6">
+      <PageHero title="HR & People Management" subtitle="Workforce administration, contracts and performance" icon="people" />
       {/* Stat cards lead the page (no hero banner) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <StatCard title="Total Headcount" value={String(headcount)} icon="people" color="navy" />
@@ -1517,6 +1526,7 @@ function InventoryDashboard() {
 
   return (
     <div className="space-y-6">
+      <PageHero title="Inventory Management" subtitle="Track assets, equipment and supplies" icon="inventory_2" />
       {/* Stat cards lead the page (no hero banner) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <StatCard title="Total Assets" value={String(allAssets.length)} icon="inventory_2" color="navy" />

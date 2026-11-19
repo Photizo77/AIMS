@@ -19,6 +19,7 @@ import { listDocs, addDoc, removeDoc, docRecordSheet, type DocCategory, type Doc
 import { formatBytes } from '@/services/employeeDocsService';
 import { openFlagForED } from '@/components/grants/FlagForEDModal';
 import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
+import { PageHero } from '@/components/ui/PageHero';
 
 type AccessLevel = 'full' | 'view' | 'flag' | 'none';
 
@@ -277,10 +278,7 @@ export function Documents() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-extrabold text-slate-900">Document Management Hub</h1>
-        <p className="text-xs text-slate-500 mt-0.5">Central repository across all modules — access governed by role permissions</p>
-      </div>
+      <PageHero title="Document Management Hub" subtitle="Central repository across all modules — access governed by role permissions" icon="folder_open" />
 
       {notification && (
         <div className="bg-aims-green/10 border border-aims-green/30 rounded-xl px-4 py-3 flex items-start gap-3">

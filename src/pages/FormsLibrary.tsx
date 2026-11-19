@@ -5,6 +5,7 @@ import { FORMS_LIBRARY } from '@/config/forms';
 import type { FormDefinition } from '@/config/forms';
 import { FormRenderer } from '@/components/forms/FormRenderer';
 import { openEmployeeOnboarding } from '@/components/hr/EmployeeOnboardingForm';
+import { PageHero } from '@/components/ui/PageHero';
 
 const MODULE_LABELS: Record<string, string> = {
   hr: 'Human Resources',
@@ -89,10 +90,7 @@ export function FormsLibrary() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-extrabold text-slate-900">Forms Library</h1>
-        <p className="text-xs text-slate-500 mt-0.5">All operational & employee-facing forms — full detail edition</p>
-      </div>
+      <PageHero title="Forms Library" subtitle="All operational & employee-facing forms — full detail edition" icon="description" />
 
       {/* Filters */}
       <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">

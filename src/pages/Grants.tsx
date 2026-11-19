@@ -12,6 +12,7 @@ import type { GrantEnrichmentData } from '@/lib/grantEnrichment';
 import { GrantsPipelineBoard } from '@/components/grants/GrantsPipelineBoard';
 import { KanbanCard, KanbanColumnBody, KanbanColumnHeader } from '@/components/ui/KanbanBoard';
 import { DashboardAiInsights } from '@/components/dashboard/DashboardAiInsights';
+import { PageHero } from '@/components/ui/PageHero';
 import { FormsShortcut } from '@/components/forms/FormsShortcut';
 import { AIPanel } from '@/components/ai/AIPanel';
 import { funderMatches } from '@/lib/aiEngine';
@@ -95,15 +96,16 @@ export function Grants() {
   if (FULL_VIEW_ROLES.includes(user.role)) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div>
-            <h1 className="text-xl font-extrabold text-slate-900">Grants Pipeline</h1>
-            <p className="text-xs text-slate-500 mt-0.5">Organization-wide grant tracking from identification to award</p>
-          </div>
-          <button onClick={handleImportWatchlist} className="px-4 py-2 bg-aims-navy text-white rounded-lg text-xs font-extrabold hover:bg-aims-navy/90 transition-colors flex items-center gap-1.5 shrink-0">
-            <span className="material-symbols-outlined text-[16px]">playlist_add</span>Import Grant Watchlist
-          </button>
-        </div>
+        <PageHero
+          title="Grants Pipeline"
+          subtitle="Organization-wide grant tracking from identification to award"
+          icon="volunteer_activism"
+          actions={
+            <button onClick={handleImportWatchlist} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-bold bg-white/15 border border-white/25 text-white hover:bg-white/25 transition-colors">
+              <span className="material-symbols-outlined text-[15px]">playlist_add</span>Import Grant Watchlist
+            </button>
+          }
+        />
         <FormsShortcut module="grants" title="Grant Forms — Proposal Cover Sheet · Budget · Milestone Checklist · Closeout Report" />
         <AIPanel compact title="AI Insights — Funder Matching" insights={funderMatches()} />
         <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
@@ -177,17 +179,21 @@ export function Grants() {
       {/* AI insight strip — compact, immediately after the stats */}
       <DashboardAiInsights scope="grants" title="AI Insights — Funders & Deadlines" />
 
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <p className="text-xs text-slate-500">Add opportunities, collaborate with the team and share resources on every grant</p>
-        <div className="flex items-center gap-2 flex-wrap">
-          <button onClick={handleImportWatchlist} className="px-4 py-2 border border-aims-navy/25 text-aims-navy rounded-lg text-xs font-extrabold hover:bg-aims-navy/5 transition-colors flex items-center gap-1.5">
-            <span className="material-symbols-outlined text-[16px]">playlist_add</span>Import Watchlist
-          </button>
-          <button onClick={() => setShowAdd(true)} className="px-4 py-2 bg-aims-navy text-white rounded-lg text-xs font-extrabold hover:bg-aims-navy/90 transition-colors flex items-center gap-1.5 shadow-sm">
-            <span className="material-symbols-outlined text-[16px]">add_circle</span>Add Grant
-          </button>
-        </div>
-      </div>
+      <PageHero
+        title="My Grants"
+        subtitle="Add opportunities, collaborate with the team and share resources on every grant"
+        icon="volunteer_activism"
+        actions={
+          <div className="flex items-center gap-2 flex-wrap">
+            <button onClick={handleImportWatchlist} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-bold bg-white/15 border border-white/25 text-white hover:bg-white/25 transition-colors">
+              <span className="material-symbols-outlined text-[15px]">playlist_add</span>Import Watchlist
+            </button>
+            <button onClick={() => setShowAdd(true)} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-bold bg-white text-aims-navy hover:bg-aims-mint transition-colors">
+              <span className="material-symbols-outlined text-[15px]">add_circle</span>Add Grant
+            </button>
+          </div>
+        }
+      />
 
       <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
         <div className="flex flex-wrap gap-2 items-end">

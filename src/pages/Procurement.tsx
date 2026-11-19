@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
+import { PageHero } from '@/components/ui/PageHero';
 
 interface Vendor {
   id: string;
@@ -86,10 +87,7 @@ export function Procurement() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-extrabold text-slate-900">Procurement & Vendors</h1>
-        <p className="text-xs text-slate-500 mt-0.5">Manage suppliers, purchase orders, and procurement workflows</p>
-      </div>
+      <PageHero title="Procurement & Vendors" subtitle="Manage suppliers, purchase orders, and procurement workflows" icon="local_shipping" />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-navy p-4 shadow-sm">

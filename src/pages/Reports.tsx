@@ -14,6 +14,7 @@ import { financeService } from '@/services/financeService';
 import { cashFlowForecast } from '@/lib/aiEngine';
 import { formatCurrency, GRANT_STAGES, daysUntil } from '@/data/grants';
 import { ACTIVE_STAFF } from '@/data/roster';
+import { PageHero } from '@/components/ui/PageHero';
 import { getDirectoryEntries } from '@/services/employeeService';
 import { inventoryGet } from '@/services/inventoryService';
 import { contractGet } from '@/services/contractService';
@@ -99,15 +100,16 @@ export function Reports() {
   return (
     <div className="space-y-6">
       {/* Header — slim, no hero banner */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-xl font-extrabold text-slate-900">Organisation Report</h1>
-          <p className="text-xs text-slate-500 mt-0.5">Board &amp; donor summary · generated {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
-        </div>
-        <button onClick={() => window.print()} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90 flex items-center gap-1.5">
-          <span className="material-symbols-outlined text-[16px]">print</span>Print / Save PDF
-        </button>
-      </div>
+      <PageHero
+        title="Organisation Report"
+        subtitle={`Board & donor summary · generated ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`}
+        icon="summarize"
+        actions={
+          <button onClick={() => window.print()} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-bold bg-white text-aims-navy hover:bg-aims-mint transition-colors">
+            <span className="material-symbols-outlined text-[15px]">print</span>Print / Save PDF
+          </button>
+        }
+      />
 
       {/* KPI cards with progress rings */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

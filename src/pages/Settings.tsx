@@ -12,6 +12,7 @@ import { getAllRequisitions } from '@/services/requisitionService';
 import { STAFF_ROSTER } from '@/data/roster';
 import { userOpsGet } from '@/services/userOpsService';
 import { loadDemoDataset } from '@/services/demoData';
+import { PageHero } from '@/components/ui/PageHero';
 
 export function Settings() {
   const { user, updateAvatar } = useAuth();
@@ -133,7 +134,7 @@ export function Settings() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <div className="mb-6"><h1 className="text-2xl font-extrabold text-slate-900">Settings</h1><p className="text-sm text-slate-500 mt-1">Manage your profile, preferences and data</p></div>
+      <PageHero title="Settings" subtitle="Manage your profile, preferences and data" icon="settings" />
 
       {/* PROFILE PHOTO */}
       <div className="bg-white rounded-xl border border-slate-200 p-6 mb-6">

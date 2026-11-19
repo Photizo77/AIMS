@@ -19,6 +19,7 @@ import { OffboardingTab } from '@/components/admin/OffboardingTab';
 import { HROverview } from '@/components/admin/HROverview';
 import { HRSummary } from '@/components/admin/HRSummary';
 import { FormsShortcut } from '@/components/forms/FormsShortcut';
+import { PageHero } from '@/components/ui/PageHero';
 import { AIPanel } from '@/components/ai/AIPanel';
 import { sentimentSummary, contractRenewalAdvice, type AiInsight } from '@/lib/aiEngine';
 
@@ -89,10 +90,7 @@ export function HR() {
   if (user?.role === 'CD') {
     return (
       <div className="space-y-6">
-        <div>
-          <h1 className="text-xl font-extrabold text-slate-900">HR &amp; Admin Summary</h1>
-          <p className="text-xs text-slate-500 mt-0.5">Consolidated workforce indicators — headcount, contracts, appraisals</p>
-        </div>
+        <PageHero title="HR &amp; Admin Summary" subtitle="Consolidated workforce indicators — headcount, contracts, appraisals" icon="people" />
         <HRSummary />
       </div>
     );
@@ -105,10 +103,11 @@ export function HR() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-extrabold text-slate-900">HR &amp; People Management</h1>
-        <p className="text-xs text-slate-500 mt-0.5">Consolidated directory, payslips, leave, contracts, appraisals and offboarding</p>
-      </div>
+      <PageHero
+        title="HR &amp; People Management"
+        subtitle="Directory, payslips, leave, contracts, appraisals and offboarding"
+        icon="people"
+      />
 
       {/* Tab bar */}
       <div className="flex gap-1 bg-slate-100 p-1 rounded-xl overflow-x-auto sticky top-16 z-30">

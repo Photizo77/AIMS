@@ -11,6 +11,7 @@ import { requisitionPriceFlags, type PriceFlag } from '@/lib/aiEngine';
 import { type Requisition, type RequisitionStatus, requisitions, useRequisitions, mutateRequisitions, addRequisition } from '@/services/requisitionService';
 import { openFlagForED } from '@/components/grants/FlagForEDModal';
 import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
+import { PageHero } from '@/components/ui/PageHero';
 
 type FinanceTab = 'drafts' | 'pushed' | 'returned' | 'history';
 
@@ -300,10 +301,7 @@ function FinanceRequisitionWorkspace({ userName }: { userName: string }) {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-extrabold text-slate-900">Requisition Queue</h1>
-        <p className="text-xs text-slate-500 mt-0.5">Draft, push to ED, and process disbursements — ED holds approval authority</p>
-      </div>
+      <PageHero title="Requisition Queue" subtitle="Draft, push to ED, and process disbursements — ED holds approval authority" icon="approval" />
 
       <div className="flex flex-wrap gap-2">
         {tabs.map((tab) => (
@@ -570,10 +568,7 @@ function EDApprovalQueue() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-extrabold text-slate-900">Approvals Queue</h1>
-        <p className="text-xs text-slate-500 mt-0.5">Exclusive to ED — requisitions, payslips and CD flags · sole approval authority</p>
-      </div>
+      <PageHero title="Approvals Queue" subtitle="Exclusive to ED — requisitions, payslips and CD flags · sole approval authority" icon="approval" />
 
       {/* CD Flag interrupts — priority at top of queue */}
       {openFlags.length > 0 && (
@@ -659,10 +654,7 @@ function ReadonlyApprovals() {
   const [detail, setDetail] = useState<Requisition | null>(null);
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-extrabold text-slate-900">Approvals in Progress</h1>
-        <p className="text-xs text-slate-500 mt-0.5">Read-only status tracker — where requisitions and payslips sit in ED's pipeline</p>
-      </div>
+      <PageHero title="Approvals in Progress" subtitle="Read-only status tracker — where requisitions and payslips sit in ED's pipeline" icon="approval" />
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead><tr className="border-b border-slate-200 bg-slate-50">

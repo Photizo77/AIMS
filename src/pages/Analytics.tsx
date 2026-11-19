@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useNotifications } from '@/context/NotificationContext';
 import { demoMode } from '@/lib/storage';
+import { PageHero } from '@/components/ui/PageHero';
 
 type ReportPeriod = 'monthly' | 'quarterly' | 'annual';
 
@@ -22,10 +23,7 @@ export function Analytics() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-extrabold text-slate-900">Analytics & Reports</h1>
-        <p className="text-sm text-slate-500 mt-1">Performance metrics and automated report generation</p>
-      </div>
+      <PageHero title="Analytics & Reports" subtitle="Performance metrics and automated report generation" icon="monitoring" />
 
       {/* REPORT GENERATOR */}
       <div className="bg-white rounded-xl border border-slate-200 p-6 mb-6">

@@ -12,6 +12,7 @@ import { openFlagForED } from '@/components/grants/FlagForEDModal';
 import { FormsShortcut } from '@/components/forms/FormsShortcut';
 import { useLiveData } from '@/lib/useLiveData';
 import { inventoryGet } from '@/services/inventoryService';
+import { PageHero } from '@/components/ui/PageHero';
 
 function InventoryReadOnly() {
   useLiveData();
@@ -67,10 +68,7 @@ export function Inventory() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-extrabold text-slate-900">Inventory & Asset Management</h1>
-        <p className="text-xs text-slate-500 mt-0.5">Assets, stock & consumables, reorders, assignment, maintenance and stock-take</p>
-      </div>
+      <PageHero title="Inventory & Asset Management" subtitle="Assets, stock & consumables, reorders, assignment, maintenance and stock-take" icon="inventory_2" />
       <FormsShortcut module="inventory" title="Inventory Forms — Reorder Request · Asset Register Entry" />
       {user?.role === 'CD' ? <InventoryReadOnly /> : user?.role === 'COMPANY_ADMIN' || user?.role === 'ED' ? <InventoryHub /> : <InventoryManager />}
     </div>

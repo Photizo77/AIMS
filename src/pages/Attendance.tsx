@@ -9,6 +9,7 @@ import { AttendanceSummary } from '@/components/admin/AttendanceSummary';
 import { OFFICE_GEOFENCE, haversineDistance, detectLocalIPv4s, matchesOfficeNetwork } from '@/config/geofence';
 import { attendanceGet, recordUserCheckIn, recordUserCheckOut, logGeofenceAttempt } from '@/services/attendanceService';
 import { leaveGet } from '@/services/leaveService';
+import { PageHero } from '@/components/ui/PageHero';
 
 const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
   present: { label: 'Present', cls: 'bg-aims-green/15 text-aims-green' },
@@ -140,10 +141,7 @@ export function Attendance() {
   if (['COMPANY_ADMIN', 'ED', 'SYS_ADMIN'].includes(user.role)) {
     return (
       <div className="space-y-6">
-        <div>
-        <h1 className="text-xl font-extrabold text-slate-900">Attendance Management</h1>
-        <p className="text-xs text-slate-500 mt-0.5">Company-wide individual-level visibility — presence, records, leave, anomalies & analytics</p>
-      </div>
+        <PageHero title="Attendance Management" subtitle="Company-wide individual-level visibility — presence, records, leave, anomalies & analytics" icon="schedule" />
         <AttendanceManagement />
       </div>
     );
@@ -153,10 +151,7 @@ export function Attendance() {
   if (user.role === 'CD') {
     return (
       <div className="space-y-6">
-        <div>
-        <h1 className="text-xl font-extrabold text-slate-900">Attendance</h1>
-        <p className="text-xs text-slate-500 mt-0.5">Aggregate presence & punctuality trends — summary level</p>
-      </div>
+        <PageHero title="Attendance" subtitle="Aggregate presence & punctuality trends — summary level" icon="schedule" />
         <AttendanceSummary />
       </div>
     );
@@ -164,10 +159,7 @@ export function Attendance() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-extrabold text-slate-900">My Attendance</h1>
-        <p className="text-xs text-slate-500 mt-0.5">Track your daily check-ins, hours, and leave balance</p>
-      </div>
+      <PageHero title="My Attendance" subtitle="Track your daily check-ins, hours, and leave balance" icon="schedule" />
 
       {/* Check-In Card */}
       <div className="bg-white border border-slate-200 border-t-4 border-t-aims-orange rounded-xl p-5 shadow-sm">

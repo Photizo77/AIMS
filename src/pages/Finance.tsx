@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { exportCsv, exportTableAsPdf } from '@/lib/export';
 import { financeService, type FinanceRecordType } from '@/services/financeService';
 import { FormsShortcut } from '@/components/forms/FormsShortcut';
+import { PageHero } from '@/components/ui/PageHero';
 import { AIPanel } from '@/components/ai/AIPanel';
 import { requisitionPriceFlags, cashFlowForecast, type AiInsight } from '@/lib/aiEngine';
 import { getAllRequisitions } from '@/services/requisitionService';
@@ -201,7 +202,14 @@ export function Finance() {
 
   return (
     <div className="space-y-6">
-      {/* Summary stat cards lead the page (no hero banner) */}
+      <PageHero
+        title="Cash Flow Analytics"
+        subtitle="Income, expenditure, budget health & disbursement ledger — edits require ED approval"
+        icon="account_balance"
+        meta={`${pendingEdits.length} pending`}
+      />
+
+      {/* Summary stat cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-green p-4 shadow-sm">
           <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Income (YTD)</p>
