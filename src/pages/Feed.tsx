@@ -110,17 +110,9 @@ function loadMessages(): ChatMessage[] {
   return [];
 }
 
-const SEED: ChatMessage[] = [
-  { id: 'm9', authorId: 'user-ed-001', authorName: 'Peter Byamugisha', authorRole: 'ED', authorDepartment: 'Executive', content: 'All department Q3 budget proposals received. Consolidated review underway. Final approval expected by Aug 28.', timestamp: '2026-08-25T09:00:00Z', channel: 'general', mentions: [] },
-  { id: 'm5', authorId: 'user-cd-001', authorName: 'Nassir Mwanje', authorRole: 'CD', authorDepartment: 'Executive', content: 'Q2 Board minutes approved. Key action: all department heads submit Q3 budget revisions by Aug 25.', timestamp: '2026-08-25T11:30:00Z', channel: 'governance', mentions: ['Peter Byamugisha'] },
-  { id: 'm10', authorId: 'user-admin-001', authorName: 'Grace Aceng', authorRole: 'COMPANY_ADMIN', authorDepartment: 'HR & Admin', content: 'New hire onboarding: Mercy Atim (Research Assistant) starts Monday. Credentials being provisioned. Welcome her!', timestamp: '2026-08-24T14:45:00Z', channel: 'hr-admin', mentions: [] },
-  { id: 'm2', authorId: 'user-grace-n', authorName: 'Grace Nakamya', authorRole: 'COMPANY_ADMIN', authorDepartment: 'HR & Admin', content: 'Reminder: All staff must complete the updated leave policy acknowledgment by Friday. Link in Documents hub.', timestamp: '2026-08-24T08:45:00Z', channel: 'hr-admin', mentions: [] },
-  { id: 'm4', authorId: 'user-finance-001', authorName: 'Amos Ojok', authorRole: 'FINANCE', authorDepartment: 'Finance', content: 'August expenditure report finalized. Net surplus UGX 350M. Full breakdown available in Finance module.', timestamp: '2026-08-24T15:20:00Z', channel: 'finance', mentions: [] },
-  { id: 'm1', authorId: 'user-gm-001', authorName: 'Sarah Aciro', authorRole: 'GRANTS_MANAGER', authorDepartment: 'Grants', content: 'Q3 grant pipeline updated. USAID Land Rights deadline confirmed for Sep 5. All compliance docs attached in Documents hub.', timestamp: '2026-08-24T09:30:00Z', channel: 'grants', mentions: [] },
-  { id: 'm8', authorId: 'user-gw-001', authorName: 'Janet Apio', authorRole: 'GRANT_WRITER', authorDepartment: 'Grants', content: 'Youth Digital Literacy proposal draft ready for TL review. Sustainability section needs strengthening.', timestamp: '2026-08-23T16:30:00Z', channel: 'grants', mentions: ['Sarah Aciro'] },
-  { id: 'm3', authorId: 'user-innov-001', authorName: 'Pius Odong', authorRole: 'INNOVATOR', authorDepartment: 'Innovation', content: 'Solar grain dryer prototype assembly complete! Field testing starts next week with 5 farmer groups in Gulu.', timestamp: '2026-08-23T17:00:00Z', channel: 'innovations', mentions: [], attachment: { name: 'prototype-photos.zip', type: 'ZIP', size: '4.2 MB' } },
-  { id: 'm6', authorId: 'u-florence', authorName: 'Florence Adong', authorRole: 'GRANT_WRITER', authorDepartment: 'Grants', content: 'Weather station sensor specs finalized. Procurement request submitted for 15 units. Budget: UGX 8.5M.', timestamp: '2026-08-22T14:00:00Z', channel: 'innovations', mentions: [], attachment: { name: 'sensor-specs-v2.pdf', type: 'PDF', size: '890 KB' } },
-];
+// Fresh start: the feed begins empty — messages appear as people post once
+// employees have been onboarded (no seeded conversations from removed staff).
+const SEED: ChatMessage[] = [];
 
 let feedMessages: ChatMessage[] = (() => {
   const loaded = loadMessages();

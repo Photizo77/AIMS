@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
 import { useNotifications } from '@/context/NotificationContext';
 import type { Requisition, ApprovalStatus } from '@/types';
 
@@ -121,18 +122,22 @@ export function RequisitionsTab() {
                 <td className="px-4 py-3">
                   <span className={cn('px-2 py-1 rounded-full text-xs font-medium capitalize', STATUS_STYLES[req.status])}>{req.status}</span>
                 </td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    {req.status === 'draft' && (
-                      <button onClick={() => handlePushToED(req)} className="text-xs px-3 py-1.5 bg-aims-mint text-white rounded-lg hover:opacity-90">Push to ED</button>
-                    )}
-                    {req.status === 'draft' && (
-                      <button onClick={() => handleDelete(req)} className="text-xs text-red-500 hover:underline">Delete</button>
-                    )}
-                    {req.status === 'pending' && <span className="text-xs text-yellow-600">Awaiting ED</span>}
-                    {req.status === 'approved' && <span className="text-xs text-green-600">✓ Approved</span>}
-                    {req.status === 'rejected' && <span className="text-xs text-red-500">✗ Rejected</span>}
-                  </div>
+                <td className="px-4 py-3 text-right">
+                  {req.status === 'draft' ? (
+                    <RowActionsMenu
+                      label={`Actions for ${req.title}`}
+                      actions={[
+                        { label: 'Push to ED', icon: 'send', tone: 'primary', onClick: () => handlePushToED(req) },
+                        { label: 'Delete requisition', icon: 'delete', tone: 'danger', divider: true, onClick: () => handleDelete(req) },
+                      ]}
+                    />
+                  ) : (
+                    <div className="flex items-center justify-end gap-2">
+                      {req.status === 'pending' && <span className="text-xs text-yellow-600">Awaiting ED</span>}
+                      {req.status === 'approved' && <span className="text-xs text-green-600">✓ Approved</span>}
+                      {req.status === 'rejected' && <span className="text-xs text-red-500">✗ Rejected</span>}
+                    </div>
+                  )}
                 </td>
               </tr>
             ))}

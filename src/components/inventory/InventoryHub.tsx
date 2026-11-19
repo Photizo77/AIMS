@@ -13,6 +13,7 @@ import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
 import { useLiveData } from '@/lib/useLiveData';
 import { exportCsv, exportTableAsPdf } from '@/lib/export';
+import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
 import {
   inventoryGet, addAsset, reassignAsset, retireAsset,
   adjustStock, addStockItem, addReorder, routeReorderToED, decideReorder,
@@ -136,11 +137,14 @@ export function InventoryHub() {
                     <td className="px-4 py-2.5"><span className={cn('text-[10px] font-bold px-2 py-0.5 rounded uppercase', a.condition === 'Excellent' ? 'bg-aims-green/15 text-aims-green' : a.condition === 'Good' ? 'bg-aims-navy/10 text-aims-navy' : a.condition === 'Fair' ? 'bg-aims-orange/15 text-aims-orange' : 'bg-red-50 text-red-500')}>{a.condition}</span></td>
                     <td className="px-4 py-2.5 text-slate-600 text-xs font-bold">{a.value}</td>
                     <td className="px-4 py-2.5 text-right">
-                      <div className="flex justify-end gap-1.5 flex-wrap">
-                        <button onClick={() => setAssetDetail(a)} className="text-[10px] font-bold text-aims-navy hover:underline">View</button>
-                        {a.status === 'active' && <button onClick={() => setReassignAssetId(a.id)} className="text-[10px] font-bold text-aims-navy hover:underline">Reassign</button>}
-                        <button onClick={() => setShowMaintAsset(a.id)} className="text-[10px] font-bold text-aims-navy hover:underline">Schedule Maint.</button>
-                      </div>
+                      <RowActionsMenu
+                        label={`Actions for ${a.name}`}
+                        actions={[
+                          { label: 'View asset', icon: 'visibility', onClick: () => setAssetDetail(a) },
+                          { label: 'Reassign custodian', icon: 'swap_horiz', disabled: a.status !== 'active', onClick: () => setReassignAssetId(a.id) },
+                          { label: 'Schedule maintenance', icon: 'build', onClick: () => setShowMaintAsset(a.id) },
+                        ]}
+                      />
                     </td>
                   </tr>
                 ))}
@@ -380,7 +384,7 @@ export function InventoryHub() {
             <div className="rounded-xl border border-slate-200 overflow-hidden">
               <div className="bg-aims-navy px-4 py-2"><p className="text-[10px] font-bold text-white uppercase tracking-wider">Issue Details</p></div>
               <div className="p-4 space-y-3">
-                <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Issued To (employee/dept) *</label><input name="recipient" required placeholder="e.g. Sarah Aciro — Grants" className={INPUT} /></div>
+                <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Issued To (employee/dept) *</label><input name="recipient" required placeholder="employee name or department" className={INPUT} /></div>
                 <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Purpose</label><textarea name="purpose" rows={2} placeholder="e.g. Field documentation printing" className={INPUT} /></div>
               </div>
             </div>
@@ -450,8 +454,8 @@ export function InventoryHub() {
         <Modal title="Plan Stock-Take" onClose={() => setShowPlanTake(false)}>
           <form onSubmit={(e) => { e.preventDefault(); const f = new FormData(e.currentTarget); planStockTake((f.get('conductedBy') as string) || 'Inventory Team', (f.get('auditors') as string).split(',').map((s) => s.trim()).filter(Boolean), f.get('date') as string || undefined); setShowPlanTake(false); showToast({ title: 'Stock-Take Planned', message: 'Count sheets created for all stock items.', type: 'success' }); }} className="space-y-3">
             <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Date</label><input name="date" type="date" required className={INPUT} /></div>
-            <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Conducted By</label><input name="conductedBy" placeholder="e.g. Grace Aceng" className={INPUT} /></div>
-            <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Auditors (comma separated)</label><input name="auditors" placeholder="e.g. Grace Aceng, Isaac Tumusiime" className={INPUT} /></div>
+            <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Conducted By</label><input name="conductedBy" placeholder="who conducted the stock-take" className={INPUT} /></div>
+            <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Auditors (comma separated)</label><input name="auditors" placeholder="auditor names, comma separated" className={INPUT} /></div>
             <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
               <button type="button" onClick={() => setShowPlanTake(false)} className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
               <button type="submit" className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg">Plan Stock-Take</button>

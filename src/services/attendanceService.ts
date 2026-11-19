@@ -92,8 +92,9 @@ let state: AttState = persisted && persisted.presence
   : demoMode()
     ? seedState()
     : {
-        presence: ACTIVE_STAFF.map((p) => ({ id: p.id, name: p.name, dept: p.department, checkIn: '—', mode: 'absent' as PresenceMode, location: '—', note: 'Not checked in today' })),
-        history: [], violations: [], anomalies: [], reminders: [],
+        // Clean by default: an empty register until real employees are on file
+        // and actually check in (roster-based "absent" rows are not seeded).
+        presence: [], history: [], violations: [], anomalies: [], reminders: [],
       };
 
 /** Reload the demo attendance register (Settings → Load demo dataset) */

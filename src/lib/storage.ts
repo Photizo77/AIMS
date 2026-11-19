@@ -286,3 +286,44 @@ export function toCSV(rows: Record<string, unknown>[], columns?: string[]): stri
   };
   return [cols.join(','), ...rows.map((r) => cols.map((c) => esc(r[c])).join(','))].join('\n');
 }
+
+// ═══════════════════════════════════════════════════════════
+// FRESH START — one-time clean slate
+// The organisation now starts empty: the seeded staff roster, directory,
+// pipeline, demo datasets and every record written against removed
+// employees are cleared once, so the system opens with only the Company
+// Administrator (Maya Namutebi). Sign-in tokens are preserved so nobody is
+// logged out mid-session. Bumping FRESH_START_VERSION re-runs the wipe.
+// ═══════════════════════════════════════════════════════════
+export const FRESH_START_VERSION = '2026-11-fresh-start-1';
+const FRESH_START_KEY = 'aims_fresh_start_version';
+
+/** Session keys that must survive the clean slate (auth token + cached user) */
+const PRESERVED_KEYS = ['aims_auth_token', 'aims_auth_user'];
+
+/**
+ * Wipe every AIMS record that predates the fresh start. Runs once per
+ * version, at module-evaluation time, so every store seeds itself clean
+ * when it first reads its storage key.
+ */
+function runFreshStartOnce(): void {
+  try {
+    if (localStorage.getItem(FRESH_START_KEY) === FRESH_START_VERSION) return;
+    const doomed: string[] = [];
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith('aims_')) continue;
+      if (PRESERVED_KEYS.includes(key)) continue;
+      doomed.push(key);
+    }
+    doomed.forEach((k) => {
+      try { localStorage.removeItem(k); } catch { /* ignore */ }
+    });
+    // The demo dataset marker is intentionally cleared: the system starts clean.
+    try { localStorage.removeItem(DEMO_KEY); } catch { /* ignore */ }
+    localStorage.setItem(FRESH_START_KEY, FRESH_START_VERSION);
+  } catch { /* storage unavailable — every store falls back to clean seeds anyway */ }
+}
+
+runFreshStartOnce();
+

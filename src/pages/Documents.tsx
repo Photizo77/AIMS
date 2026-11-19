@@ -18,6 +18,7 @@ import { exportCsv, exportTableAsPdf } from '@/lib/export';
 import { listDocs, addDoc, removeDoc, docRecordSheet, type DocCategory, type DocRecord } from '@/services/docService';
 import { formatBytes } from '@/services/employeeDocsService';
 import { openFlagForED } from '@/components/grants/FlagForEDModal';
+import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
 
 type AccessLevel = 'full' | 'view' | 'flag' | 'none';
 
@@ -463,19 +464,22 @@ export function Documents() {
                     ) : (<span className="text-xs text-slate-400">v1</span>)}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <button onClick={() => downloadRecord(doc)} className="p-1.5 rounded hover:bg-slate-100 text-slate-500" title="Download"><span className="material-symbols-outlined text-[18px]">download</span></button>
-                      <button onClick={() => setPreviewDoc(doc)} className="p-1.5 rounded hover:bg-slate-100 text-slate-500" title="Preview"><span className="material-symbols-outlined text-[18px]">visibility</span></button>
-                      {activeAccess === 'flag' && (
-                        <button onClick={() => handleFlag(doc)} className="p-1.5 rounded hover:bg-slate-100 text-aims-orange" title="Comment / Flag"><span className="material-symbols-outlined text-[18px]">flag</span></button>
-                      )}
-                      {activeAccess === 'full' && (
-                        <>
-                          <button onClick={() => shareDoc(doc)} className="p-1.5 rounded hover:bg-slate-100 text-slate-500" title="Share"><span className="material-symbols-outlined text-[18px]">share</span></button>
-                          <button onClick={() => { removeDoc(doc.id); setSelectedIds(new Set()); setVersionDocId(null); showToast({ title: 'Deleted', message: doc.title, type: 'success' }); }} className="p-1.5 rounded hover:bg-slate-100 text-red-500" title="Delete"><span className="material-symbols-outlined text-[18px]">delete</span></button>
-                        </>
-                      )}
-                    </div>
+                    <RowActionsMenu
+                      label={`Actions for ${doc.title}`}
+                      actions={[
+                        { label: 'Preview', icon: 'visibility', onClick: () => setPreviewDoc(doc) },
+                        { label: 'Download', icon: 'download', onClick: () => downloadRecord(doc) },
+                        ...(activeAccess === 'flag'
+                          ? [{ label: 'Comment / flag', icon: 'flag', onClick: () => handleFlag(doc) }]
+                          : []),
+                        ...(activeAccess === 'full'
+                          ? [
+                            { label: 'Share', icon: 'share', onClick: () => shareDoc(doc) },
+                            { label: 'Delete document', icon: 'delete', tone: 'danger' as const, divider: true, onClick: () => { removeDoc(doc.id); setSelectedIds(new Set()); setVersionDocId(null); showToast({ title: 'Deleted', message: doc.title, type: 'success' }); } },
+                          ]
+                          : []),
+                      ]}
+                    />
                   </td>
                 </tr>
               ))}

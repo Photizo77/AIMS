@@ -10,28 +10,22 @@ import { InventoryManager } from '@/components/inventory/InventoryManager';
 import { InventoryHub } from '@/components/inventory/InventoryHub';
 import { openFlagForED } from '@/components/grants/FlagForEDModal';
 import { FormsShortcut } from '@/components/forms/FormsShortcut';
-
-const READ_ONLY_ASSETS = [
-  { tag: 'LAP001', name: 'MacBook Pro 14"', category: 'IT Hardware', custodian: 'Sarah Aciro', condition: 'Excellent' },
-  { tag: 'PHN002', name: 'iPhone 13', category: 'Mobile Device', custodian: 'Florence Adong', condition: 'Good' },
-  { tag: 'FUR001', name: 'Desk Chair (Ergonomic)', category: 'Furniture', custodian: 'Grace Nakamya', condition: 'Fair' },
-  { tag: 'PRT001', name: 'Canon i7 Printer', category: 'Equipment', custodian: 'Warehouse (shared)', condition: 'Good' },
-];
-
-const LOW_STOCK = [
-  { name: 'Printer Paper A4', qty: 15, threshold: 20 },
-  { name: 'Toner Cartridges (Canon)', qty: 2, threshold: 5 },
-  { name: 'USB Dongles', qty: 3, threshold: 10 },
-];
+import { useLiveData } from '@/lib/useLiveData';
+import { inventoryGet } from '@/services/inventoryService';
 
 function InventoryReadOnly() {
+  useLiveData();
+  // Live, read-only view of the same store the hub writes to
+  const READ_ONLY_ASSETS = inventoryGet.assets();
+  const LOW_STOCK = inventoryGet.lowStock();
   return (
     <div className="space-y-6">
       <div className="bg-aims-orange/10 border border-aims-orange/30 rounded-xl p-4">
         <p className="text-sm font-bold text-aims-orange mb-2">⚠️ Low-Stock Alerts</p>
         <div className="space-y-1">
+          {LOW_STOCK.length === 0 && <p className="text-xs text-slate-500 italic">No stock items below their reorder threshold.</p>}
           {LOW_STOCK.map((s) => (
-            <p key={s.name} className="text-xs text-aims-orange">• {s.name}: {s.qty} (threshold: {s.threshold})</p>
+            <p key={s.id} className="text-xs text-aims-orange">• {s.name}: {s.qty} (threshold: {s.threshold})</p>
           ))}
         </div>
       </div>
@@ -46,8 +40,9 @@ function InventoryReadOnly() {
             <th className="px-4 py-2.5 font-bold text-slate-500 text-xs uppercase tracking-wider">Condition</th>
           </tr></thead>
           <tbody className="divide-y divide-slate-100">
+            {READ_ONLY_ASSETS.length === 0 && <tr><td colSpan={5} className="px-4 py-10 text-center text-xs text-slate-400 italic">No assets registered yet.</td></tr>}
             {READ_ONLY_ASSETS.map((a) => (
-              <tr key={a.tag} className="hover:bg-slate-50">
+              <tr key={a.id} className="hover:bg-slate-50">
                 <td className="px-4 py-2.5 font-bold text-slate-900">{a.name}</td>
                 <td className="px-4 py-2.5 text-slate-500 text-xs font-mono">{a.tag}</td>
                 <td className="px-4 py-2.5 text-slate-600 text-xs">{a.category}</td>
@@ -59,7 +54,7 @@ function InventoryReadOnly() {
         </table>
       </div>
 
-      <button onClick={() => openFlagForED({ recordLabel: 'Inventory — low stock on toner, paper & USB dongles', sourceModule: 'inventory' })} className="px-4 py-2 border border-aims-orange/30 text-aims-orange text-xs font-bold rounded-lg hover:bg-aims-orange/10 flex items-center gap-1.5 w-fit">
+      <button onClick={() => openFlagForED({ recordLabel: `Inventory — ${LOW_STOCK.length} item(s) below reorder threshold`, sourceModule: 'inventory' })} className="px-4 py-2 border border-aims-orange/30 text-aims-orange text-xs font-bold rounded-lg hover:bg-aims-orange/10 flex items-center gap-1.5 w-fit">
         <span className="material-symbols-outlined text-[15px]">flag</span>Flag Inventory Concern for ED
       </button>
       <p className="text-[10px] text-slate-400 italic">CD inventory access: view-only. Cannot reorder, adjust thresholds or approve disposal.</p>

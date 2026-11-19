@@ -4,37 +4,9 @@ import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import type { Appraisal } from '@/types';
 
-const MOCK_APPRAISALS: Appraisal[] = [
-  {
-    id: 'appr-1',
-    employeeId: 'user-emp-001',
-    employeeName: 'Lucy Wanjiku',
-    reviewPeriod: 'Q2 2026',
-    kpis: [
-      { id: 'kpi-1', name: 'Project Delivery', target: 100, achieved: 92, weight: 40 },
-      { id: 'kpi-2', name: 'Team Collaboration', target: 100, achieved: 88, weight: 30 },
-      { id: 'kpi-3', name: 'Innovation', target: 100, achieved: 75, weight: 30 },
-    ],
-    overallRating: 4,
-    status: 'submitted',
-    reviewerId: 'user-admin-001',
-    submittedAt: '2026-07-15',
-  },
-  {
-    id: 'appr-2',
-    employeeId: 'user-finance-001',
-    employeeName: 'James Odhiambo',
-    reviewPeriod: 'Q2 2026',
-    kpis: [
-      { id: 'kpi-4', name: 'Report Accuracy', target: 100, achieved: 95, weight: 50 },
-      { id: 'kpi-5', name: 'Deadline Compliance', target: 100, achieved: 90, weight: 50 },
-    ],
-    overallRating: 5,
-    status: 'acknowledged',
-    reviewerId: 'user-admin-001',
-    submittedAt: '2026-07-10',
-  },
-];
+// Fresh start: no appraisals are seeded. Appraisals appear as they are created
+// for employees who have been onboarded.
+const MOCK_APPRAISALS: Appraisal[] = [];
 
 export function PerformanceTab() {
   const { user } = useAuth();
@@ -42,12 +14,8 @@ export function PerformanceTab() {
   const [selectedAppraisal, setSelectedAppraisal] = useState<Appraisal | null>(null);
   const isED = user?.role === 'ED';
 
-  const [countersignQueue, setCountersignQueue] = useState([
-    { id: 'cs-1', employee: 'Sarah Aciro', manager: 'Grace Aceng', rating: '4.2/5', submitted: '2026-08-20' },
-    { id: 'cs-2', employee: 'Janet Apio', manager: 'Grace Aceng', rating: '3.9/5', submitted: '2026-08-19' },
-    { id: 'cs-3', employee: 'Pius Odong', manager: 'Isaac Tumusiime', rating: '4.1/5', submitted: '2026-08-22' },
-    { id: 'cs-4', employee: 'Grace Nakamya', manager: 'Isaac Tumusiime', rating: '3.8/5', submitted: '2026-08-20' },
-  ]);
+  // Nothing is countersigned until an appraisal is submitted
+  const [countersignQueue, setCountersignQueue] = useState<{ id: string; employee: string; manager: string; rating: string; submitted: string }[]>([]);
 
   const countersign = (id: string, employee: string) => {
     setCountersignQueue((prev) => prev.filter((c) => c.id !== id));

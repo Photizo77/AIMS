@@ -9,6 +9,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import type { User, Role } from '@/types';
 import { ROLE_LABELS } from '@/config/roles';
 import { LOGIN_STAFF } from '@/data/roster';
+import { userOpsGet } from '@/services/userOpsService';
 import {
   apiEnabled,
   apiLogin,
@@ -76,6 +77,30 @@ function toUser(apiUser: ApiUser): User {
 
 function personaFor(email: string): User | null {
   return MOCK_USERS[email.toLowerCase()] ?? null;
+}
+
+/**
+ * Logins issued through the onboarding pipeline. Provisioning writes a real
+ * account (email + temporary password + role); those hire credentials must be
+ * able to sign in, otherwise "give them a login" would only be a checklist tick.
+ * Returns null when the email is unknown or the password does not match.
+ */
+function onboardedAccountFor(email: string, password: string): User | null {
+  const hire = userOpsGet.onboardees().find(
+    (o) => o.account && o.account.loginEmail.toLowerCase() === email,
+  );
+  if (!hire?.account) return null;
+  if (hire.account.temporaryPassword && hire.account.temporaryPassword !== password) return null;
+  const record = userOpsGet.users().find((u) => u.id === hire.account?.userRecordId);
+  return {
+    id: record?.id ?? hire.id,
+    name: hire.name,
+    email: hire.account.loginEmail,
+    role: (record?.role ?? (hire.role as Role) ?? 'GRANT_WRITER') as Role,
+    department: record?.department ?? hire.department ?? '',
+    status: 'active',
+    createdAt: hire.account.createdAt,
+  };
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -146,6 +171,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(persona);
       setAuthMode('local');
       return { user: persona, error: null, mode: 'local' };
+    }
+
+    // 3) Credentials issued in the onboarding pipeline (email + temporary password)
+    const hired = onboardedAccountFor(email, passwordRaw);
+    if (hired) {
+      setUser(hired);
+      setAuthMode('local');
+      return { user: hired, error: null, mode: 'local' };
     }
     return { user: null, error: 'Invalid email or password', mode: 'local' };
   };

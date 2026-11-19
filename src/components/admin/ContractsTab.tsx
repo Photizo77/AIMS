@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { exportRecordSheet } from '@/lib/export';
+import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
 import type { Contract } from '@/types';
 
 const MOCK_CONTRACTS: Contract[] = [
@@ -28,11 +29,8 @@ export function ContractsTab() {
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
   const [contracts, setContracts] = useState<Contract[]>(MOCK_CONTRACTS);
 
-  // Contracts awaiting ED employer signature
-  const [signQueue, setSignQueue] = useState([
-    { id: 'sig-1', employee: 'Isaac Tumusiime', role: 'Senior Technical Lead', type: 'Permanent', effective: '2026-09-01', salary: '$48,000 annually' },
-    { id: 'sig-2', employee: 'Okello Komakech', role: 'System Administrator', type: 'Permanent (renewal)', effective: 'Renewal due', salary: '—' },
-  ]);
+  // Contracts awaiting ED employer signature — none until a contract is created
+  const [signQueue, setSignQueue] = useState<{ id: string; employee: string; role: string; type: string; effective: string; salary: string }[]>([]);
 
   const signContract = (id: string, employee: string) => {
     setSignQueue((prev) => prev.filter((c) => c.id !== id));
@@ -144,9 +142,14 @@ export function ContractsTab() {
                     {contract.status}
                   </span>
                 </td>
-                <td className="px-4 py-3">
-                  <button onClick={() => setSelectedContract(contract)} className="text-xs text-aims-mint hover:underline mr-3">Edit</button>
-                  <button onClick={() => setSelectedContract(contract)} className="text-xs text-gray-500 hover:underline">View Full Details</button>
+                <td className="px-4 py-3 text-right">
+                  <RowActionsMenu
+                    label={`Actions for ${contract.employeeName}`}
+                    actions={[
+                      { label: 'View full details', icon: 'visibility', onClick: () => setSelectedContract(contract) },
+                      { label: 'Edit contract', icon: 'edit', onClick: () => setSelectedContract(contract) },
+                    ]}
+                  />
                 </td>
               </tr>
             ))}

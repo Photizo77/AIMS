@@ -10,6 +10,7 @@ import { financeService } from '@/services/financeService';
 import { requisitionPriceFlags, type PriceFlag } from '@/lib/aiEngine';
 import { type Requisition, type RequisitionStatus, requisitions, useRequisitions, mutateRequisitions, addRequisition } from '@/services/requisitionService';
 import { openFlagForED } from '@/components/grants/FlagForEDModal';
+import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
 
 type FinanceTab = 'drafts' | 'pushed' | 'returned' | 'history';
 
@@ -681,14 +682,13 @@ function ReadonlyApprovals() {
                 <td className="px-4 py-3 font-bold text-slate-900 text-xs">{fmtMoney(r.amount)}</td>
                 <td className="px-4 py-3"><span className={cn('text-[9px] font-bold px-1.5 py-0.5 rounded uppercase', STATUS_BADGE[r.status].cls)}>{STATUS_BADGE[r.status].label}</span></td>
                 <td className="px-4 py-3 text-right">
-                  <div className="flex items-center justify-end gap-2">
-                    <button onClick={() => setDetail(r)} className="text-[10px] font-bold text-aims-navy hover:underline flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[13px]">visibility</span>View
-                    </button>
-                    <button onClick={() => openFlagForED({ recordLabel: `${r.id} — ${r.title}`, sourceModule: 'approvals' })} className="text-[10px] font-bold text-aims-orange hover:underline flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[13px]">flag</span>Flag for ED
-                    </button>
-                  </div>
+                  <RowActionsMenu
+                    label={`Actions for ${r.id}`}
+                    actions={[
+                      { label: 'View requisition', icon: 'visibility', onClick: () => setDetail(r) },
+                      { label: 'Flag for ED', icon: 'flag', onClick: () => openFlagForED({ recordLabel: `${r.id} — ${r.title}`, sourceModule: 'approvals' }) },
+                    ]}
+                  />
                 </td>
               </tr>
             ))}

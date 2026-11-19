@@ -1,18 +1,11 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
+import { useLiveData } from '@/lib/useLiveData';
 import { ROLE_LABELS, ROLE_HIERARCHY } from '@/config/roles';
+import { userOpsGet, setUserRole } from '@/services/userOpsService';
 import type { Role } from '@/types';
-
-const MOCK_USERS = [
-  { id: 'user-cd-001', name: 'Nassir Mwanje', email: 'cd@aims.org', role: 'CD' as Role, department: 'Executive', status: 'active' },
-  { id: 'user-ed-001', name: 'Peter Byamugisha', email: 'ed@aims.org', role: 'ED' as Role, department: 'Executive', status: 'active' },
-  { id: 'user-sysadmin-001', name: 'Okello Komakech', email: 'sysadmin@aims.org', role: 'SYS_ADMIN' as Role, department: 'IT', status: 'active' },
-  { id: 'user-admin-001', name: 'Grace Aceng', email: 'admin@aims.org', role: 'COMPANY_ADMIN' as Role, department: 'Administration', status: 'active' },
-  { id: 'user-finance-001', name: 'Amos Ojok', email: 'finance@aims.org', role: 'FINANCE' as Role, department: 'Finance', status: 'active' },
-  { id: 'user-grant-001', name: 'Sarah Aciro', email: 'grants@aims.org', role: 'GRANT_WRITER' as Role, department: 'Grants', status: 'active' },
-  { id: 'user-innov-001', name: 'Pius Odong', email: 'innovation@aims.org', role: 'INNOVATOR' as Role, department: 'Innovation', status: 'active' },
-];
 
 const ROLE_COLORS: Record<Role, string> = {
   CD: 'bg-purple-100 text-purple-700',
@@ -26,18 +19,22 @@ const ROLE_COLORS: Record<Role, string> = {
 };
 
 export function RoleManager() {
+  const { user: actor } = useAuth();
   const { showToast } = useNotifications();
-  const [users, setUsers] = useState(MOCK_USERS);
   const [filterRole, setFilterRole] = useState<string>('all');
+  useLiveData();
+
+  // Live account directory — no seeded users (the organisation starts empty)
+  const users = userOpsGet.users();
 
   const filtered = filterRole === 'all' ? users : users.filter((u) => u.role === filterRole);
 
   const handleRoleChange = (userId: string, newRole: Role) => {
-    setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u)));
+    const updated = setUserRole(userId, newRole, actor?.name ?? 'Company Admin');
     showToast({
-      title: 'Role Updated',
-      message: `User role changed to ${ROLE_LABELS[newRole]}.`,
-      type: 'success',
+      title: updated ? 'Role Updated' : 'Role Not Saved',
+      message: updated ? `${updated.name} is now ${ROLE_LABELS[newRole]} — recorded in the audit trail.` : 'That account no longer exists.',
+      type: updated ? 'success' : 'error',
     });
   };
 
@@ -68,6 +65,9 @@ export function RoleManager() {
             </tr>
           </thead>
           <tbody>
+            {filtered.length === 0 && (
+              <tr><td colSpan={5} className="px-4 py-10 text-center text-xs text-slate-400 italic">No accounts yet — employees appear here once they are provisioned in the onboarding pipeline.</td></tr>
+            )}
             {filtered.map((user) => (
               <tr key={user.id} className="border-b border-gray-50 hover:bg-gray-50">
                 <td className="px-4 py-3">

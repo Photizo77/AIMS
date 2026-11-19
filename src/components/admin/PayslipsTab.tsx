@@ -11,14 +11,9 @@ interface PayslipRecord {
   status: 'pending' | 'approved' | 'rejected'; generatedBy: string; notes?: string;
 }
 
-const MOCK_PAYSLIPS: PayslipRecord[] = [
-  { id: 'ps1', employeeName: 'Grace Aceng', position: 'Company Administrator', period: 'August 2026', baseSalary: 2800000, allowances: 350000, deductions: 700000, netPay: 2450000, status: 'pending', generatedBy: 'Amos Ojok' },
-  { id: 'ps2', employeeName: 'Amos Ojok', position: 'Finance Officer', period: 'August 2026', baseSalary: 2500000, allowances: 300000, deductions: 550000, netPay: 2250000, status: 'pending', generatedBy: 'System' },
-  { id: 'ps3', employeeName: 'Sarah Aciro', position: 'Grants Manager', period: 'August 2026', baseSalary: 2600000, allowances: 400000, deductions: 600000, netPay: 2400000, status: 'approved', generatedBy: 'Amos Ojok', notes: 'Approved by ED.' },
-  { id: 'ps4', employeeName: 'Janet Apio', position: 'Grant Writer', period: 'August 2026', baseSalary: 2000000, allowances: 250000, deductions: 450000, netPay: 1800000, status: 'approved', generatedBy: 'Amos Ojok', notes: 'Approved.' },
-  { id: 'ps5', employeeName: 'Pius Odong', position: 'Lead Innovator', period: 'August 2026', baseSalary: 1800000, allowances: 200000, deductions: 400000, netPay: 1600000, status: 'rejected', generatedBy: 'Amos Ojok', notes: 'Recalculate field stipend.' },
-  { id: 'ps6', employeeName: 'Nassir Mwanje', position: 'Country Director', period: 'July 2026', baseSalary: 3500000, allowances: 500000, deductions: 850000, netPay: 3150000, status: 'approved', generatedBy: 'Amos Ojok', notes: 'Approved.' },
-];
+// Fresh start: no payroll batch is seeded — payslips are generated per employee
+// once staff exist.
+const MOCK_PAYSLIPS: PayslipRecord[] = [];
 
 export function PayslipsTab() {
   const { user } = useAuth();
@@ -74,7 +69,7 @@ export function PayslipsTab() {
           <div className="flex items-center justify-between flex-wrap gap-3 mb-3">
             <div>
               <h4 className="text-sm font-extrabold text-slate-900">Payroll Batch — August 2026 · Awaiting ED Authorization</h4>
-              <p className="text-xs text-slate-500 mt-0.5">Submitted by Grace Aceng (Company Admin) · {pendingCount} payslips · total UGX 186M · ED is the sole signatory</p>
+              <p className="text-xs text-slate-500 mt-0.5">Submitted by Maya Namutebi (Company Admin) · {pendingCount} payslips · total UGX 186M · ED is the sole signatory</p>
             </div>
             <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-aims-orange/15 text-aims-orange uppercase">SLA: Overdue by 1 day</span>
           </div>

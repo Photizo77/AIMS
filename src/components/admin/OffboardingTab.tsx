@@ -151,7 +151,7 @@ export function OffboardingTab() {
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Handover To (role/responsibilities)</label>
-                    <input name="handoverTo" placeholder="e.g. Janet Apio — Grants portfolio" className={INPUT} />
+                    <input name="handoverTo" placeholder="employee taking over the portfolio" className={INPUT} />
                   </div>
                 </div>
               </div>

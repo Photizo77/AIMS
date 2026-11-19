@@ -15,9 +15,10 @@ import { cn } from '@/lib/utils';
 import { innovationService, proposalStatus, LIFECYCLE_LABELS } from '@/services/innovationService';
 import { addRequisition } from '@/services/requisitionService';
 import { ProposalModal } from '@/components/innovations/ProposalModal';
+import { ACTIVE_STAFF } from '@/data/roster';
 
 // Known team members available for handoff / team management
-const STAFF_ROSTER = ['Pius Odong', 'Florence Adong', 'Isaac Tumusiime', 'Janet Apio', 'Grace Nakamya', 'Sarah Aciro', 'Amos Ojok', 'Okello Komakech'];
+const STAFF_ROSTER: string[] = ACTIVE_STAFF.map((s: { name: string }) => s.name);
 
 type TabKey = 'overview' | 'milestones' | 'resources' | 'timeline' | 'updates';
 
@@ -193,7 +194,7 @@ export function ProjectDetail() {
   const handleSubmitProposal = () => {
     const updated = innovationService.submitForReview(project.id, user.name);
     if (!updated) return;
-    ['Nassir Mwanje', 'Peter Byamugisha'].forEach((name) => addNotification({
+    STAFF_ROSTER.forEach((name) => addNotification({
       recipientName: name,
       title: 'Innovation Proposal — Awaiting Your Review',
       message: `${user.name} submitted "${project.title}" for CD/ED review.`,

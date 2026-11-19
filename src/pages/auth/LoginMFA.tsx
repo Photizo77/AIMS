@@ -98,25 +98,30 @@ export function LoginMFA() {
             </button>
           </form>
 
-          {/* Demo accounts — separated by a light divider */}
+          {/* Sign-in accounts — the organisation starts with the administrator only */}
           <div className="mt-6 pt-6 border-t border-slate-100">
             <p className="text-xs font-bold text-slate-500 mb-3 uppercase tracking-wide">
-              Demo Accounts {serverLinked ? '(password: Ardhi@2026)' : '(Any Password)'}
+              Administrator Account {serverLinked ? '(password: Ardhi@2026)' : '(any password offline)'}
             </p>
-            <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 font-medium">
-              <span>cd@aims.org</span>
-              <span>ed@aims.org</span>
-              <span>sysadmin@aims.org</span>
-              <span>admin@aims.org</span>
-              <span>finance@aims.org</span>
-              <span>grants@aims.org</span>
-              <span>grantsmanager@aims.org</span>
-              <span>innovation@aims.org</span>
+            <div className="text-xs text-slate-600 font-medium space-y-1">
+              <p className="flex items-center justify-between gap-2"><span>admin@aims.org</span><span className="text-slate-400">Maya Namutebi · Company Admin</span></p>
             </div>
             {serverLinked && (
-              <p className="text-[10px] text-slate-400 mt-3">
-                Signed in via the AIMS server. Offline fallback: demo accounts accept any password.
-              </p>
+              <div className="mt-3">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">Server persona accounts</p>
+                <div className="grid grid-cols-2 gap-1 text-[11px] text-slate-500 font-medium">
+                  <span>cd@aims.org</span>
+                  <span>ed@aims.org</span>
+                  <span>sysadmin@aims.org</span>
+                  <span>finance@aims.org</span>
+                  <span>grants@aims.org</span>
+                  <span>grantsmanager@aims.org</span>
+                  <span>innovation@aims.org</span>
+                </div>
+                <p className="text-[10px] text-slate-400 mt-2">
+                  These exist in the AIMS backend only. New employees sign in with the credentials issued in the onboarding pipeline.
+                </p>
+              </div>
             )}
           </div>
         </div>

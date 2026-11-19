@@ -20,7 +20,6 @@ interface CalendarEvent {
 }
 
 const STATIC_EVENTS: CalendarEvent[] = [
-  { id: 'lv1', date: '2026-09-10', title: 'Annual Leave — Peter Byamugisha (10 days)', kind: 'leave' },
   { id: 'ro1', date: '2026-09-05', title: 'Reorder due — Toner Cartridges', kind: 'reorder' },
   { id: 'ro2', date: '2026-09-12', title: 'Reorder due — USB Dongles', kind: 'reorder' },
 ];

@@ -10,7 +10,7 @@ import { useRequisitions, mutateRequisitions, getAllRequisitions } from '@/servi
 import { attendanceGet } from '@/services/attendanceService';
 import { leaveGet } from '@/services/leaveService';
 import { contractGet } from '@/services/contractService';
-import { getDirectoryEntries } from '@/services/employeeService';
+import { getDirectoryEntries, listPendingSubmissions } from '@/services/employeeService';
 import { CHIP, ACCENT, FILL, type ColorKey } from '@/lib/uiTheme';
 import { ExecutiveBrief } from '@/components/ai/ExecutiveBrief';
 import { useNotifications } from '@/context/NotificationContext';
@@ -29,6 +29,7 @@ import { innovationService, isExecutingProject } from '@/services/innovationServ
 import { grantService } from '@/services/grantService';
 import { financeService } from '@/services/financeService';
 import { userOpsGet } from '@/services/userOpsService';
+import { inventoryGet } from '@/services/inventoryService';
 import { ACTIVE_STAFF } from '@/data/roster';
 import { DATA_VAULT_VERSION, DATA_VAULT_BASELINE } from '@/lib/storage';
 import { GRANT_STAGES, daysUntil } from '@/data/grants';
@@ -684,22 +685,39 @@ function AdminDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { showToast } = useNotifications();
+  useLiveData();
   if (!user) return null;
 
   const go = (path: string, tab?: string) => navigate(path, { state: tab ? { tab } : undefined });
 
+  // ── LIVE values only — every card reads its store, 0 when nothing is on file ──
+  const pipeline = userOpsGet.onboardees();
+  const openHires = pipeline.filter((o) => o.steps.some((s) => !s.done));
+  const pendingForms = listPendingSubmissions().length;
+  const contracts = contractGet();
+  const renewals = contracts.filter((c) => c.status === 'expiring' || c.status === 'expired');
+  const openAnomalies = attendanceGet.anomalies().filter((a) => !a.resolved).length;
+  const leavePending = leaveGet.pending().length;
+  const presence = attendanceGet.presence();
+  const presentToday = presence.filter((p) => p.mode === 'physical' || p.mode === 'remote').length;
+  const directory = getDirectoryEntries();
+  const headcount = ACTIVE_STAFF.length + directory.length;
+  const departments = new Set([...ACTIVE_STAFF.map((s) => s.department), ...directory.map((d) => d.department)]).size;
+  const hiredLogins = userOpsGet.users().filter((u) => u.provisioned).length;
+  const mfaEnabled = userOpsGet.users().filter((u) => u.mfaEnabled).length;
+
   const atAGlance = [
-    { key: 'onboarding', label: 'Pending Onboarding', value: '3', icon: 'person_add', color: 'orange' as ColorKey, onClick: () => go('/user-management', 'onboarding') },
-    { key: 'contracts', label: 'Contracts Expiring', value: '2', icon: 'description', color: 'navy' as ColorKey, onClick: () => go('/hr', 'contracts') },
-    { key: 'appraisals', label: 'Appraisals Complete', value: '78%', icon: 'fact_check', color: 'green' as ColorKey, onClick: () => go('/hr', 'performance') },
-    { key: 'anomalies', label: 'Attendance Anomalies', value: '5', icon: 'warning', color: 'red' as ColorKey, onClick: () => go('/attendance', 'anomalies') },
+    { key: 'onboarding', label: 'Pending Onboarding', value: String(openHires.length), icon: 'person_add', color: 'orange' as ColorKey, onClick: () => go('/user-management', 'onboarding') },
+    { key: 'submitted', label: 'Forms To Verify', value: String(pendingForms), icon: 'inbox', color: 'navy' as ColorKey, onClick: () => go('/user-management', 'onboarding') },
+    { key: 'contracts', label: 'Contracts Expiring', value: String(renewals.length), icon: 'description', color: 'green' as ColorKey, onClick: () => go('/hr', 'contracts') },
+    { key: 'anomalies', label: 'Attendance Anomalies', value: String(openAnomalies), icon: 'warning', color: 'red' as ColorKey, onClick: () => go('/attendance', 'anomalies') },
   ];
 
   const summaryStats = [
-    { label: 'Total Staff', value: '142', icon: 'group', sub: 'across 8 departments' },
-    { label: 'Departments', value: '8', icon: 'apartment', sub: 'fully staffed' },
-    { label: 'Open Tickets', value: '12', icon: 'support_agent', sub: 'HR & admin requests' },
-    { label: 'Compliance', value: '94%', icon: 'verified_user', sub: 'policy adherence' },
+    { label: 'Total Staff', value: String(headcount), icon: 'group', sub: headcount === 0 ? 'no employees on file yet' : `across ${departments} department(s)` },
+    { label: 'Logins Issued', value: String(hiredLogins), icon: 'key', sub: mfaEnabled > 0 ? `${mfaEnabled} with 2FA enabled` : 'provisioned through onboarding' },
+    { label: 'Leave Requests Pending', value: String(leavePending), icon: 'event_available', sub: leavePending === 0 ? 'nothing awaiting a decision' : 'awaiting approval' },
+    { label: 'Present Today', value: presence.length === 0 ? '—' : `${presentToday}/${headcount}`, icon: 'verified_user', sub: presence.length === 0 ? 'no check-ins recorded yet' : 'live from the attendance register' },
   ];
 
   const quickActions = [
@@ -1024,7 +1042,7 @@ function GrantDashboard() {
         <StatCard title="Active Proposals" value={String(active)} icon="edit_note" color="navy" />
         <StatCard title="Unassigned — Claimable" value={String(unassigned)} icon="handshake" color="orange" />
         <StatCard title="Pipeline (Active)" value={pipelineLabel} icon="workspace_premium" color="green" />
-        <StatCard title="AI Assists" value="28" icon="smart_toy" color="mint" />
+        <StatCard title="Due In 7 Days" value={String(grants.filter((g) => !['awarded', 'declined'].includes(g.stage) && daysUntil(g.deadline) <= 7).length)} icon="event" color="mint" />
       </div>
 
       {/* AI insight strip — compact, immediately after the stats */}
@@ -1194,49 +1212,28 @@ function InnovatorDashboard() {
 function SysAdminDashboard() {
   const navigate = useNavigate();
   const [showAuditLog, setShowAuditLog] = useState(false);
+  useLiveData();
   const managedUsers = userOpsGet.users();
   const auditTrail = userOpsGet.audit();
-  const auditEntries = [
-    { time: '2026-08-22 07:42:18', user: 'Janet Apio', role: 'GRANT_WRITER', action: 'check_in', distance: '342m', coords: '0.3034°N, 32.5897°E', ip: '41.220.138.44' },
-    { time: '2026-08-22 08:15:03', user: 'David Okello', role: 'FINANCE', action: 'check_in', distance: '1.2km', coords: '0.3112°N, 32.5845°E', ip: '102.82.91.12' },
-    { time: '2026-08-21 17:31:45', user: 'Isaac Tumusiime', role: 'COMPANY_ADMIN', action: 'check_out', distance: '890m', coords: '0.2921°N, 32.5998°E', ip: '41.220.138.67' },
-  ];
+  // Real geofence attempts recorded by the attendance register (none until staff check in)
+  const violations = attendanceGet.violations();
+  const auditEntries = violations.map((v) => ({
+    time: v.ts,
+    user: v.name,
+    role: '—',
+    action: v.attempted || 'check_in',
+    distance: v.distance,
+    coords: v.note || '—',
+    ip: v.action || '—',
+  }));
   return (
     <div className="space-y-6">
-      {/* Stat cards lead the page (no hero banner) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <StatCard title="Uptime" value="99.9%" icon="check_circle" color="green" />
-        <StatCard title="Error Rate" value="0.4%" icon="bug_report" color="orange" />
-        <StatCard title="API Latency" value="182ms" icon="speed" color="navy" />
-        <StatCard title="Sessions" value="47" icon="group" color="mint" />
-      </div>
-
-      {/* AI insight strip — compact, immediately after the stats */}
-      <DashboardAiInsights scope="system" title="AI Insights — Security & Accounts" />
-
-      <CheckInCard />
-
-      {/* System status — all systems operational */}
-      <div className="rounded-xl border border-aims-green/30 bg-aims-green/5 p-4 flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-3">
-          <span className="relative flex w-3 h-3">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-aims-green opacity-75" />
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-aims-green" />
-          </span>
-          <div>
-            <p className="text-sm font-extrabold text-slate-900">System Status: <span className="text-aims-green">Active — all systems operational</span></p>
-            <p className="text-[11px] text-slate-500 mt-0.5">Core modules, attendance, AI proxy and email endpoints reporting healthy.</p>
-          </div>
-        </div>
-        <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-aims-navy/10 text-aims-navy font-mono">AIMS v{DATA_VAULT_VERSION} · baseline {DATA_VAULT_BASELINE}</span>
-      </div>
-
-      {/* Live administration widgets */}
+      {/* Stat cards lead the page — real account/audit figures only */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <button onClick={() => navigate('/user-management')} className="text-left bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-navy p-4 shadow-sm hover:shadow-md transition-shadow">
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">Total Users<span className="material-symbols-outlined text-aims-navy text-[15px]">group</span></p>
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">Managed Accounts<span className="material-symbols-outlined text-aims-navy text-[15px]">group</span></p>
           <p className="text-2xl font-extrabold text-slate-900 mt-1">{managedUsers.length}</p>
-          <p className="text-[10px] text-slate-400 mt-0.5">managed accounts · ARD-EMP codes</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">{managedUsers.filter((u) => u.provisioned).length} provisioned · ARD-EMP codes</p>
         </button>
         <button onClick={() => navigate('/rbac?tab=audit')} className="text-left bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-orange p-4 shadow-sm hover:shadow-md transition-shadow">
           <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">Audit Events<span className="material-symbols-outlined text-aims-orange text-[15px]">shield</span></p>
@@ -1244,15 +1241,58 @@ function SysAdminDashboard() {
           <p className="text-[10px] text-slate-400 mt-0.5">role changes, resets & security actions</p>
         </button>
         <div className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-green p-4 shadow-sm">
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">Active Roster<span className="material-symbols-outlined text-aims-green text-[15px]">badge</span></p>
-          <p className="text-2xl font-extrabold text-slate-900 mt-1">{ACTIVE_STAFF.length}</p>
-          <p className="text-[10px] text-slate-400 mt-0.5">active staff in the personnel roster</p>
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">2FA Coverage<span className="material-symbols-outlined text-aims-green text-[15px]">verified_user</span></p>
+          <p className="text-2xl font-extrabold text-slate-900 mt-1">{managedUsers.filter((u) => u.mfaEnabled).length}/{managedUsers.length}</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">accounts with two-factor enabled</p>
         </div>
         <button onClick={() => navigate('/settings')} className="text-left bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-mint p-4 shadow-sm hover:shadow-md transition-shadow">
           <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">Data Vault Exports<span className="material-symbols-outlined text-aims-navy text-[15px]">database</span></p>
           <p className="text-2xl font-extrabold text-slate-900 mt-1">{financeService.getExportLog().length}</p>
           <p className="text-[10px] text-slate-400 mt-0.5">backups & exports recorded this session</p>
         </button>
+      </div>
+
+      {/* AI insight strip — compact, immediately after the stats */}
+      <DashboardAiInsights scope="system" title="AI Insights — Security & Accounts" />
+
+      <CheckInCard />
+
+      {/* System status — deployment facts, not a fabricated health claim */}
+      <div className="rounded-xl border border-slate-200 bg-white p-4 flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <span className="relative flex w-3 h-3">
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-aims-green" />
+          </span>
+          <div>
+            <p className="text-sm font-extrabold text-slate-900">Build <span className="text-aims-navy font-mono">v{DATA_VAULT_VERSION}</span> · baseline <span className="font-mono">{DATA_VAULT_BASELINE}</span></p>
+            <p className="text-[11px] text-slate-500 mt-0.5">Live checks are listed below — uptime, latency and error figures are only shown when a monitoring feed is connected.</p>
+          </div>
+        </div>
+        <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-aims-navy/10 text-aims-navy font-mono">{managedUsers.length} account(s) · {auditTrail.length} audit event(s)</span>
+      </div>
+
+      {/* Live administration widgets */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-green p-4 shadow-sm">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">Active Roster<span className="material-symbols-outlined text-aims-green text-[15px]">badge</span></p>
+          <p className="text-2xl font-extrabold text-slate-900 mt-1">{ACTIVE_STAFF.length}</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">active staff in the personnel roster</p>
+        </div>
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">In Onboarding<span className="material-symbols-outlined text-aims-orange text-[15px]">person_add</span></p>
+          <p className="text-2xl font-extrabold text-slate-900 mt-1">{userOpsGet.onboardees().filter((o) => o.steps.some((s) => !s.done)).length}</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">hires mid-cycle (login / role / 2FA / assets)</p>
+        </div>
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">Employee Records<span className="material-symbols-outlined text-aims-navy text-[15px]">folder_shared</span></p>
+          <p className="text-2xl font-extrabold text-slate-900 mt-1">{getDirectoryEntries().length}</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">forms on file · {listPendingSubmissions().length} awaiting verification</p>
+        </div>
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">API Keys Issued<span className="material-symbols-outlined text-aims-mint text-[15px]">vpn_key</span></p>
+          <p className="text-2xl font-extrabold text-slate-900 mt-1">{managedUsers.filter((u) => u.apiKey).length}</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">accounts with an active integration key</p>
+        </div>
       </div>
 
       {/* Server services & environment */}
@@ -1319,7 +1359,7 @@ function SysAdminDashboard() {
       <SharedLibraryWidget />
       <div className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-red-500 p-5 shadow-sm hover:shadow-md transition-shadow">
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3"><div className="w-11 h-11 rounded-lg flex items-center justify-center bg-red-500 text-white"><span className="material-symbols-outlined text-[24px]">shield_alert</span></div><div><p className="text-2xl font-extrabold text-slate-900 tracking-tight">3</p><p className="text-sm font-semibold text-slate-600 mt-1">Geofence Violations (24h)</p></div></div>
+          <div className="flex items-center gap-3"><div className="w-11 h-11 rounded-lg flex items-center justify-center bg-red-500 text-white"><span className="material-symbols-outlined text-[24px]">shield_alert</span></div><div><p className="text-2xl font-extrabold text-slate-900 tracking-tight">{violations.length}</p><p className="text-sm font-semibold text-slate-600 mt-1">Geofence Violations</p></div></div>
           <button onClick={() => setShowAuditLog(!showAuditLog)} className="text-xs font-bold text-aims-navy hover:underline flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">{showAuditLog ? 'expand_less' : 'expand_more'}</span>{showAuditLog ? 'Collapse' : 'View Log'}</button>
         </div>
         <p className="text-[10px] text-slate-400">Failed physical check-in attempts outside office perimeter</p>
@@ -1345,16 +1385,27 @@ function SysAdminDashboard() {
 
 function HRDashboard() {
   const navigate = useNavigate();
-  const [expandedContract, setExpandedContract] = useState<string | null>(null);
+  useLiveData();
+
+  // ── LIVE workforce figures — nothing is hard-coded ──
+  const directory = getDirectoryEntries();
+  const headcount = ACTIVE_STAFF.length + directory.length;
+  const presence = attendanceGet.presence();
+  const presentToday = presence.filter((p) => p.mode === 'physical' || p.mode === 'remote').length;
+  const contracts = contractGet();
+  const renewals = contracts.filter((c) => c.status === 'expiring' || c.status === 'expired');
+  const leavePending = leaveGet.pending().length;
+  const pendingForms = listPendingSubmissions().length;
+  const openHires = userOpsGet.onboardees().filter((o) => o.steps.some((s) => !s.done));
 
   return (
     <div className="space-y-6">
       {/* Stat cards lead the page (no hero banner) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <StatCard title="Total Headcount" value="142" icon="people" color="navy" />
-        <StatCard title="Present Today" value="128" icon="check_circle" color="green" />
-        <StatCard title="Expiring Contracts (30d)" value="3" icon="description" color="orange" />
-        <StatCard title="Pending Appraisals" value="12" icon="fact_check" color="mint" />
+        <StatCard title="Total Headcount" value={String(headcount)} icon="people" color="navy" />
+        <StatCard title="Present Today" value={presence.length === 0 ? '—' : `${presentToday}/${headcount}`} icon="check_circle" color="green" />
+        <StatCard title="Contracts Renewing" value={String(renewals.length)} icon="description" color="orange" />
+        <StatCard title="Leave Requests Pending" value={String(leavePending)} icon="event_available" color="mint" />
       </div>
 
       {/* AI insight strip — compact, immediately after the stats */}
@@ -1378,109 +1429,72 @@ function HRDashboard() {
       </Section>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Section title="Expiring Contracts" subtitle="Contracts approaching renewal deadline">
+        <Section title="Contracts On File" subtitle="Live from aims_contracts — renewals first">
           <div className="space-y-2">
-            {[
-              { id: 'c1', name: 'Janet Apio', role: 'Grant Writer', type: '1-Year', salary: 'UGX 1.8M', expiry: 'Sep 15, 2026', daysLeft: 24 },
-              { id: 'c2', name: 'Pius Odong', role: 'Innovator', type: 'Contract', salary: 'UGX 1.5M', expiry: 'Sep 30, 2026', daysLeft: 39 },
-              { id: 'c3', name: 'Isaac Tumusiime', role: 'Procurement Officer', type: 'Contract', salary: 'UGX 1.6M', expiry: 'Oct 10, 2026', daysLeft: 49 },
-            ].map((c) => (
-              <div key={c.id} className="flex items-center justify-between p-3 bg-aims-orange/5 rounded-lg border border-aims-orange/20">
-                <div>
-                  <p className="text-sm font-bold text-slate-900">{c.name}</p>
-                  <p className="text-xs text-slate-500">{c.role} • {c.type} • {c.salary}</p>
-                </div>
-                <div className="text-right">
-                  <span className={cn('text-xs font-bold px-2 py-0.5 rounded', c.daysLeft <= 30 ? 'bg-aims-orange/15 text-aims-orange' : 'bg-slate-100 text-slate-600')}>
-                    Expires {c.expiry} ({c.daysLeft}d)
-                  </span>
-                  <div className="flex gap-2 mt-1 justify-end">
-                    <button onClick={() => navigate('/hr', { state: { tab: 'contracts' } })} className="text-[10px] font-bold text-aims-navy hover:underline">Renew in HR module</button>
-                    <button onClick={() => navigate('/hr', { state: { tab: 'contracts' } })} className="text-[10px] font-bold text-slate-500 hover:underline">View</button>
+            {contracts.length === 0 && <p className="text-xs text-slate-400 italic py-4 text-center">No contracts on file yet — they are created when an employee is onboarded or a contract is added in HR.</p>}
+            {contracts
+              .slice()
+              .sort((a, b) => (a.endDate ?? '9999').localeCompare(b.endDate ?? '9999'))
+              .slice(0, 5)
+              .map((c) => (
+                <div key={c.id} className={cn('flex items-center justify-between p-3 rounded-lg border', c.status === 'expiring' || c.status === 'expired' ? 'bg-aims-orange/5 border-aims-orange/20' : 'bg-slate-50 border-slate-100')}>
+                  <div>
+                    <p className="text-sm font-bold text-slate-900">{c.employeeName}</p>
+                    <p className="text-xs text-slate-500 capitalize">{c.type} · UGX {c.salary.toLocaleString()}{c.startDate ? ` · from ${c.startDate}` : ''}</p>
+                  </div>
+                  <div className="text-right">
+                    <span className={cn('text-xs font-bold px-2 py-0.5 rounded capitalize', c.status === 'expiring' || c.status === 'expired' ? 'bg-aims-orange/15 text-aims-orange' : 'bg-slate-100 text-slate-600')}>
+                      {c.endDate ? `${c.status} · ${c.endDate}` : c.status}
+                    </span>
+                    <button onClick={() => navigate('/hr', { state: { tab: 'contracts' } })} className="block mt-1 text-[10px] font-bold text-aims-navy hover:underline">Open in HR</button>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
         </Section>
 
-        <Section title="Pending Appraisals" subtitle="Employees awaiting performance review">
+        <Section title="Onboarding Queue" subtitle="Hires mid-cycle — login, role, 2FA, assets">
           <div className="space-y-3">
-            {[
-              { id: 'a1', name: 'Florence Adong', dept: 'Research', role: 'Research Lead', lastReview: 'Feb 2026', dueDate: 'Sep 10, 2026', status: 'pending' },
-              { id: 'a2', name: 'Grace Nakamya', dept: 'HR', role: 'HR Officer', lastReview: 'Mar 2026', dueDate: 'Sep 15, 2026', status: 'pending' },
-              { id: 'a3', name: 'Isaac Tumusiime', dept: 'Procurement', role: 'Procurement Officer', lastReview: 'Jan 2026', dueDate: 'Sep 20, 2026', status: 'overdue' },
-            ].map((emp) => (
-              <div key={emp.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
-                <div>
-                  <p className="text-sm font-bold text-slate-900">{emp.name}</p>
-                  <p className="text-xs text-slate-500">{emp.role} • {emp.dept}</p>
-                  <p className="text-[10px] text-slate-400 mt-0.5">Last review: {emp.lastReview}</p>
-                </div>
-                <div className="text-right">
-                  <span className={cn('text-xs font-bold px-2 py-0.5 rounded', 
-                    emp.status === 'overdue' ? 'bg-red-50 text-red-600' : 'bg-aims-orange/15 text-aims-orange'
-                  )}>
-                    Due: {emp.dueDate}
-                  </span>
-                  <button onClick={() => navigate(`/appraisals/${emp.id}`)} className="block mt-1 text-[10px] font-bold text-aims-navy hover:underline">Start Review</button>
-                </div>
-              </div>
-            ))}
+            {openHires.length === 0 && pendingForms === 0 && (
+              <p className="text-xs text-slate-400 italic py-4 text-center">Nobody is being onboarded right now — send the Employee Information Form to add a hire.</p>
+            )}
+            {pendingForms > 0 && (
+              <button onClick={() => navigate('/user-management', { state: { tab: 'onboarding' } })} className="w-full flex items-center justify-between p-3 bg-aims-orange/5 rounded-lg border border-aims-orange/20 text-left">
+                <span className="text-sm font-bold text-slate-900">{pendingForms} submitted form(s) to verify</span>
+                <span className="material-symbols-outlined text-aims-orange text-[18px]">chevron_right</span>
+              </button>
+            )}
+            {openHires.map((ob) => {
+              const done = ob.steps.filter((s) => s.done).length;
+              return (
+                <button key={ob.id} onClick={() => navigate('/user-management', { state: { tab: 'onboarding' } })} className="w-full flex items-center justify-between gap-2 p-3 bg-slate-50 rounded-lg border border-slate-100 text-left hover:bg-slate-100">
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-slate-900 truncate">{ob.name}</p>
+                    <p className="text-[10px] text-slate-500 truncate">{ob.account?.loginEmail ?? ob.email ?? 'no login yet'} · {done}/{ob.steps.length} steps</p>
+                  </div>
+                  <div className="w-20 shrink-0">
+                    <div className="w-full bg-slate-200 rounded-full h-1.5"><div className="h-1.5 rounded-full bg-aims-navy" style={{ width: `${(done / ob.steps.length) * 100}%` }} /></div>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </Section>
       </div>
 
-      <Section title="Contract Actions Queue" subtitle="Contracts awaiting your approval or rejection">
+      <Section title="Recent HR Activity" subtitle="Latest onboarding and account events from the audit trail">
         <div className="space-y-3">
-          {[
-            { id: 'ctr-david', name: 'David Okello', role: 'Finance Officer', type: 'Permanent', salary: 'UGX 2.0M', submittedBy: 'HR Admin', submittedDate: 'Aug 20', status: 'Awaiting Your Approval', comment: 'Salary adjustment per Q2 appraisal. Approved by Dept Head.' },
-            { id: 'ctr-mercy', name: 'Mercy Atim', role: 'Research Assistant', type: 'Intern', salary: 'UGX 800K', submittedBy: 'Grants Team', submittedDate: 'Aug 19', status: 'Awaiting Your Approval', comment: 'New hire for Land Rights project. Budget line confirmed.' },
-          ].map((item) => (
-            <div key={item.id} className={cn('rounded-lg border transition-all', expandedContract === item.id ? 'border-aims-navy shadow-md bg-white' : 'border-slate-200 bg-slate-50')}>
-              <div className="flex items-center justify-between p-3 cursor-pointer" onClick={() => setExpandedContract(expandedContract === item.id ? null : item.id)}>
-                <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-slate-400 text-[18px]">{expandedContract === item.id ? 'expand_less' : 'expand_more'}</span>
-                  <div>
-                    <p className="text-sm font-bold text-slate-900">{item.name}</p>
-                    <p className="text-xs text-slate-500">{item.role} • {item.type} • {item.salary} • {item.submittedBy}</p>
-                  </div>
-                </div>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-aims-orange/15 text-aims-orange">{item.status}</span>
+          {userOpsGet.audit().length === 0 && <p className="text-xs text-slate-400 italic py-4 text-center">No HR activity recorded yet — onboarding steps and account changes appear here.</p>}
+          {userOpsGet.audit().slice(0, 5).map((a) => (
+            <div key={a.id} className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-aims-navy/10">
+                <span className="material-symbols-outlined text-aims-navy text-[20px]">history</span>
               </div>
-              {expandedContract === item.id && (
-                <div className="px-3 pb-3 space-y-3">
-                  <div className="bg-white rounded-lg p-2.5 border border-slate-100">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Comment from {item.submittedBy} ({item.submittedDate})</p>
-                    <p className="text-xs text-slate-700 italic">"{item.comment}"</p>
-                  </div>
-                  <div className="bg-white rounded-lg p-3 border border-aims-navy/20 flex items-center justify-between gap-3 flex-wrap">
-                    <div className="flex items-center gap-2 text-xs text-slate-600"><span className="material-symbols-outlined text-aims-navy text-[18px]">description</span>Contract decisions are completed in the HR &amp; Contracts module.</div>
-                    <button onClick={() => navigate('/hr', { state: { tab: 'contracts' } })} className="px-3 py-1.5 bg-aims-navy text-white text-[10px] font-bold rounded-lg hover:bg-aims-navy/90 shrink-0">Open HR &amp; Contracts</button>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </Section>
-
-      <Section title="Recent Activity" subtitle="Latest HR operations">
-        <div className="space-y-3">
-          {[
-            { action: 'Contract Renewed', user: 'Janet Apio', time: '2h ago', icon: 'description', color: 'green' as ColorKey },
-            { action: 'Appraisal Completed', user: 'Pius Odong', time: '5h ago', icon: 'fact_check', color: 'navy' as ColorKey },
-            { action: 'New Employee Added', user: 'Mercy Atim', time: '1d ago', icon: 'person_add', color: 'orange' as ColorKey },
-          ].map((item, i) => (
-            <div key={i} className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
-              <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center', CHIP[item.color])}>
-                <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-slate-900 truncate">{a.action}</p>
+                <p className="text-xs text-slate-500">{a.user} · by {a.by}</p>
               </div>
-              <div className="flex-1">
-                <p className="text-sm font-bold text-slate-900">{item.action}</p>
-                <p className="text-xs text-slate-500">{item.user}</p>
-              </div>
-              <p className="text-[10px] text-slate-400">{item.time}</p>
+              <p className="text-[10px] text-slate-400 shrink-0">{a.ts}</p>
             </div>
           ))}
         </div>
@@ -1491,15 +1505,24 @@ function HRDashboard() {
 
 function InventoryDashboard() {
   const navigate = useNavigate();
+  useLiveData();
+
+  // ── LIVE inventory figures — no demo totals ──
+  const allAssets = inventoryGet.assets();
+  const activeAssets = allAssets.filter((a) => a.status === 'active');
+  const inUse = activeAssets.filter((a) => a.custodian && !['available', 'warehouse (shared)', 'retired'].includes(a.custodian.toLowerCase())).length;
+  const maintenance = inventoryGet.maintenance();
+  const lowStock = inventoryGet.lowStock();
+  const assignments = inventoryGet.assignments();
 
   return (
     <div className="space-y-6">
       {/* Stat cards lead the page (no hero banner) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <StatCard title="Total Assets" value="284" icon="inventory_2" color="navy" />
-        <StatCard title="In Use" value="241" icon="check_circle" color="green" />
-        <StatCard title="Under Maintenance" value="12" icon="build" color="orange" />
-        <StatCard title="Low Stock Items" value="8" icon="warning" color="mint" />
+        <StatCard title="Total Assets" value={String(allAssets.length)} icon="inventory_2" color="navy" />
+        <StatCard title="In Use" value={String(inUse)} icon="check_circle" color="green" />
+        <StatCard title="Maintenance Records" value={String(maintenance.length)} icon="build" color="orange" />
+        <StatCard title="Low Stock Items" value={String(lowStock.length)} icon="warning" color="mint" />
       </div>
 
       {/* AI insight strip — compact, immediately after the stats */}
@@ -1507,30 +1530,47 @@ function InventoryDashboard() {
 
       <CheckInCard />
 
-      <Section title="Inventory Overview" subtitle="Current asset status and alerts">
+      <Section title="Inventory Overview" subtitle="Live from aims_inventory — assets by category">
         <div className="space-y-3">
-          {[
-            { item: 'Laptops (Dell Latitude)', total: 45, inUse: 42, available: 3, status: 'healthy' },
-            { item: 'Field Tablets (Samsung Tab A9)', total: 20, inUse: 18, available: 2, status: 'low' },
-            { item: 'GPS Units (Garmin GPSMAP 67i)', total: 15, inUse: 12, available: 3, status: 'healthy' },
-            { item: 'Solar Chargers (Anker 24W)', total: 30, inUse: 25, available: 5, status: 'healthy' },
-            { item: 'Office Chairs', total: 50, inUse: 48, available: 2, status: 'low' },
-          ].map((item, i) => (
-            <div key={i} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
-              <div className="flex-1">
-                <p className="text-sm font-bold text-slate-900">{item.item}</p>
-                <p className="text-xs text-slate-500">Total: {item.total} • In Use: {item.inUse} • Available: {item.available}</p>
+          {activeAssets.length === 0 && assignments.length === 0 && (
+            <p className="text-xs text-slate-400 italic py-6 text-center">No assets registered yet — add equipment in Inventory, or complete an onboarding step&apos;s Asset Issuance to create the first assignment.</p>
+          )}
+          {Array.from(
+            activeAssets.reduce((map, a) => map.set(a.category, (map.get(a.category) ?? 0) + 1), new Map<string, number>()),
+          ).map(([category, total]) => {
+            const inCat = activeAssets.filter((a) => a.category === category);
+            const used = inCat.filter((a) => a.custodian && !['available', 'warehouse (shared)'].includes(a.custodian.toLowerCase())).length;
+            const available = total - used;
+            const low = available <= 1;
+            return (
+              <div key={category} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-slate-900">{category}</p>
+                  <p className="text-xs text-slate-500">Total: {total} • In Use: {used} • Available: {available}</p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded', low ? 'bg-aims-orange/15 text-aims-orange' : 'bg-aims-green/15 text-aims-green')}>
+                    {low ? 'Low Availability' : 'Healthy'}
+                  </span>
+                  <button onClick={() => navigate('/inventory')} className="text-xs font-bold text-aims-navy hover:underline">View in Inventory</button>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded', 
-                  item.status === 'healthy' ? 'bg-aims-green/15 text-aims-green' : 'bg-aims-orange/15 text-aims-orange'
-                )}>
-                  {item.status === 'healthy' ? 'Healthy' : 'Low Stock'}
-                </span>
-                <button onClick={() => navigate('/inventory')} className="text-xs font-bold text-aims-navy hover:underline">View in Inventory</button>
-              </div>
+            );
+          })}
+          {assignments.length > 0 && (
+            <div className="pt-2 border-t border-slate-100">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Open hand-overs ({assignments.filter((a) => a.status !== 'Completed').length})</p>
+              {assignments.filter((a) => a.status !== 'Completed').slice(0, 5).map((a) => (
+                <div key={a.id} className="flex items-center justify-between p-2.5 bg-white rounded-lg border border-slate-200 mb-1.5">
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-slate-900 truncate">{a.person}</p>
+                    <p className="text-[10px] text-slate-500 truncate">{a.items.join(', ') || 'no items listed'} · due {a.due}</p>
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-600 shrink-0">{a.done}/{a.total}</span>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
       </Section>
 

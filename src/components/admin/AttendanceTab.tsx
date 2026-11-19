@@ -11,22 +11,9 @@ interface DailyRecord {
   checkIn: string; checkOut: string; status: AttendanceStatus; location: string; hours: number;
 }
 
-const MOCK_DAILY: DailyRecord[] = [
-  { id: 'a1', name: 'Nassir Mwanje', position: 'Country Director', department: 'Executive', checkIn: '08:00', checkOut: '17:00', status: 'present', location: 'On-site (2.7750° N, 32.2986° E)', hours: 9 },
-  { id: 'a2', name: 'Amos Ojok', position: 'Finance Officer', department: 'Finance', checkIn: '08:45', checkOut: '17:30', status: 'late', location: 'On-site (2.7750° N, 32.2986° E)', hours: 8.75 },
-  { id: 'a3', name: 'Sarah Aciro', position: 'Grants Manager', department: 'Grants', checkIn: '08:15', checkOut: '16:45', status: 'remote', location: 'Remote (IP: 197.239.xx.xx)', hours: 8.5 },
-  { id: 'a4', name: 'Pius Odong', position: 'Innovator', department: 'Innovation', checkIn: '-', checkOut: '-', status: 'absent', location: '-', hours: 0 },
-  { id: 'a5', name: 'Grace Aceng', position: 'Company Admin', department: 'Administration', checkIn: '07:55', checkOut: '17:15', status: 'present', location: 'On-site (2.7750° N, 32.2986° E)', hours: 9.3 },
-  { id: 'a6', name: 'Janet Apio', position: 'Grant Writer', department: 'Grants', checkIn: '-', checkOut: '-', status: 'leave', location: '-', hours: 0 },
-];
-
-const MOCK_TIMESHEETS: any[] = [
-  { name: 'Sarah Aciro', mon: 8, tue: 8.5, wed: 8, thu: 9, fri: 8, total: 41.5, status: 'Approved' },
-  { name: 'Pius Odong', mon: 8, tue: 8, wed: 8, thu: 8, fri: 8, total: 40, status: 'Pending' },
-  { name: 'Amos Ojok', mon: 9, tue: 8.5, wed: 9, thu: 8, fri: 8.5, total: 43, status: 'Approved' },
-  { name: 'Grace Aceng', mon: 8, tue: 8, wed: 8, thu: 8, fri: 8, total: 40, status: 'Approved' },
-  { name: 'Nassir Mwanje', mon: 9, tue: 9, wed: 8.5, thu: 9, fri: 8.5, total: 44, status: 'Approved' },
-];
+// Fresh start: the register is empty until employees are onboarded and check in.
+const MOCK_DAILY: DailyRecord[] = [];
+const MOCK_TIMESHEETS: any[] = [];
 
 const STATUS_STYLES: Record<AttendanceStatus, string> = {
   present: 'bg-green-100 text-green-700',

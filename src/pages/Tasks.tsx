@@ -21,6 +21,7 @@ import { KanbanCard, KanbanColumnBody, KanbanColumnHeader } from '@/components/u
 import { DashboardAiInsights } from '@/components/dashboard/DashboardAiInsights';
 import { FormsShortcut } from '@/components/forms/FormsShortcut';
 import { ProposalModal } from '@/components/innovations/ProposalModal';
+import { ACTIVE_STAFF } from '@/data/roster';
 
 const STATUS_CHIP: Record<string, string> = {
   draft: 'bg-slate-100 text-slate-600 border-slate-200',
@@ -99,7 +100,7 @@ export function Tasks() {
   const submitProposal = (p: InnovationProject) => {
     const updated = innovationService.submitForReview(p.id, user.name);
     if (!updated) return;
-    const who = ['Nassir Mwanje', 'Peter Byamugisha']; // CD + ED review queue
+    const who: string[] = ACTIVE_STAFF.map((s: { name: string }) => s.name); // reviewers: the administrator(s) on the roster
     who.forEach((name) => addNotification({
       recipientName: name,
       title: 'Innovation Proposal — Awaiting Your Review',

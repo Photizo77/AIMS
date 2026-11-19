@@ -25,6 +25,7 @@ import {
 import { OffboardingTab } from '@/components/admin/OffboardingTab';
 import { openEmployeeOnboarding } from '@/components/hr/EmployeeOnboardingForm';
 import { OnboardStepModal } from '@/components/admin/OnboardStepModal';
+import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
 import { listPendingSubmissions, listOnboarding, approveSubmission, rejectSubmission } from '@/services/employeeService';
 import { printBlankEmployeeForm, employeeFormShareLink } from '@/lib/employeeFormTemplate';
 
@@ -188,12 +189,17 @@ export function UserManagement() {
                         {u.mfaEnabled && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded ml-1 bg-aims-navy/10 text-aims-navy">MFA</span>}
                       </td>
                       <td className="py-2.5 text-right">
-                        <div className="flex items-center justify-end gap-1.5 flex-wrap">
-                          <button onClick={() => setSelectedUser(u)} className="text-[10px] font-bold text-aims-navy hover:underline">View Profile</button>
-                          <button onClick={() => { setRoleTarget(u); setNewRole(u.role); }} className="text-[10px] font-bold text-aims-navy hover:underline">Edit Role</button>
-                          <button onClick={() => { const r = resetCredential(u.id, actor); if (r) showToast({ title: 'Credential Reset', message: `Temporary code for ${r.user.email}: ${r.code}`, type: 'info' }); }} className="text-[10px] font-bold text-aims-navy hover:underline">Reset Credential</button>
-                          <button onClick={() => { const r = toggleUserStatus(u.id, actor); if (r) showToast({ title: r.status === 'inactive' ? 'Account Deactivated' : 'Account Reactivated', message: `${r.name} ${r.status}.`, type: 'info' }); }} className="text-[10px] font-bold text-red-500 hover:underline">{u.status === 'active' ? 'Deactivate' : 'Reactivate'}</button>
-                        </div>
+                        <RowActionsMenu
+                          label={`Actions for ${u.name}`}
+                          actions={[
+                            { label: 'View profile', icon: 'person', onClick: () => setSelectedUser(u) },
+                            { label: 'Edit role & access', icon: 'admin_panel_settings', onClick: () => { setRoleTarget(u); setNewRole(u.role); } },
+                            { label: 'Reset credential', icon: 'key', onClick: () => { const r = resetCredential(u.id, actor); if (r) showToast({ title: 'Credential Reset', message: `Temporary code for ${r.user.email}: ${r.code}`, type: 'info' }); } },
+                            { label: 'Reissue API key', icon: 'vpn_key', onClick: () => { const r = reissueApiKey(u.id, actor); if (r) showToast({ title: 'API Key Reissued', message: `New key for ${r.user.name}: ${r.key}`, type: 'info' }); } },
+                            { label: 'Download profile', icon: 'download', onClick: () => downloadProfile(u) },
+                            { label: u.status === 'active' ? 'Deactivate account' : 'Reactivate account', icon: u.status === 'active' ? 'person_off' : 'how_to_reg', tone: u.status === 'active' ? 'danger' : 'primary', divider: true, onClick: () => { const r = toggleUserStatus(u.id, actor); if (r) showToast({ title: r.status === 'inactive' ? 'Account Deactivated' : 'Account Reactivated', message: `${r.name} ${r.status}.`, type: 'info' }); } },
+                          ]}
+                        />
                       </td>
                     </tr>
                   ))}

@@ -26,16 +26,21 @@ export interface QueueTarget {
   recipients: { name?: string; userId?: string }[];
 }
 
-/** Where each module's submitted forms are reviewed (queue page) */
+/**
+ * Where each module's submitted forms are reviewed (queue page).
+ * The organisation currently has a single administrator (Maya Namutebi,
+ * Company Admin), so every queue is routed to her — otherwise submissions
+ * would be addressed to accounts that no longer exist.
+ */
 export const FORM_QUEUE: Record<string, QueueTarget> = {
-  hr: { route: '/hr', label: 'HR queue', recipients: [{ name: 'Grace Aceng' }] },
-  attendance: { route: '/hr', label: 'HR queue', recipients: [{ name: 'Grace Aceng' }] },
-  finance: { route: '/approvals', label: 'Approvals queue', recipients: [{ userId: 'user-ed-001' }] },
-  procurement: { route: '/approvals', label: 'Approvals queue', recipients: [{ userId: 'user-ed-001' }] },
-  grants: { route: '/grants', label: 'Grants workspace', recipients: [{ userId: 'user-gm-001' }, { userId: 'user-gw-001' }] },
-  innovations: { route: '/innovations', label: 'Innovations workspace', recipients: [{ userId: 'user-innov-001' }] },
-  inventory: { route: '/inventory', label: 'Inventory module', recipients: [{ name: 'Grace Aceng' }] },
-  rbac: { route: '/rbac', label: 'Compliance queue', recipients: [{ userId: 'user-sysadmin-001' }] },
+  hr: { route: '/hr', label: 'HR queue', recipients: [{ userId: 'user-admin-001', name: 'Maya Namutebi' }] },
+  attendance: { route: '/hr', label: 'HR queue', recipients: [{ userId: 'user-admin-001', name: 'Maya Namutebi' }] },
+  finance: { route: '/approvals', label: 'Approvals queue', recipients: [{ userId: 'user-admin-001', name: 'Maya Namutebi' }] },
+  procurement: { route: '/approvals', label: 'Approvals queue', recipients: [{ userId: 'user-admin-001', name: 'Maya Namutebi' }] },
+  grants: { route: '/grants', label: 'Grants workspace', recipients: [{ userId: 'user-admin-001', name: 'Maya Namutebi' }] },
+  innovations: { route: '/innovations', label: 'Innovations workspace', recipients: [{ userId: 'user-admin-001', name: 'Maya Namutebi' }] },
+  inventory: { route: '/inventory', label: 'Inventory module', recipients: [{ userId: 'user-admin-001', name: 'Maya Namutebi' }] },
+  rbac: { route: '/rbac', label: 'Compliance queue', recipients: [{ userId: 'user-admin-001', name: 'Maya Namutebi' }] },
 };
 
 export function queueForModule(moduleName: string): QueueTarget | undefined {
