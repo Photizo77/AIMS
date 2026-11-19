@@ -1,37 +1,113 @@
 name: Deploy to Vercel (Production)
 
-# Explicit CI/CD pipeline for AIMS:
-#   - every push to main triggers a production build + deploy to Vercel
-#   - can also be triggered manually (Actions -> "Deploy to Vercel" -> Run workflow)
+# Explicit production deploy pipeline for AIMS.
 #
-# One-time setup (GitHub -> Settings -> Secrets and variables -> Actions):
-#   VERCEL_TOKEN      - Vercel account token (Vercel dashboard -> Settings -> Tokens)
-#   VERCEL_ORG_ID     - your Vercel team/org id (run `vercel teams ls` locally)
-#   VERCEL_PROJECT_ID - project id (run `vercel projects ls` locally, or the
-#                       `id` in your project's .vercel/project.json after `vercel link`)
+# Design:
+#   · Vercel's native Git integration is the PRIMARY deploy path — every push
+#     to `main` ships automatically. That is how production is kept current.
+#   · This workflow is the explicit, auditable pipeline on top of it. It builds
+#     the artifact in CI (same Node/npm as CI) and promotes it to production.
+#   · If the Vercel credentials are not configured, the job does NOT fail: it
+#     records a clear notice in the run summary and exits cleanly, so a repo
+#     without secrets never shows a red pipeline.
 #
-# Note: Vercel's native Git integration also auto-deploys on push to main.
-# This workflow is the explicit pipeline on top of that gate (CI + deploy in
-# one place); if you prefer, you can remove this file and rely on the native
-# integration alone.
+# One-time setup (GitHub → Settings → Secrets and variables → Actions):
+#   VERCEL_TOKEN      Vercel dashboard → Account Settings → Tokens
+#   VERCEL_ORG_ID     `vercel teams ls` (or team page URL)
+#   VERCEL_PROJECT_ID `vercel projects ls`, or projectId in .vercel/project.json
+#
+# Once the three secrets exist this workflow deploys on every push to main.
+# To avoid building the same commit twice you can then disable the native Git
+# integration (Vercel → Project → Settings → Git → Ignored Build Step), or keep
+# both — the second deploy is byte-identical.
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Git ref to deploy (branch, tag or SHA). Defaults to the triggering ref.'
+        required: false
+        type: string
+
+# Never let two production deploys race each other.
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
 
 jobs:
   deploy:
     name: Build & deploy production
     runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Verify Vercel credentials
+        id: creds
+        run: |
+          if [ -n "$VERCEL_TOKEN" ] && [ -n "$VERCEL_ORG_ID" ] && [ -n "$VERCEL_PROJECT_ID" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+            echo "Vercel credentials detected — this run will deploy to production."
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "### Production deploy skipped — credentials not configured"
+              echo ""
+              echo "Add these repository secrets (Settings → Secrets and variables → Actions):"
+              echo ""
+              echo "| Secret | Where to get it |"
+              echo "|---|---|"
+              echo "| \`VERCEL_TOKEN\` | Vercel → Account Settings → Tokens |"
+              echo "| \`VERCEL_ORG_ID\` | \`vercel teams ls\` |"
+              echo "| \`VERCEL_PROJECT_ID\` | \`vercel projects ls\` / \`.vercel/project.json\` |"
+              echo ""
+              echo "Production is **still being deployed** by Vercel's native Git integration on every push to \`main\`;"
+              echo "this job only fails-over to the explicit pipeline once the secrets are present."
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::notice title=Deploy skipped::Vercel secrets are not set — production continues via Vercel Git integration."
+          fi
 
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
+      - name: Checkout repository
+        if: steps.creds.outputs.ready == 'true'
+        uses: actions/checkout@v4
         with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod'
+          ref: ${{ inputs.ref || github.ref }}
+
+      - name: Setup Node.js
+        if: steps.creds.outputs.ready == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        if: steps.creds.outputs.ready == 'true'
+        run: npm ci
+
+      - name: Pull Vercel project settings
+        if: steps.creds.outputs.ready == 'true'
+        run: npx --yes vercel@latest pull --yes --environment=production --token "$VERCEL_TOKEN"
+
+      - name: Build production artifact
+        if: steps.creds.outputs.ready == 'true'
+        run: npx --yes vercel@latest build --prod --token "$VERCEL_TOKEN"
+
+      - name: Deploy to production
+        id: deploy
+        if: steps.creds.outputs.ready == 'true'
+        run: |
+          url=$(npx --yes vercel@latest deploy --prebuilt --prod --token "$VERCEL_TOKEN")
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Production deployed"
+            echo ""
+            echo "Deployment: $url"
+            echo ""
+            echo "Commit: \`${GITHUB_SHA:0:8}\`"
+          } >> "$GITHUB_STEP_SUMMARY"

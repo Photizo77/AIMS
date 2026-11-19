@@ -37,21 +37,41 @@ Two workflows live in `.github/workflows/`:
 | Workflow | Triggers | Purpose |
 |---|---|---|
 | `ci.yml` | Push to `main`; pull requests to `main` | `npm ci` + `npm run build` — verifies every update compiles and bundles before it can ship |
-| `deploy.yml` | Push to `main`; manual dispatch | Builds and deploys **production** to Vercel via the Vercel CLI action |
+| `deploy.yml` | Push to `main`; manual dispatch | Builds the artifact in CI and promotes it to **production** with the official Vercel CLI |
+
+### How `deploy.yml` behaves
+
+- **With** the three secrets below it deploys the built artifact to production
+  (`vercel pull` → `vercel build --prod` → `vercel deploy --prebuilt --prod`),
+  publishing the deployment URL into the run summary. A `concurrency` group
+  (`production-deploy`) prevents two production deploys from racing.
+- **Without** them the job does not fail — it writes a "deploy skipped" notice
+  to the run summary and exits green, because Vercel's native Git integration is
+  already publishing every push to `main`. So a fresh clone never shows a red
+  pipeline just for missing credentials.
 
 ### One-time setup for `deploy.yml`
 
 Add these secrets in **GitHub → Settings → Secrets and variables → Actions**:
 
-1. `VERCEL_TOKEN` — Vercel dashboard → **Settings → Tokens → Create**.
+1. `VERCEL_TOKEN` — Vercel dashboard → **Account Settings → Tokens → Create**.
 2. `VERCEL_ORG_ID` — from `vercel teams ls` (Vercel CLI), or your team page URL.
 3. `VERCEL_PROJECT_ID` — run `vercel link` once locally (creates
    `.vercel/project.json`), then take the `projectId`; or from
    `vercel projects ls`.
 
+Fastest path (GitHub CLI + Vercel CLI installed locally):
+
+```bash
+vercel link                       # writes .vercel/project.json
+gh secret set VERCEL_TOKEN --body "<token>"
+gh secret set VERCEL_ORG_ID --body "$(node -p "require('./.vercel/project.json').orgId")"
+gh secret set VERCEL_PROJECT_ID --body "$(node -p "require('./.vercel/project.json').projectId")"
+```
+
 Until the secrets are added, `ci.yml` still runs (it needs no secrets) and
 Vercel's native integration still deploys — the explicit `deploy.yml` simply
-becomes the formal pipeline on top.
+skips and becomes the formal pipeline on top the moment the secrets appear.
 
 ### Manual production deploy
 
