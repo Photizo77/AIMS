@@ -17,6 +17,8 @@ import { innovationService, isExecutingProject, LIFECYCLE_LABELS } from '@/servi
 import { getAllRequisitions } from '@/services/requisitionService';
 import { stageTransitionConfidence, type AiInsight } from '@/lib/aiEngine';
 import { AIPanel } from '@/components/ai/AIPanel';
+import { KanbanCard, KanbanColumnBody, KanbanColumnHeader } from '@/components/ui/KanbanBoard';
+import { DashboardAiInsights } from '@/components/dashboard/DashboardAiInsights';
 import { FormsShortcut } from '@/components/forms/FormsShortcut';
 import { ProposalModal } from '@/components/innovations/ProposalModal';
 
@@ -153,19 +155,7 @@ export function Tasks() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
-        <div className="flex items-start justify-between flex-wrap gap-4">
-          <div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">Innovations & Tasks</h1>
-            <p className="text-base font-medium text-white">{scope === 'mine' ? 'Your innovation projects, proposals and tasks' : 'Organization-wide innovation pipeline oversight'}</p>
-          </div>
-          <button onClick={openNewProposal} className="px-5 py-2.5 bg-white text-aims-navy rounded-xl text-xs font-extrabold hover:bg-aims-mint/90 transition-colors flex items-center gap-1.5 shadow-sm">
-            <span className="material-symbols-outlined text-[16px]">add_circle</span>New Innovation
-          </button>
-        </div>
-      </div>
-
-      {/* Dashboard widgets */}
+      {/* Stat tiles lead the page (no hero banner) */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {statTiles.map((t) => (
           <button key={t.label} onClick={t.onClick} className="text-left bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-navy p-4 shadow-sm hover:shadow-md transition-shadow">
@@ -174,6 +164,16 @@ export function Tasks() {
             <p className="text-[10px] text-slate-400 mt-0.5">{t.sub}</p>
           </button>
         ))}
+      </div>
+
+      {/* AI insight strip — compact, immediately after the stats */}
+      <DashboardAiInsights scope="innovations" title="AI Insights — Pipeline & Readiness" />
+
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <p className="text-xs text-slate-500">{scope === 'mine' ? 'Your innovation projects, proposals and tasks' : 'Organization-wide innovation pipeline oversight'}</p>
+        <button onClick={openNewProposal} className="px-4 py-2 bg-aims-navy text-white rounded-lg text-xs font-extrabold hover:bg-aims-navy/90 transition-colors flex items-center gap-1.5 shadow-sm">
+          <span className="material-symbols-outlined text-[16px]">add_circle</span>New Innovation
+        </button>
       </div>
 
       <FormsShortcut module="innovations" title="Innovation Forms — Project Proposal · Feasibility Study" />
@@ -342,19 +342,22 @@ export function Tasks() {
 
             return (
               <div key={stage} className="flex flex-col">
-                <div className={cn('rounded-t-xl px-3 py-2.5 flex items-center justify-between', CHIP[color])}><span className="text-xs font-bold uppercase tracking-wider text-white">{INNOVATION_STAGE_LABELS[stage]}</span><span className="text-xs font-extrabold text-white bg-white/20 px-2 py-0.5 rounded-full">{stageProjects.length}</span></div>
-                <div className="bg-slate-50 rounded-b-xl border border-slate-200 border-t-0 p-2 space-y-2 min-h-[200px]">
-                  {stageProjects.length === 0 && <p className="text-xs text-slate-400 text-center py-8 italic">No projects</p>}
+                <KanbanColumnHeader label={INNOVATION_STAGE_LABELS[stage]} count={stageProjects.length} chipClass={CHIP[color]} />
+                <KanbanColumnBody count={stageProjects.length} emptyLabel="No projects">
                   {stageProjects.map((p) => (
-                    <div key={p.id} onClick={() => navigate(`/innovations/${p.id}`)} className="bg-white rounded-lg border border-slate-200 p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
-                      <p className="text-sm font-bold text-slate-900 mb-1 group-hover:text-aims-navy transition-colors">{p.title}</p>
-                      <p className="text-[10px] text-slate-500 mb-2">Lead: {p.leadName}</p>
-                      <div className="mb-2"><div className="w-full bg-slate-100 rounded-full h-1.5"><div className="h-1.5 rounded-full bg-aims-green" style={{ width: `${p.progressPercent}%` }} /></div></div>
-                      <p className="text-[10px] text-slate-500 mb-2">{p.milestones?.filter(m => m.completed).length || 0}/{p.milestones?.length || 0} milestones</p>
-                      <div className={cn('flex items-center gap-1.5 px-2 py-1 rounded border text-[10px] font-bold', getAgingColor(p.daysInStage))}><span className={cn('w-1.5 h-1.5 rounded-full', getAgingDot(p.daysInStage))} />{p.daysInStage}d in stage</div>
-                    </div>
+                    <KanbanCard key={p.id} onClick={() => navigate(`/innovations/${p.id}`)}>
+                      <p className="text-sm font-bold text-slate-900 mb-1 line-clamp-2 group-hover:text-aims-navy transition-colors">{p.title}</p>
+                      <p className="text-[10px] text-slate-500 truncate">Lead: {p.leadName}</p>
+                      <div className="mt-auto">
+                        <div className="mb-2"><div className="w-full bg-slate-100 rounded-full h-1.5"><div className="h-1.5 rounded-full bg-aims-green" style={{ width: `${p.progressPercent}%` }} /></div></div>
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[10px] text-slate-500">{p.milestones?.filter(m => m.completed).length || 0}/{p.milestones?.length || 0} milestones</span>
+                          <div className={cn('flex items-center gap-1.5 px-2 py-1 rounded border text-[10px] font-bold shrink-0', getAgingColor(p.daysInStage))}><span className={cn('w-1.5 h-1.5 rounded-full', getAgingDot(p.daysInStage))} />{p.daysInStage}d</div>
+                        </div>
+                      </div>
+                    </KanbanCard>
                   ))}
-                </div>
+                </KanbanColumnBody>
               </div>
             );
           })}

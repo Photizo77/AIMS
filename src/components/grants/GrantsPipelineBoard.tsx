@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
 import { CHIP, ACCENT } from '@/lib/uiTheme';
+import { KanbanCard, KanbanColumnBody, KanbanColumnHeader } from '@/components/ui/KanbanBoard';
 import { GRANT_STAGES, formatCurrency, daysUntil, grantProgress, type GrantRecord } from '@/data/grants';
 import { grantService } from '@/services/grantService';
 
@@ -80,34 +81,35 @@ export function GrantsPipelineBoard() {
             const stageGrants = filtered.filter((g) => g.stage === stage.key);
             return (
               <div key={stage.key} className="flex flex-col">
-                <div className={cn('rounded-t-xl px-3 py-2.5 flex items-center justify-between', CHIP[stage.color])}><span className="text-xs font-bold uppercase tracking-wider text-white">{stage.label}</span><span className="text-xs font-extrabold text-white bg-white/20 px-2 py-0.5 rounded-full">{stageGrants.length}</span></div>
-                <div className="bg-slate-50 rounded-b-xl border border-slate-200 border-t-0 p-2 space-y-2 min-h-[160px]">
-                  {stageGrants.length === 0 && <p className="text-xs text-slate-400 text-center py-8 italic">No grants</p>}
+                <KanbanColumnHeader label={stage.label} count={stageGrants.length} chipClass={CHIP[stage.color]} />
+                <KanbanColumnBody count={stageGrants.length} emptyLabel="No grants">
                   {stageGrants.map((g) => {
                     const days = daysUntil(g.deadline);
                     const progress = grantProgress(g);
                     const unassigned = !g.handler || g.handler === 'Unassigned';
                     return (
-                      <div key={g.id} onClick={() => handleCardClick(g)} className="bg-white rounded-lg border border-slate-200 p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
-                        <p className="text-sm font-bold text-slate-900 mb-1 group-hover:text-aims-navy transition-colors">{g.title}</p>
-                        <div className="flex items-center gap-1 mb-2 flex-wrap"><span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-aims-navy/10 text-aims-navy uppercase">{g.pillar}</span><span className="text-[9px] text-slate-400">{g.funder}</span></div>
-                        <p className="text-[10px] text-slate-500 mb-2">Handler: {g.handler}</p>
-                        <div className="mb-2"><div className="flex justify-between text-[10px] mb-0.5"><span className="font-semibold text-slate-500">Progress</span><span className="font-bold text-slate-900">{progress}%</span></div><div className="w-full bg-slate-100 rounded-full h-1.5"><div className="h-1.5 rounded-full bg-aims-green" style={{ width: `${progress}%` }} /></div></div>
-                        <div className="flex items-center justify-between mt-2 gap-2 flex-wrap">
-                          <span className="text-[10px] font-bold text-slate-700">{formatCurrency(g.amountRequested)}</span>
-                          <div className="flex items-center gap-1.5">
-                            <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded border', getDeadlineColor(days))}>{days}d left</span>
-                            {unassigned && canExpressInterest && (
-                              <button onClick={(e) => { e.stopPropagation(); handleExpressInterest(g); }} className="text-[10px] font-bold px-2 py-1 rounded bg-aims-green text-white hover:bg-aims-green/90 flex items-center gap-0.5">
-                                <span className="material-symbols-outlined text-[12px]">handshake</span>Express Interest
-                              </button>
-                            )}
+                      <KanbanCard key={g.id} onClick={() => handleCardClick(g)}>
+                        <p className="text-sm font-bold text-slate-900 mb-1 line-clamp-2 group-hover:text-aims-navy transition-colors">{g.title}</p>
+                        <div className="flex items-center gap-1 flex-wrap"><span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-aims-navy/10 text-aims-navy uppercase">{g.pillar}</span><span className="text-[9px] text-slate-400 truncate">{g.funder}</span></div>
+                        <p className="text-[10px] text-slate-500 mt-1 truncate">Handler: {g.handler}</p>
+                        <div className="mt-auto">
+                          <div className="mb-2"><div className="flex justify-between text-[10px] mb-0.5"><span className="font-semibold text-slate-500">Progress</span><span className="font-bold text-slate-900">{progress}%</span></div><div className="w-full bg-slate-100 rounded-full h-1.5"><div className="h-1.5 rounded-full bg-aims-green" style={{ width: `${progress}%` }} /></div></div>
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <span className="text-[10px] font-bold text-slate-700">{formatCurrency(g.amountRequested)}</span>
+                            <div className="flex items-center gap-1.5">
+                              <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded border', getDeadlineColor(days))}>{days}d left</span>
+                              {unassigned && canExpressInterest && (
+                                <button onClick={(e) => { e.stopPropagation(); handleExpressInterest(g); }} className="text-[10px] font-bold px-2 py-1 rounded bg-aims-green text-white hover:bg-aims-green/90 flex items-center gap-0.5">
+                                  <span className="material-symbols-outlined text-[12px]">handshake</span>Express Interest
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      </KanbanCard>
                     );
                   })}
-                </div>
+                </KanbanColumnBody>
               </div>
             );
           })}

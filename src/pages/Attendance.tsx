@@ -140,10 +140,10 @@ export function Attendance() {
   if (['COMPANY_ADMIN', 'ED', 'SYS_ADMIN'].includes(user.role)) {
     return (
       <div className="space-y-6">
-        <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
-          <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">Attendance Management</h1>
-          <p className="text-base font-medium text-white">Company-wide individual-level visibility — presence, records, leave, anomalies & analytics</p>
-        </div>
+        <div>
+        <h1 className="text-xl font-extrabold text-slate-900">Attendance Management</h1>
+        <p className="text-xs text-slate-500 mt-0.5">Company-wide individual-level visibility — presence, records, leave, anomalies & analytics</p>
+      </div>
         <AttendanceManagement />
       </div>
     );
@@ -153,10 +153,10 @@ export function Attendance() {
   if (user.role === 'CD') {
     return (
       <div className="space-y-6">
-        <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
-          <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">Attendance</h1>
-          <p className="text-base font-medium text-white">Aggregate presence & punctuality trends — summary level</p>
-        </div>
+        <div>
+        <h1 className="text-xl font-extrabold text-slate-900">Attendance</h1>
+        <p className="text-xs text-slate-500 mt-0.5">Aggregate presence & punctuality trends — summary level</p>
+      </div>
         <AttendanceSummary />
       </div>
     );
@@ -164,9 +164,9 @@ export function Attendance() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
-        <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">My Attendance</h1>
-        <p className="text-base font-medium text-white">Track your daily check-ins, hours, and leave balance</p>
+      <div>
+        <h1 className="text-xl font-extrabold text-slate-900">My Attendance</h1>
+        <p className="text-xs text-slate-500 mt-0.5">Track your daily check-ins, hours, and leave balance</p>
       </div>
 
       {/* Check-In Card */}

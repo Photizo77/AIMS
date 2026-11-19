@@ -18,10 +18,41 @@ interface AIPanelProps {
   insights: AiInsight[];
   onAction?: (insight: AiInsight) => void;
   className?: string;
+  /** Dense single-row variant for dashboards — stats lead, AI follows quietly */
+  compact?: boolean;
 }
 
-export function AIPanel({ title, insights, onAction, className }: AIPanelProps) {
+export function AIPanel({ title, insights, onAction, className, compact = false }: AIPanelProps) {
   if (insights.length === 0) return null;
+
+  if (compact) {
+    return (
+      <div className={cn('bg-white rounded-xl border border-slate-200 border-l-4 border-l-aims-navy px-4 py-3 shadow-sm', className)}>
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="material-symbols-outlined text-aims-navy text-[16px] shrink-0">auto_awesome</span>
+            <h3 className="text-[11px] font-extrabold text-slate-900 uppercase tracking-wider truncate">{title}</h3>
+          </div>
+          <span className="text-[9px] font-bold text-aims-navy/60 uppercase tracking-wider shrink-0">AI · live</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
+          {insights.map((ins) => {
+            const s = SEVERITY_STYLE[ins.severity];
+            return (
+              <div key={ins.id} className={cn('flex items-start gap-2 rounded-lg border px-2.5 py-1.5', s.box)}>
+                <span className={cn('material-symbols-outlined text-[14px] mt-0.5 shrink-0', s.label)}>{s.icon}</span>
+                <p className="text-[11px] text-slate-600 leading-snug line-clamp-2">
+                  <span className={cn('font-bold', s.label)}>{ins.title}</span>
+                  {ins.detail ? <span> — {ins.detail}</span> : null}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={cn('bg-white rounded-xl border border-slate-200 border-l-4 border-l-aims-navy p-5 shadow-sm', className)}>
       <div className="flex items-center gap-2 mb-3">

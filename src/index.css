@@ -118,6 +118,19 @@
 .border-aims-mint\/20 { border-color: rgba(193,219,195,0.20); }
 
 /* ═══════════════════════════════════════════════════════════
+   Checkboxes & radios — brand-green ticks everywhere
+   (native inputs use accent-color; the accent-* utilities are
+   declared here because aims-* colours live in this file, not in
+   tailwind.config, so Tailwind would never emit accent-aims-*.)
+   ═══════════════════════════════════════════════════════════ */
+input[type='checkbox'],
+input[type='radio'] {
+  accent-color: var(--aims-green);
+}
+.accent-aims-green { accent-color: var(--aims-green); }
+.accent-aims-navy { accent-color: var(--aims-green); }
+
+/* ═══════════════════════════════════════════════════════════
    Gradient utilities
    ═══════════════════════════════════════════════════════════ */
 .bg-grad-navy {

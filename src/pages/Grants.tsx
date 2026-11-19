@@ -10,6 +10,8 @@ import { grantService, importGrantOpportunities } from '@/services/grantService'
 import { GrantEnrichmentPanel } from '@/components/grants/GrantEnrichmentPanel';
 import type { GrantEnrichmentData } from '@/lib/grantEnrichment';
 import { GrantsPipelineBoard } from '@/components/grants/GrantsPipelineBoard';
+import { KanbanCard, KanbanColumnBody, KanbanColumnHeader } from '@/components/ui/KanbanBoard';
+import { DashboardAiInsights } from '@/components/dashboard/DashboardAiInsights';
 import { FormsShortcut } from '@/components/forms/FormsShortcut';
 import { AIPanel } from '@/components/ai/AIPanel';
 import { funderMatches } from '@/lib/aiEngine';
@@ -93,19 +95,17 @@ export function Grants() {
   if (FULL_VIEW_ROLES.includes(user.role)) {
     return (
       <div className="space-y-6">
-        <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
-          <div className="flex items-start justify-between flex-wrap gap-4">
-            <div>
-              <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">Grants Pipeline</h1>
-              <p className="text-base font-medium text-white">Organization-wide grant tracking from identification to award</p>
-            </div>
-            <button onClick={handleImportWatchlist} className="px-5 py-2.5 bg-white/15 border border-white/40 text-white rounded-xl text-xs font-extrabold hover:bg-white/25 transition-colors flex items-center gap-1.5 shrink-0">
-              <span className="material-symbols-outlined text-[16px]">playlist_add</span>Import Grant Watchlist
-            </button>
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <h1 className="text-xl font-extrabold text-slate-900">Grants Pipeline</h1>
+            <p className="text-xs text-slate-500 mt-0.5">Organization-wide grant tracking from identification to award</p>
           </div>
+          <button onClick={handleImportWatchlist} className="px-4 py-2 bg-aims-navy text-white rounded-lg text-xs font-extrabold hover:bg-aims-navy/90 transition-colors flex items-center gap-1.5 shrink-0">
+            <span className="material-symbols-outlined text-[16px]">playlist_add</span>Import Grant Watchlist
+          </button>
         </div>
         <FormsShortcut module="grants" title="Grant Forms — Proposal Cover Sheet · Budget · Milestone Checklist · Closeout Report" />
-        <AIPanel title="AI Insights — Funder Matching" insights={funderMatches()} />
+        <AIPanel compact title="AI Insights — Funder Matching" insights={funderMatches()} />
         <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
           <GrantsPipelineBoard />
         </div>
@@ -166,28 +166,27 @@ export function Grants() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
-        <div className="flex items-start justify-between flex-wrap gap-4">
-          <div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">My Grants</h1>
-            <p className="text-base font-medium text-white">Add opportunities, collaborate with the team and share resources on every grant</p>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <button onClick={handleImportWatchlist} className="px-4 py-2.5 bg-white/15 border border-white/40 text-white rounded-xl text-xs font-extrabold hover:bg-white/25 transition-colors flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[16px]">playlist_add</span>Import Watchlist
-            </button>
-            <button onClick={() => setShowAdd(true)} className="px-5 py-2.5 bg-white text-aims-navy rounded-xl text-xs font-extrabold hover:bg-aims-mint/90 transition-colors flex items-center gap-1.5 shadow-sm">
-              <span className="material-symbols-outlined text-[16px]">add_circle</span>Add Grant
-            </button>
-          </div>
-        </div>
-      </div>
-
+      {/* Stat cards lead the page (no hero banner) */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-navy p-4 shadow-sm"><p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">My Active Grants</p><p className="text-xl font-extrabold text-slate-900 mt-1">{activeMine.length}</p><p className="text-[10px] text-slate-400 mt-0.5">as handler or contributor</p></div>
         <div className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-orange p-4 shadow-sm"><p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Next Deadline</p><p className="text-xl font-extrabold text-slate-900 mt-1">{nextDeadline ? `${daysUntil(nextDeadline.deadline)}d` : '—'}</p><p className="text-[10px] text-slate-400 mt-0.5 truncate">{nextDeadline ? nextDeadline.title : 'No active grants'}</p></div>
         <div className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-green p-4 shadow-sm"><p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">My Pending Tasks</p><p className="text-xl font-extrabold text-slate-900 mt-1">{myPendingTasks}</p><p className="text-[10px] text-slate-400 mt-0.5">milestones assigned to you</p></div>
         <div className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-mint p-4 shadow-sm"><p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">My Secured Value</p><p className="text-xl font-extrabold text-slate-900 mt-1">{formatCurrency(mySecured)}</p><p className="text-[10px] text-slate-400 mt-0.5">awarded grants you worked on</p></div>
+      </div>
+
+      {/* AI insight strip — compact, immediately after the stats */}
+      <DashboardAiInsights scope="grants" title="AI Insights — Funders & Deadlines" />
+
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <p className="text-xs text-slate-500">Add opportunities, collaborate with the team and share resources on every grant</p>
+        <div className="flex items-center gap-2 flex-wrap">
+          <button onClick={handleImportWatchlist} className="px-4 py-2 border border-aims-navy/25 text-aims-navy rounded-lg text-xs font-extrabold hover:bg-aims-navy/5 transition-colors flex items-center gap-1.5">
+            <span className="material-symbols-outlined text-[16px]">playlist_add</span>Import Watchlist
+          </button>
+          <button onClick={() => setShowAdd(true)} className="px-4 py-2 bg-aims-navy text-white rounded-lg text-xs font-extrabold hover:bg-aims-navy/90 transition-colors flex items-center gap-1.5 shadow-sm">
+            <span className="material-symbols-outlined text-[16px]">add_circle</span>Add Grant
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
@@ -248,25 +247,26 @@ export function Grants() {
             const stageGrants = visible.filter((g) => g.stage === stage.key);
             return (
               <div key={stage.key} className="flex flex-col">
-                <div className={cn('rounded-t-xl px-3 py-2.5 flex items-center justify-between', CHIP[stage.color])}><span className="text-xs font-bold uppercase tracking-wider text-white">{stage.label}</span><span className="text-xs font-extrabold text-white bg-white/20 px-2 py-0.5 rounded-full">{stageGrants.length}</span></div>
-                <div className="bg-slate-50 rounded-b-xl border border-slate-200 border-t-0 p-2 space-y-2 min-h-[120px]">
-                  {stageGrants.length === 0 && <p className="text-xs text-slate-400 text-center py-6 italic">None</p>}
+                <KanbanColumnHeader label={stage.label} count={stageGrants.length} chipClass={CHIP[stage.color]} />
+                <KanbanColumnBody count={stageGrants.length} emptyLabel="None">
                   {stageGrants.map((g) => {
                     const progress = grantProgress(g);
                     const days = daysUntil(g.deadline);
                     return (
-                      <div key={g.id} onClick={() => navigate(`/grants/${g.id}`)} className="bg-white rounded-lg border border-slate-200 p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
-                        <p className="text-sm font-bold text-slate-900 mb-1 group-hover:text-aims-navy transition-colors">{g.title}</p>
-                        <p className="text-[10px] text-slate-500 mb-1">{g.funder}</p>
-                        <div className="mb-2"><div className="w-full bg-slate-100 rounded-full h-1.5"><div className="h-1.5 rounded-full bg-aims-green" style={{ width: `${progress}%` }} /></div></div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-bold text-slate-700">{formatCurrency(g.amountRequested)}</span>
-                          <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded border', days <= 7 ? 'text-red-500 bg-red-50 border-red-200' : days <= 30 ? 'text-aims-orange bg-aims-orange/10 border-aims-orange/20' : 'text-slate-500 bg-slate-50 border-slate-200')}>{days}d</span>
+                      <KanbanCard key={g.id} onClick={() => navigate(`/grants/${g.id}`)}>
+                        <p className="text-sm font-bold text-slate-900 mb-1 line-clamp-2 group-hover:text-aims-navy transition-colors">{g.title}</p>
+                        <p className="text-[10px] text-slate-500 truncate">{g.funder}</p>
+                        <div className="mt-auto">
+                          <div className="mb-2"><div className="w-full bg-slate-100 rounded-full h-1.5"><div className="h-1.5 rounded-full bg-aims-green" style={{ width: `${progress}%` }} /></div></div>
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-[10px] font-bold text-slate-700 truncate">{formatCurrency(g.amountRequested)}</span>
+                            <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded border shrink-0', days <= 7 ? 'text-red-500 bg-red-50 border-red-200' : days <= 30 ? 'text-aims-orange bg-aims-orange/10 border-aims-orange/20' : 'text-slate-500 bg-slate-50 border-slate-200')}>{days}d</span>
+                          </div>
                         </div>
-                      </div>
+                      </KanbanCard>
                     );
                   })}
-                </div>
+                </KanbanColumnBody>
               </div>
             );
           })}

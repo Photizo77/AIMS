@@ -1,8 +1,10 @@
 // src/pages/FormsLibrary.tsx
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { FORMS_LIBRARY } from '@/config/forms';
 import type { FormDefinition } from '@/config/forms';
 import { FormRenderer } from '@/components/forms/FormRenderer';
+import { openEmployeeOnboarding } from '@/components/hr/EmployeeOnboardingForm';
 
 const MODULE_LABELS: Record<string, string> = {
   hr: 'Human Resources',
@@ -30,6 +32,18 @@ export function FormsLibrary() {
   const [selectedForm, setSelectedForm] = useState<FormDefinition | null>(null);
   const [filterModule, setFilterModule] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchParams] = useSearchParams();
+
+  // Share link support: /forms?form=hr-02&mode=employee opens the Employee
+  // Information Form directly in employee self-service mode. The dispatch is
+  // deferred one tick so the modal listener (mounted in AppShell) is live.
+  useEffect(() => {
+    if (searchParams.get('form') !== 'hr-02') return;
+    const mode = searchParams.get('mode') === 'employee' ? 'employee' : 'admin';
+    const timer = setTimeout(() => openEmployeeOnboarding(mode), 0);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const filteredForms = FORMS_LIBRARY.filter((f) => {
     if (filterModule && f.module !== filterModule) return false;
@@ -48,6 +62,26 @@ export function FormsLibrary() {
         <button onClick={() => setSelectedForm(null)} className="flex items-center gap-1 text-xs font-bold text-aims-navy hover:underline">
           <span className="material-symbols-outlined text-[16px]">arrow_back</span>Back to Forms Library
         </button>
+        {/* Employee Information Form — the employee can fill it in themselves */}
+        {selectedForm.id === 'hr-02' && (
+          <div className="bg-white rounded-xl border border-slate-200 border-l-4 border-l-aims-green p-4 shadow-sm flex items-start justify-between gap-3 flex-wrap">
+            <div className="flex items-start gap-3">
+              <span className="w-9 h-9 rounded-lg bg-aims-green/10 flex items-center justify-center shrink-0"><span className="material-symbols-outlined text-aims-green text-[20px]">how_to_reg</span></span>
+              <div>
+                <p className="text-sm font-bold text-slate-900">Who is completing this form?</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">Employees can fill in the full ARDHI form themselves — it is sent straight to the Company Admin for verification and onboarding.</p>
+              </div>
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              <button onClick={() => openEmployeeOnboarding('employee')} className="px-4 py-2 bg-aims-green text-white text-xs font-bold rounded-lg hover:bg-aims-green/90 flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[15px]">person</span>Fill in as employee
+              </button>
+              <button onClick={() => openEmployeeOnboarding('admin')} className="px-4 py-2 border border-aims-navy/25 text-aims-navy text-xs font-bold rounded-lg hover:bg-aims-navy/5 flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[15px]">badge</span>HR / Admin entry
+              </button>
+            </div>
+          </div>
+        )}
         <FormRenderer form={selectedForm} onClose={() => setSelectedForm(null)} />
       </div>
     );
@@ -55,9 +89,9 @@ export function FormsLibrary() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
-        <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">Forms Library</h1>
-        <p className="text-base font-medium text-white">All operational & employee-facing forms — full detail edition</p>
+      <div>
+        <h1 className="text-xl font-extrabold text-slate-900">Forms Library</h1>
+        <p className="text-xs text-slate-500 mt-0.5">All operational & employee-facing forms — full detail edition</p>
       </div>
 
       {/* Filters */}

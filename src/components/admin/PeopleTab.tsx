@@ -81,7 +81,7 @@ export function PeopleTab({ focusUserId }: { focusUserId?: string }) {
           <h2 className="text-lg font-semibold text-slate-900">People Directory</h2>
           <p className="text-sm text-slate-500">View employee profiles and contracts{onboardingCount > 0 ? ` · ${onboardingCount} new hire(s) in onboarding` : ''}</p>
         </div>
-        <button onClick={openEmployeeOnboarding} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90 flex items-center gap-1.5">
+        <button onClick={() => openEmployeeOnboarding('admin')} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90 flex items-center gap-1.5">
           <span className="material-symbols-outlined text-[16px]">person_add</span>Add Employee
         </button>
       </div>

@@ -299,9 +299,9 @@ function FinanceRequisitionWorkspace({ userName }: { userName: string }) {
 
   return (
     <div className="space-y-6">
-      <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
-        <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">Requisition Queue</h1>
-        <p className="text-base font-medium text-white">Draft, push to ED, and process disbursements — ED holds approval authority</p>
+      <div>
+        <h1 className="text-xl font-extrabold text-slate-900">Requisition Queue</h1>
+        <p className="text-xs text-slate-500 mt-0.5">Draft, push to ED, and process disbursements — ED holds approval authority</p>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -569,9 +569,9 @@ function EDApprovalQueue() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
-        <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">Approvals Queue</h1>
-        <p className="text-base font-medium text-white">Exclusive to ED — requisitions, payslips and CD flags · sole approval authority</p>
+      <div>
+        <h1 className="text-xl font-extrabold text-slate-900">Approvals Queue</h1>
+        <p className="text-xs text-slate-500 mt-0.5">Exclusive to ED — requisitions, payslips and CD flags · sole approval authority</p>
       </div>
 
       {/* CD Flag interrupts — priority at top of queue */}
@@ -658,9 +658,9 @@ function ReadonlyApprovals() {
   const [detail, setDetail] = useState<Requisition | null>(null);
   return (
     <div className="space-y-6">
-      <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
-        <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">Approvals in Progress</h1>
-        <p className="text-base font-medium text-white">Read-only status tracker — where requisitions and payslips sit in ED's pipeline</p>
+      <div>
+        <h1 className="text-xl font-extrabold text-slate-900">Approvals in Progress</h1>
+        <p className="text-xs text-slate-500 mt-0.5">Read-only status tracker — where requisitions and payslips sit in ED's pipeline</p>
       </div>
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
         <table className="w-full text-left text-sm">

@@ -22,7 +22,20 @@ export interface EmployeeReferenceRow { name: string; titleOrg: string; relation
 export interface EmployeeOnboarding {
   id: string;
   employeeId: string;
-  status: 'Onboarding' | 'Active';
+  /**
+   * Submitted — the employee filled the form in themselves and it is sitting
+   *             with the Company Admin for review (no login exists yet).
+   * Onboarding — reviewed by HR/Admin; the hire is in the onboarding pipeline.
+   * Active     — every onboarding step (login, role, 2FA, assets) is complete.
+   */
+  status: 'Submitted' | 'Onboarding' | 'Active';
+  /** Who captured the form: the employee (self-service) or HR/Company Admin */
+  origin?: 'employee' | 'admin';
+  submittedBy?: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  /** Onboarding pipeline entry (userOps store) created for this hire */
+  pipelineId?: string;
   role: Role;
   position: string;
   department: string;
@@ -133,6 +146,35 @@ export function updateOnboarding(id: string, patch: Partial<EmployeeOnboarding>)
 /** Activate an onboarding record so it appears as an active employee */
 export function activateEmployee(id: string): void {
   updateOnboarding(id, { status: 'Active' });
+}
+
+/** Forms an employee submitted themselves — awaiting Company Admin review */
+export function listPendingSubmissions(): EmployeeOnboarding[] {
+  return records.filter((r) => r.status === 'Submitted');
+}
+
+/**
+ * Company Admin accepts an employee-submitted form: the record moves from
+ * "Submitted" into the live onboarding pipeline.
+ */
+export function approveSubmission(id: string, by: string): EmployeeOnboarding | undefined {
+  const rec = records.find((r) => r.id === id);
+  if (!rec) return undefined;
+  updateOnboarding(id, { status: 'Onboarding', reviewedBy: by, reviewedAt: new Date().toISOString() });
+  return records.find((r) => r.id === id);
+}
+
+/** Reject / send an employee-submitted form back (record kept for the audit trail) */
+export function rejectSubmission(id: string, by: string, note: string): EmployeeOnboarding | undefined {
+  const rec = records.find((r) => r.id === id);
+  if (!rec) return undefined;
+  updateOnboarding(id, { status: 'Submitted', reviewedBy: by, reviewedAt: new Date().toISOString(), hrUse: { ...rec.hrUse, fileRef: note || rec.hrUse.fileRef } });
+  return records.find((r) => r.id === id);
+}
+
+/** Link a form record to the onboarding pipeline entry it created */
+export function linkPipeline(id: string, pipelineId: string): void {
+  updateOnboarding(id, { pipelineId });
 }
 
 // ── People Directory mapping ──

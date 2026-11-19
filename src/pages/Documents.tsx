@@ -276,9 +276,9 @@ export function Documents() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
-        <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">Document Management Hub</h1>
-        <p className="text-base font-medium text-white">Central repository across all modules — access governed by role permissions</p>
+      <div>
+        <h1 className="text-xl font-extrabold text-slate-900">Document Management Hub</h1>
+        <p className="text-xs text-slate-500 mt-0.5">Central repository across all modules — access governed by role permissions</p>
       </div>
 
       {notification && (
@@ -290,19 +290,19 @@ export function Documents() {
 
       {/* Tailored for you */}
       {persona && (
-        <div className="bg-grad-navy rounded-2xl p-6 text-white shadow-lg">
+        <div className="bg-white rounded-xl border border-slate-200 border-l-4 border-l-aims-green p-4 shadow-sm">
           <div className="flex items-center gap-2 mb-1">
-            <span className="material-symbols-outlined text-aims-mint text-[18px]">person_pin</span>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-aims-mint">Tailored for you</p>
+            <span className="material-symbols-outlined text-aims-green text-[18px]">person_pin</span>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-aims-green">Tailored for you</p>
           </div>
-          <h2 className="text-lg font-extrabold text-white mb-1">{persona.label} Documents</h2>
-          <p className="text-sm text-white/90 mb-4">{persona.blurb}</p>
-          <div className="flex flex-wrap gap-2 mb-4">
+          <h2 className="text-sm font-extrabold text-slate-900 mb-1">{persona.label} Documents</h2>
+          <p className="text-xs text-slate-600 mb-3">{persona.blurb}</p>
+          <div className="flex flex-wrap gap-2 mb-3">
             {persona.focus.map((key) => {
               const cat = CATEGORIES.find((c) => c.key === key);
               if (!cat || getCategoryAccess(userRole, key) === 'none') return null;
               return (
-                <button key={key} onClick={() => goCategory(key)} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 border border-white/20 rounded-lg text-xs font-bold transition-colors">
+                <button key={key} onClick={() => goCategory(key)} className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 transition-colors">
                   <span className="material-symbols-outlined text-[14px]">{cat.icon}</span>{cat.label}
                 </button>
               );
@@ -311,13 +311,13 @@ export function Documents() {
           {pinnedDocs.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {pinnedDocs.map((doc) => (
-                <button key={doc.id} onClick={() => goCategory(doc.category)} className="flex items-center gap-2 p-2.5 bg-white/10 hover:bg-white/20 rounded-lg border border-white/15 text-left transition-colors group">
+                <button key={doc.id} onClick={() => goCategory(doc.category)} className="flex items-center gap-2 p-2.5 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 text-left transition-colors group">
                   <span className={cn('material-symbols-outlined text-[18px] shrink-0', getFileColor(doc.fileType))}>{getFileIcon(doc.fileType)}</span>
                   <span className="min-w-0">
-                    <span className="block text-xs font-bold text-white truncate">{doc.title}</span>
-                    <span className="block text-[10px] text-white/70">{doc.fileType} • {doc.fileSize}</span>
+                    <span className="block text-xs font-bold text-slate-900 truncate">{doc.title}</span>
+                    <span className="block text-[10px] text-slate-500">{doc.fileType} • {doc.fileSize}</span>
                   </span>
-                  <span className="material-symbols-outlined text-[14px] text-white/60 ml-auto group-hover:text-white transition-colors">arrow_forward</span>
+                  <span className="material-symbols-outlined text-[14px] text-slate-400 ml-auto group-hover:text-aims-navy transition-colors">arrow_forward</span>
                 </button>
               ))}
             </div>
@@ -427,7 +427,7 @@ export function Documents() {
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50">
-                <th className="px-4 py-3 w-10"><input type="checkbox" checked={selectedIds.size === filteredDocs.length && filteredDocs.length > 0} onChange={toggleSelectAll} className="rounded border-slate-300 accent-aims-navy" /></th>
+                <th className="px-4 py-3 w-10"><input type="checkbox" checked={selectedIds.size === filteredDocs.length && filteredDocs.length > 0} onChange={toggleSelectAll} className="rounded border-slate-300 accent-aims-green" /></th>
                 <th className="px-4 py-3 font-bold text-slate-500 text-xs uppercase tracking-wider">Document</th>
                 <th className="px-4 py-3 font-bold text-slate-500 text-xs uppercase tracking-wider">Uploaded By</th>
                 <th className="px-4 py-3 font-bold text-slate-500 text-xs uppercase tracking-wider">Date</th>
@@ -442,7 +442,7 @@ export function Documents() {
               )}
               {filteredDocs.map((doc) => (
                 <tr key={doc.id} className={cn('hover:bg-slate-50 transition-colors', selectedIds.has(doc.id) ? 'bg-blue-50/50' : '')}>
-                  <td className="px-4 py-3"><input type="checkbox" checked={selectedIds.has(doc.id)} onChange={() => toggleSelect(doc.id)} className="rounded border-slate-300 accent-aims-navy" /></td>
+                  <td className="px-4 py-3"><input type="checkbox" checked={selectedIds.has(doc.id)} onChange={() => toggleSelect(doc.id)} className="rounded border-slate-300 accent-aims-green" /></td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <span className={cn('material-symbols-outlined text-[20px]', getFileColor(doc.fileType))}>{getFileIcon(doc.fileType)}</span>

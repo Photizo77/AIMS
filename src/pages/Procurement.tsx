@@ -86,9 +86,9 @@ export function Procurement() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
-        <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">Procurement & Vendors</h1>
-        <p className="text-base font-medium text-white">Manage suppliers, purchase orders, and procurement workflows</p>
+      <div>
+        <h1 className="text-xl font-extrabold text-slate-900">Procurement & Vendors</h1>
+        <p className="text-xs text-slate-500 mt-0.5">Manage suppliers, purchase orders, and procurement workflows</p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

@@ -72,9 +72,9 @@ export function Inventory() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
-        <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">Inventory & Asset Management</h1>
-        <p className="text-base font-medium text-white">Assets, stock & consumables, reorders, assignment, maintenance and stock-take</p>
+      <div>
+        <h1 className="text-xl font-extrabold text-slate-900">Inventory & Asset Management</h1>
+        <p className="text-xs text-slate-500 mt-0.5">Assets, stock & consumables, reorders, assignment, maintenance and stock-take</p>
       </div>
       <FormsShortcut module="inventory" title="Inventory Forms — Reorder Request · Asset Register Entry" />
       {user?.role === 'CD' ? <InventoryReadOnly /> : user?.role === 'COMPANY_ADMIN' || user?.role === 'ED' ? <InventoryHub /> : <InventoryManager />}

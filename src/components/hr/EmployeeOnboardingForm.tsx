@@ -19,17 +19,28 @@ import { cn } from '@/lib/utils';
 import { ROLE_LABELS } from '@/config/roles';
 import type { Role } from '@/types';
 import {
-  emptyOnboarding, addOnboarding, listOnboarding, updateOnboarding,
+  emptyOnboarding, addOnboarding, listOnboarding, updateOnboarding, linkPipeline,
   type EmployeeOnboarding,
   type EmployeeEducationRow, type EmployeeTertiaryRow, type EmployeeCertRow,
   type EmployeeWorkRow, type EmployeeLanguageRow, type EmployeeReferenceRow,
 } from '@/services/employeeService';
 import { addHrDoc, formatBytes } from '@/services/employeeDocsService';
 import { addContract } from '@/services/contractService';
+import { addOnboardee } from '@/services/userOpsService';
+import { printBlankEmployeeForm, employeeFormShareLink, employeeFormShareMessage } from '@/lib/employeeFormTemplate';
+import { queueForModule } from '@/lib/formSubmissions';
+
+/**
+ * Two ways to fill the form:
+ *  - 'admin'    : HR / Company Admin captures the record and provisions the account.
+ *  - 'employee' : the employee fills it in themselves; on submit it is sent to the
+ *                 Company Admin for review — no login is created until they verify it.
+ */
+export type EmployeeFormMode = 'admin' | 'employee';
 
 /** Programmatically open the employee onboarding form (used across HR surfaces) */
-export function openEmployeeOnboarding(): void {
-  window.dispatchEvent(new CustomEvent('aims:employee-onboarding'));
+export function openEmployeeOnboarding(mode: EmployeeFormMode = 'admin'): void {
+  window.dispatchEvent(new CustomEvent('aims:employee-onboarding', { detail: { mode } }));
 }
 
 const DOCS_CHECKLIST = [
@@ -110,8 +121,10 @@ const CELL = 'w-full text-xs border border-slate-200 rounded-md px-2 py-1.5 bg-w
 
 export function EmployeeOnboardingModal() {
   const { user } = useAuth();
-  const { showToast } = useNotifications();
+  const { showToast, addNotification } = useNotifications();
   const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState<EmployeeFormMode>('admin');
+  const [showShare, setShowShare] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const blank = emptyOnboarding();
@@ -134,33 +147,43 @@ export function EmployeeOnboardingModal() {
   const [docsSubmitted, setDocsSubmitted] = useState<Set<string>>(new Set());
   const [cv, setCv] = useState<{ name: string; size: string; type: string } | null>(null);
   const [created, setCreated] = useState<{ id: string; fullName: string; employeeId: string; roleLabel: string; dept: string; loginEmail: string; password: string; createdAt: string; docsCount: number; contractCreated: boolean; sent: boolean } | null>(null);
+  /** Employee self-service submission receipt (awaiting Company Admin review) */
+  const [submitted, setSubmitted] = useState<{ id: string; fullName: string; reference: string; email: string; docsCount: number; pipelineCreated: boolean } | null>(null);
+
+  const resetForm = () => {
+    const fresh = emptyOnboarding();
+    setPersonalState(fresh.personal);
+    setContactState(fresh.contact);
+    setNextOfKinState(fresh.nextOfKin);
+    setSchoolsState(fresh.education.schools);
+    setTertiaryState(fresh.education.tertiary);
+    setCertsState(fresh.education.certs);
+    setWorkHistoryState(fresh.employment.history);
+    setResponsibilitiesState(fresh.employment.responsibilities);
+    setSkillsState(fresh.skills);
+    setLangRowsState(fresh.skills.languages);
+    setReferencesState(fresh.references);
+    setBankingState(fresh.banking);
+    setDeclarationsState(fresh.declarations);
+    setSignatureState(fresh.signature);
+    setHrUseState(fresh.hrUse);
+    setTop({ employeeId: '', position: '', department: '', role: 'GRANT_WRITER', startDate: '', contractType: '', salary: '' });
+    setDocsSubmitted(new Set());
+    setCv(null);
+    setCreated(null);
+    setSubmitted(null);
+  };
 
   useEffect(() => {
-    const handler = () => {
-      const fresh = emptyOnboarding();
-      setPersonalState(fresh.personal);
-      setContactState(fresh.contact);
-      setNextOfKinState(fresh.nextOfKin);
-      setSchoolsState(fresh.education.schools);
-      setTertiaryState(fresh.education.tertiary);
-      setCertsState(fresh.education.certs);
-      setWorkHistoryState(fresh.employment.history);
-      setResponsibilitiesState(fresh.employment.responsibilities);
-      setSkillsState(fresh.skills);
-      setLangRowsState(fresh.skills.languages);
-      setReferencesState(fresh.references);
-      setBankingState(fresh.banking);
-      setDeclarationsState(fresh.declarations);
-      setSignatureState(fresh.signature);
-      setHrUseState(fresh.hrUse);
-      setTop({ employeeId: '', position: '', department: '', role: 'GRANT_WRITER', startDate: '', contractType: '', salary: '' });
-      setDocsSubmitted(new Set());
-      setCv(null);
-      setCreated(null);
+    const handler = (e: Event) => {
+      resetForm();
+      const detail = (e as CustomEvent<{ mode?: EmployeeFormMode }>).detail;
+      setMode(detail?.mode === 'employee' ? 'employee' : 'admin');
       setOpen(true);
     };
     window.addEventListener('aims:employee-onboarding', handler);
     return () => window.removeEventListener('aims:employee-onboarding', handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Generic row helpers for repeatable sections
@@ -191,7 +214,109 @@ export function EmployeeOnboardingModal() {
     setCv({ name: file.name, size: formatBytes(file.size), type: file.type });
   };
 
+  const buildRecord = (status: EmployeeOnboarding['status'], employeeIdOverride?: string): EmployeeOnboarding => {
+    const fullName = [personal.firstName, personal.surname].filter(Boolean).join(' ').trim();
+    const now = new Date().toISOString();
+    const seq = String(listOnboarding().length + 1).padStart(3, '0');
+    const employeeId = employeeIdOverride ?? (top.employeeId.trim() || `ARD-${new Date().getFullYear()}-${seq}`);
+    const firstPart = (personal.firstName || fullName.split(' ')[0] || 'employee').toLowerCase().replace(/[^a-z0-9]+/g, '');
+    const lastPart = (personal.surname || '').toLowerCase().replace(/[^a-z0-9]+/g, '') || firstPart;
+    const loginEmail = (contact.personalEmail || '').trim() || `${firstPart}.${lastPart}@ardhi.org.ug`;
+    const rec: EmployeeOnboarding = {
+      id: `emp-${Date.now()}`,
+      employeeId,
+      status,
+      origin: mode,
+      submittedBy: user?.name ?? (mode === 'employee' ? 'Employee' : 'HR'),
+      role: top.role,
+      position: top.position.trim() || 'New Hire',
+      department: top.department.trim() || 'Unassigned',
+      submittedAt: now,
+      startDate: top.startDate,
+      contractType: top.contractType,
+      personal,
+      contact,
+      nextOfKin,
+      education: { schools, tertiary: tertiaryRows, certs },
+      employment: { history: workHistory, responsibilities },
+      skills: { ...skills, languages: langRows },
+      references,
+      banking,
+      declarations,
+      signature: { ...signature, name: signature.name || fullName, date: signature.date || now.slice(0, 10) },
+      hrUse,
+      documentsSubmitted: Array.from(docsSubmitted),
+      cvFile: cv,
+    };
+    return { ...rec, account: mode === 'admin' ? { loginEmail, defaultPassword: '', createdAt: now } : undefined };
+  };
+
+  /**
+   * EMPLOYEE SELF-SERVICE — the hire fills the form in and sends it to the
+   * Company Admin. No login is created here: the record lands as "Submitted",
+   * the hire enters the onboarding pipeline, and HR is notified to review it.
+   */
+  const submitAsEmployee = () => {
+    const fullName = [personal.firstName, personal.surname].filter(Boolean).join(' ').trim();
+    if (!fullName) {
+      showToast({ title: 'Missing Details', message: 'Provide at least your first name and surname (Section 1 — Personal Information).', type: 'error' });
+      return;
+    }
+    if (!contact.personalEmail.trim()) {
+      showToast({ title: 'Email Required', message: 'Add a personal email in Section 2 — the Company Admin uses it to send your login.', type: 'error' });
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.personalEmail.trim())) {
+      showToast({ title: 'Invalid Email', message: 'Enter a valid email address in Section 2 (Contact Details).', type: 'error' });
+      return;
+    }
+
+    const rec = buildRecord('Submitted');
+    addOnboarding(rec);
+
+    // The hire enters the onboarding pipeline so the admin can work the 4 steps
+    const pipeline = addOnboardee({
+      name: fullName,
+      email: contact.personalEmail.trim(),
+      position: top.position.trim() || rec.position,
+      department: top.department.trim() || rec.department,
+      startDate: top.startDate || undefined,
+      employeeId: rec.id,
+      source: 'employee-form',
+    });
+    linkPipeline(rec.id, pipeline.id);
+
+    // Notify the HR / Company Admin queue
+    queueForModule('hr')?.recipients.forEach((r) => {
+      addNotification({
+        userId: r.userId,
+        recipientName: r.name,
+        title: 'Employee Information Form submitted',
+        message: `${fullName} submitted FORM-HR-02 (${rec.employeeId}) for review. Verify it in the onboarding pipeline, then provision the login, role, 2FA and assets.`,
+        type: 'approval',
+        link: '/user-management',
+        actionUrl: '/user-management',
+      });
+    });
+
+    showToast({
+      title: 'Sent to the Company Admin',
+      message: `Thank you, ${fullName.split(' ')[0]}. Your form (${rec.employeeId}) was submitted — the Company Admin will review it and send your login.`,
+      type: 'success',
+    });
+    setOpen(false);
+    setSubmitted({
+      id: rec.id,
+      fullName,
+      reference: rec.employeeId,
+      email: contact.personalEmail.trim(),
+      docsCount: docsSubmitted.size,
+      pipelineCreated: true,
+    });
+  };
+
   const submit = () => {
+    if (mode === 'employee') { submitAsEmployee(); return; }
     const fullName = [personal.firstName, personal.surname].filter(Boolean).join(' ').trim();
     if (!fullName) {
       showToast({ title: 'Missing Details', message: 'Provide at least the first name and surname (Section 1 — Personal Information).', type: 'error' });
@@ -206,32 +331,21 @@ export function EmployeeOnboardingModal() {
     const loginEmail = (contact.personalEmail || '').trim() || `${firstPart}.${lastPart}@ardhi.org.ug`;
     const defaultPassword = `ARDHI-${new Date().getFullYear()}-${String(Math.floor(1000 + Math.random() * 9000))}`;
     const account = { loginEmail, defaultPassword, createdAt: now };
-    const rec: EmployeeOnboarding = {
-      id: `emp-${Date.now()}`,
-      employeeId,
-      status: 'Onboarding',
-      role: top.role,
-      position: top.position.trim() || 'New Hire',
-      department: top.department.trim() || 'Unassigned',
-      submittedAt: now,
-      startDate: top.startDate,
-      contractType: top.contractType,
-      account,
-      personal,
-      contact,
-      nextOfKin,
-      education: { schools, tertiary: tertiaryRows, certs },
-      employment: { history: workHistory, responsibilities },
-      skills: { ...skills, languages: langRows },
-      references,
-      banking,
-      declarations,
-      signature,
-      hrUse,
-      documentsSubmitted: Array.from(docsSubmitted),
-      cvFile: cv,
-    };
+    const rec: EmployeeOnboarding = { ...buildRecord('Onboarding', employeeId), account };
     addOnboarding(rec);
+
+    // The hire enters the onboarding pipeline so the 4 provisioning steps can be worked
+    const pipeline = addOnboardee({
+      name: fullName,
+      email: loginEmail,
+      role: top.role,
+      position: rec.position,
+      department: rec.department,
+      startDate: top.startDate || undefined,
+      employeeId: rec.id,
+      source: 'admin',
+    });
+    linkPipeline(rec.id, pipeline.id);
 
     // Draft contract created on save so it appears under Contracts for this employee
     let contractCreated = false;
@@ -260,7 +374,7 @@ export function EmployeeOnboardingModal() {
 
     showToast({
       title: 'Employee Added — User Account Created',
-      message: `${fullName} (${employeeId}) added to the People Directory. AIMS account ${loginEmail} created with a default password — send credentials to finish onboarding.`,
+      message: `${fullName} (${employeeId}) added to the People Directory and the onboarding pipeline. AIMS account ${loginEmail} created with a default password — finish the 4 pipeline steps to activate them.`,
       type: 'success',
     });
     setOpen(false);
@@ -296,6 +410,56 @@ export function EmployeeOnboardingModal() {
       showToast({ title: 'Copy Unavailable', message: 'Select the value and copy manually.', type: 'error' });
     }
   };
+
+  // Success stage — the EMPLOYEE sent the form to the Company Admin
+  if (submitted) {
+    return (
+      <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black/50" onClick={() => setSubmitted(null)} />
+        <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6">
+          <div className="flex items-start justify-between gap-3 mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-aims-green/15 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-aims-green text-[26px]">outbox</span>
+              </div>
+              <div>
+                <h3 className="text-lg font-extrabold text-slate-900">Form Sent to the Company Admin</h3>
+                <p className="text-xs text-slate-500 mt-0.5">Reference {submitted.reference} · no login is issued until it is verified</p>
+              </div>
+            </div>
+            <button onClick={() => setSubmitted(null)} className="text-slate-400 hover:text-slate-600 shrink-0"><span className="material-symbols-outlined">close</span></button>
+          </div>
+
+          <div className="rounded-xl border border-aims-green/30 bg-aims-green/5 p-4 mb-4">
+            <p className="text-xs font-bold text-slate-900 flex items-center gap-1.5"><span className="material-symbols-outlined text-[15px] text-aims-green">check_circle</span>Thank you, {submitted.fullName.split(' ')[0]}</p>
+            <p className="text-[11px] text-slate-600 mt-1">Your information has been delivered to the Company Admin and a place has been reserved for you in the onboarding pipeline.</p>
+            <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-[11px]">
+              <p className="text-slate-500">Submission ref <span className="font-mono font-bold text-slate-900 block">{submitted.reference}</span></p>
+              <p className="text-slate-500">Documents ticked <span className="font-bold text-slate-900 block">{submitted.docsCount} {submitted.docsCount === 1 ? 'item' : 'items'}</span></p>
+              <p className="text-slate-500 col-span-2">Contact email <span className="font-bold text-slate-900 block">{submitted.email}</span></p>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 p-4 mb-4">
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">What happens next</p>
+            <ol className="space-y-1.5 text-[11px] text-slate-600">
+              <li className="flex gap-2"><span className="text-aims-green font-bold">1</span>The Company Admin reviews and verifies your form.</li>
+              <li className="flex gap-2"><span className="text-aims-green font-bold">2</span>Your login, role and two-factor authentication are provisioned.</li>
+              <li className="flex gap-2"><span className="text-aims-green font-bold">3</span>Your credentials are emailed to <span className="font-bold text-slate-900">{submitted.email}</span>.</li>
+              <li className="flex gap-2"><span className="text-aims-green font-bold">4</span>Equipment is handed over and your record is activated.</li>
+            </ol>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <button onClick={() => setSubmitted(null)} className="px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100 rounded-lg">Close</button>
+            <button onClick={printBlankEmployeeForm} className="px-4 py-2 rounded-lg text-xs font-bold border border-aims-navy/25 text-aims-navy hover:bg-aims-navy/5 flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-[14px]">print</span>Keep a printed copy
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Success stage — user account created, ready to send credentials
   if (created) {
@@ -376,35 +540,93 @@ export function EmployeeOnboardingModal() {
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="bg-grad-navy px-6 py-4 text-white shrink-0">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-widest text-aims-mint flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-[14px]">lock</span>Confidential — For HR Use Only
+                <span className="material-symbols-outlined text-[14px]">{mode === 'employee' ? 'outbox' : 'lock'}</span>
+                {mode === 'employee' ? 'Confidential — you complete this, we send it to the Company Admin' : 'Confidential — HR / Company Admin entry'}
               </p>
               <h2 className="text-lg font-extrabold text-white mt-0.5">ARDHI Employee Information Form</h2>
-              <p className="text-xs text-white/85">Client onboarding — complete every section accurately. Write "N/A" where a field does not apply.</p>
+              <p className="text-xs text-white/85">
+                {mode === 'employee'
+                  ? 'Fill in every section accurately, then send it to the Company Admin for review. Write "N/A" where a field does not apply.'
+                  : 'Complete every section accurately — the employee enters the onboarding pipeline on save.'}
+              </p>
             </div>
             <button onClick={() => setOpen(false)} className="text-white/80 hover:text-white shrink-0"><span className="material-symbols-outlined">close</span></button>
           </div>
+
+          {/* Who is filling this in? */}
+          <div className="flex flex-wrap items-center gap-2 mt-3">
+            <div className="flex items-center bg-white/15 rounded-lg p-1">
+              <button onClick={() => setMode('employee')} className={cn('px-3 py-1 rounded-md text-[10px] font-bold transition-colors', mode === 'employee' ? 'bg-white text-aims-navy' : 'text-white/80 hover:text-white')}>
+                <span className="material-symbols-outlined text-[13px] align-middle mr-1">person</span>Employee fills it in
+              </button>
+              <button onClick={() => setMode('admin')} className={cn('px-3 py-1 rounded-md text-[10px] font-bold transition-colors', mode === 'admin' ? 'bg-white text-aims-navy' : 'text-white/80 hover:text-white')}>
+                <span className="material-symbols-outlined text-[13px] align-middle mr-1">badge</span>HR / Admin entry
+              </button>
+            </div>
+            <button onClick={() => setShowShare((s) => !s)} className="px-2.5 py-1.5 rounded-lg text-[10px] font-bold bg-white/15 hover:bg-white/25 flex items-center gap-1">
+              <span className="material-symbols-outlined text-[13px]">share</span>Share blank template
+            </button>
+          </div>
+
+          {/* Share / copy of the blank form */}
+          {showShare && (
+            <div className="mt-3 bg-white rounded-xl p-3 text-slate-700">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Hand the form to anyone — blank copies stay blank</p>
+              <div className="flex flex-wrap gap-2">
+                <button onClick={printBlankEmployeeForm} className="px-3 py-1.5 bg-aims-navy text-white text-[10px] font-bold rounded-lg hover:bg-aims-navy/90 flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[13px]">print</span>Print / Save PDF
+                </button>
+                <button onClick={() => copyText(employeeFormShareLink())} className="px-3 py-1.5 border border-aims-navy/25 text-aims-navy text-[10px] font-bold rounded-lg hover:bg-aims-navy/5 flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[13px]">link</span>Copy form link
+                </button>
+                <button onClick={() => copyText(employeeFormShareMessage())} className="px-3 py-1.5 border border-slate-200 text-slate-700 text-[10px] font-bold rounded-lg hover:bg-slate-50 flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[13px]">content_copy</span>Copy invite message
+                </button>
+              </div>
+              <p className="text-[10px] text-slate-500 mt-2">
+                Share link: <span className="font-mono break-all">{employeeFormShareLink()}</span> — employees open it, fill the form themselves and it lands in the Company Admin's onboarding pipeline.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Body */}
         <div className="p-5 space-y-4 overflow-y-auto">
-          {/* Quick fields */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <F label="Date of Submission" value={new Date().toISOString().slice(0, 10)} onChange={() => undefined} />
-            <F label="Employee ID (HR)" value={top.employeeId} onChange={(v) => setTop((t) => ({ ...t, employeeId: v }))} placeholder="ARD-2026-001 (auto if blank)" />
-            <F label="Position" value={top.position} onChange={(v) => setTop((t) => ({ ...t, position: v }))} placeholder="e.g. Grants Officer" />
-            <F label="Department" value={top.department} onChange={(v) => setTop((t) => ({ ...t, department: v }))} placeholder="e.g. Grants" />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <F label="Start Date (Contract)" type="date" value={top.startDate} onChange={(v) => setTop((t) => ({ ...t, startDate: v }))} />
-            <SEL label="Contract Type" value={top.contractType} onChange={(v) => setTop((t) => ({ ...t, contractType: v }))} options={CONTRACT_TYPES.map((c) => c.label)} />
-            <F label="Monthly Salary (UGX)" value={top.salary} onChange={(v) => setTop((t) => ({ ...t, salary: v }))} placeholder="e.g. 1,200,000" />
-          </div>
-          <div className="max-w-xs">
-            <SEL label="System Role" value={top.role} onChange={(v) => setTop((t) => ({ ...t, role: v as Role }))} options={Object.keys(ROLE_LABELS)} />
-          </div>
+          {/* Quick fields — HR/Admin only. Employees only state the post applied for. */}
+          {mode === 'admin' ? (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <F label="Date of Submission" value={new Date().toISOString().slice(0, 10)} onChange={() => undefined} />
+                <F label="Employee ID (HR)" value={top.employeeId} onChange={(v) => setTop((t) => ({ ...t, employeeId: v }))} placeholder="ARD-2026-001 (auto if blank)" />
+                <F label="Position" value={top.position} onChange={(v) => setTop((t) => ({ ...t, position: v }))} placeholder="e.g. Grants Officer" />
+                <F label="Department" value={top.department} onChange={(v) => setTop((t) => ({ ...t, department: v }))} placeholder="e.g. Grants" />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <F label="Start Date (Contract)" type="date" value={top.startDate} onChange={(v) => setTop((t) => ({ ...t, startDate: v }))} />
+                <SEL label="Contract Type" value={top.contractType} onChange={(v) => setTop((t) => ({ ...t, contractType: v }))} options={CONTRACT_TYPES.map((c) => c.label)} />
+                <F label="Monthly Salary (UGX)" value={top.salary} onChange={(v) => setTop((t) => ({ ...t, salary: v }))} placeholder="e.g. 1,200,000" />
+              </div>
+              <div className="max-w-xs">
+                <SEL label="System Role" value={top.role} onChange={(v) => setTop((t) => ({ ...t, role: v as Role }))} options={Object.keys(ROLE_LABELS)} />
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="rounded-xl border border-aims-green/30 bg-aims-green/5 px-4 py-3 flex items-start gap-2">
+                <span className="material-symbols-outlined text-aims-green text-[18px] mt-0.5">info</span>
+                <p className="text-[11px] text-slate-700">
+                  You are completing this form yourself. When you press <b>Send to Company Admin</b> it goes straight to HR for verification — no login is created until they approve it.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <F label="Position Applied For" value={top.position} onChange={(v) => setTop((t) => ({ ...t, position: v }))} placeholder="e.g. Grants Officer" />
+                <F label="Department / Unit" value={top.department} onChange={(v) => setTop((t) => ({ ...t, department: v }))} placeholder="e.g. Grants" />
+              </div>
+            </>
+          )}
 
           {/* SECTION 1 — PERSONAL */}
           <SectionBlock n="1" title="Personal Information (Biodata)">
@@ -658,17 +880,19 @@ export function EmployeeOnboardingModal() {
             </div>
           </SectionBlock>
 
-          {/* HR USE ONLY */}
-          <SectionBlock n="HR" title="For HR Use Only">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              <F label="Received By" value={hrUse.receivedBy} onChange={(v) => setHrUseState((s) => ({ ...s, receivedBy: v }))} />
-              <F label="Received Date" type="date" value={hrUse.receivedDate} onChange={(v) => setHrUseState((s) => ({ ...s, receivedDate: v }))} />
-              <F label="Verified By" value={hrUse.verifiedBy} onChange={(v) => setHrUseState((s) => ({ ...s, verifiedBy: v }))} />
-              <F label="Verified Date" type="date" value={hrUse.verifiedDate} onChange={(v) => setHrUseState((s) => ({ ...s, verifiedDate: v }))} />
-              <F label="Employee Number" value={hrUse.employeeNumber} onChange={(v) => setHrUseState((s) => ({ ...s, employeeNumber: v }))} />
-              <F label="File Reference No." value={hrUse.fileRef} onChange={(v) => setHrUseState((s) => ({ ...s, fileRef: v }))} />
-            </div>
-          </SectionBlock>
+          {/* HR USE ONLY — hidden while an employee fills the form in */}
+          {mode === 'admin' && (
+            <SectionBlock n="HR" title="For HR Use Only">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <F label="Received By" value={hrUse.receivedBy} onChange={(v) => setHrUseState((s) => ({ ...s, receivedBy: v }))} />
+                <F label="Received Date" type="date" value={hrUse.receivedDate} onChange={(v) => setHrUseState((s) => ({ ...s, receivedDate: v }))} />
+                <F label="Verified By" value={hrUse.verifiedBy} onChange={(v) => setHrUseState((s) => ({ ...s, verifiedBy: v }))} />
+                <F label="Verified Date" type="date" value={hrUse.verifiedDate} onChange={(v) => setHrUseState((s) => ({ ...s, verifiedDate: v }))} />
+                <F label="Employee Number" value={hrUse.employeeNumber} onChange={(v) => setHrUseState((s) => ({ ...s, employeeNumber: v }))} />
+                <F label="File Reference No." value={hrUse.fileRef} onChange={(v) => setHrUseState((s) => ({ ...s, fileRef: v }))} />
+              </div>
+            </SectionBlock>
+          )}
 
           {/* DOCUMENTS CHECKLIST */}
           <SectionBlock n="✓" title="Documents Submitted (tick as applicable)">
@@ -709,11 +933,14 @@ export function EmployeeOnboardingModal() {
 
         {/* Footer */}
         <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between gap-3 shrink-0">
-          <p className="text-[10px] text-slate-400 italic">ARDHI · Research. Advocacy. Innovation.</p>
+          <p className="text-[10px] text-slate-400 italic">
+            {mode === 'employee' ? 'Your answers are sent only to the Company Admin.' : 'ARDHI · Research. Advocacy. Innovation.'}
+          </p>
           <div className="flex items-center gap-2">
             <button onClick={() => setOpen(false)} className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Cancel</button>
             <button onClick={submit} className="px-5 py-2 bg-aims-green text-white text-xs font-bold rounded-lg hover:bg-aims-green/90 flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[16px]">person_add</span>Save Employee
+              <span className="material-symbols-outlined text-[16px]">{mode === 'employee' ? 'send' : 'person_add'}</span>
+              {mode === 'employee' ? 'Send to Company Admin' : 'Save Employee'}
             </button>
           </div>
         </div>

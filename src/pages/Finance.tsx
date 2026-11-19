@@ -201,10 +201,31 @@ export function Finance() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
-        <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">Cash Flow Analytics</h1>
-        <p className="text-base font-medium text-white">Income, expenditure, budget health & disbursement ledger — records are editable, changes require ED approval</p>
+      {/* Summary stat cards lead the page (no hero banner) */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-green p-4 shadow-sm">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Income (YTD)</p>
+          <p className="text-xl font-extrabold text-slate-900 mt-1">{fmtUSD(finIncome)}</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">live from aims_finance</p>
+        </div>
+        <div className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-orange p-4 shadow-sm">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Expenditure</p>
+          <p className="text-xl font-extrabold text-slate-900 mt-1">{fmtUSD(finExpense)}</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">incl. approved disbursements</p>
+        </div>
+        <div className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-navy p-4 shadow-sm">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Net Position</p>
+          <p className={cn('text-xl font-extrabold mt-1', finIncome - finExpense >= 0 ? 'text-aims-green' : 'text-red-500')}>{fmtUSD(finIncome - finExpense)}</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">income less expenditure</p>
+        </div>
+        <div className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-mint p-4 shadow-sm">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Pending ED Approval</p>
+          <p className="text-xl font-extrabold text-slate-900 mt-1">{pendingEdits.length}</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">records awaiting ED sign-off</p>
+        </div>
       </div>
+
+      <p className="text-xs text-slate-500">Cash flow analytics — income, expenditure, budget health &amp; disbursement ledger. Records are editable; changes require ED approval.</p>
 
       <FormsShortcut module={['finance', 'procurement']} title="Finance & Procurement Forms — Requisition · Procurement Request · Expense Reimbursement" />
 

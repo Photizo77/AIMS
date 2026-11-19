@@ -20,10 +20,13 @@ import type { Role } from '@/types';
 import { ROLE_LABELS } from '@/config/roles';
 import {
   userOpsGet, setUserRole, toggleUserStatus, resetCredential, reissueApiKey, resetMfa,
-  advanceOnboard, addOnboardee, type ManagedUser,
+  advanceOnboard, addOnboardee, removeOnboardee, type ManagedUser, type Onboardee,
 } from '@/services/userOpsService';
 import { OffboardingTab } from '@/components/admin/OffboardingTab';
 import { openEmployeeOnboarding } from '@/components/hr/EmployeeOnboardingForm';
+import { OnboardStepModal } from '@/components/admin/OnboardStepModal';
+import { listPendingSubmissions, listOnboarding, approveSubmission, rejectSubmission } from '@/services/employeeService';
+import { printBlankEmployeeForm, employeeFormShareLink } from '@/lib/employeeFormTemplate';
 
 type TabKey = 'directory' | 'onboarding' | 'offboarding' | 'roles' | 'audit';
 
@@ -75,10 +78,13 @@ export function UserManagement() {
   const [newRole, setNewRole] = useState<Role>('GRANT_WRITER');
   const [auditFilter, setAuditFilter] = useState('');
   const [showTemplate, setShowTemplate] = useState(false);
+  const [stepModal, setStepModal] = useState<{ obId: string; stepId: string } | null>(null);
+  const [submittedById, setSubmittedById] = useState<string | null>(null);
 
   const users = userOpsGet.users();
   const audit = userOpsGet.audit();
   const onboardees = userOpsGet.onboardees();
+  const pendingForms = listPendingSubmissions();
   const depts = Array.from(new Set(users.map((u) => u.department)));
 
   const filteredUsers = users.filter((u) => {
@@ -104,8 +110,18 @@ export function UserManagement() {
     showToast({ title: 'CSV Exported', message: `${filteredAudit.length} audit row(s).`, type: 'success' });
   };
 
-  const downloadProfile = (u: ManagedUser) => {
-    exportRecordSheet(`${u.name} profile`, 'User Account Profile', [
+  /** Copy the employee self-service form link (share it with any new hire) */
+  const copyShareLink = () => {
+    const link = employeeFormShareLink();
+    try {
+      navigator.clipboard.writeText(link);
+      showToast({ title: 'Form Link Copied', message: 'Send it to the new hire — they fill FORM-HR-02 themselves and it arrives here for verification.', type: 'success' });
+    } catch {
+      showToast({ title: 'Copy Unavailable', message: link, type: 'info' });
+    }
+  };
+
+  const downloadProfile = (u: ManagedUser) => {    exportRecordSheet(`${u.name} profile`, 'User Account Profile', [
       ['Name', u.name], ['Email', u.email], ['Role', ROLE_LABELS[u.role]], ['Department', u.department],
       ['Position', u.position], ['Status', u.status], ['Provisioned', u.provisioned ? 'Yes' : 'No'],
       ['MFA', u.mfaEnabled ? 'Enabled' : 'Not enrolled'], ['API Key', u.apiKey ?? '—'], ['Credential version', String(u.credentialVersion)],
@@ -115,9 +131,14 @@ export function UserManagement() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
-        <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">User Management & Provisioning</h1>
-        <p className="text-base font-medium text-white">Directory, onboarding, offboarding, roles and account audit</p>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-xl font-extrabold text-slate-900">User Management &amp; Provisioning</h1>
+          <p className="text-xs text-slate-500 mt-0.5">Directory, onboarding, offboarding, roles and account audit</p>
+        </div>
+        <button onClick={copyShareLink} className="px-4 py-2 border border-aims-navy/25 text-aims-navy text-xs font-bold rounded-lg hover:bg-aims-navy/5 flex items-center gap-1.5">
+          <span className="material-symbols-outlined text-[16px]">link</span>Share employee form
+        </button>
       </div>
 
       <div className="flex gap-1 bg-slate-100 p-1 rounded-xl overflow-x-auto">
@@ -186,45 +207,114 @@ export function UserManagement() {
       {/* ── ONBOARDING ── */}
       {activeTab === 'onboarding' && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between flex-wrap gap-3">
-            <p className="text-sm font-bold text-slate-700">New Hires In Pipeline: <span className="text-aims-navy">{onboardees.length}</span></p>
+          <div className="flex items-start justify-between flex-wrap gap-3">
+            <div>
+              <p className="text-sm font-bold text-slate-700">New Hires In Pipeline: <span className="text-aims-navy">{onboardees.length}</span></p>
+              <p className="text-[11px] text-slate-500">Work all four steps to give a hire a real login, role, 2FA and equipment — every step writes live data.</p>
+            </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <button onClick={openEmployeeOnboarding} className="px-4 py-2 border border-aims-navy/30 text-aims-navy text-xs font-bold rounded-lg hover:bg-aims-navy/5 flex items-center gap-1.5"><span className="material-symbols-outlined text-[16px]">description</span>Employee Information Form</button>
+              <button onClick={printBlankEmployeeForm} title="Print or save a blank Employee Information Form to share" className="px-4 py-2 border border-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50 flex items-center gap-1.5"><span className="material-symbols-outlined text-[16px]">print</span>Blank Form Template</button>
+              <button onClick={() => openEmployeeOnboarding('admin')} className="px-4 py-2 border border-aims-navy/30 text-aims-navy text-xs font-bold rounded-lg hover:bg-aims-navy/5 flex items-center gap-1.5"><span className="material-symbols-outlined text-[16px]">description</span>Employee Information Form</button>
               <button onClick={() => setShowAddHire(true)} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90 flex items-center gap-1.5"><span className="material-symbols-outlined text-[16px]">person_add</span>Add New Hire</button>
             </div>
           </div>
+
+          {/* Employee-submitted forms — the hire filled it in, the admin verifies it */}
+          {pendingForms.length > 0 && (
+            <div className="bg-white rounded-xl border border-aims-orange/40 border-l-4 border-l-aims-orange p-4 shadow-sm">
+              <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+                <p className="text-xs font-bold text-aims-orange uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[16px]">inbox</span>Employee-submitted forms awaiting verification ({pendingForms.length})
+                </p>
+                <button onClick={() => copyShareLink()} className="text-[10px] font-bold text-aims-navy hover:underline flex items-center gap-1"><span className="material-symbols-outlined text-[12px]">link</span>Copy form link to share</button>
+              </div>
+              <div className="space-y-2">
+                {pendingForms.map((rec) => (
+                  <div key={rec.id} className="flex items-center justify-between gap-3 flex-wrap p-3 bg-slate-50 rounded-lg border border-slate-100">
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-slate-900">{[rec.personal.firstName, rec.personal.surname].filter(Boolean).join(' ')}</p>
+                      <p className="text-[11px] text-slate-500">{rec.position} · {rec.department} · {rec.contact.personalEmail || 'no email'} · submitted {new Date(rec.submittedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} · {rec.documentsSubmitted.length} doc(s) ticked</p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button onClick={() => setSubmittedById(rec.id)} className="text-[10px] font-bold text-aims-navy hover:underline">View form</button>
+                      <button onClick={() => { const r = rejectSubmission(rec.id, actor, 'Sent back for correction'); if (r) showToast({ title: 'Sent Back', message: 'The employee keeps the form and can resubmit with corrections.', type: 'info' }); }} className="text-[10px] font-bold text-slate-500 hover:underline">Send back</button>
+                      <button onClick={() => { const r = approveSubmission(rec.id, actor); if (r) showToast({ title: 'Form Verified', message: `${[rec.personal.firstName, rec.personal.surname].filter(Boolean).join(' ')} is verified — work the four onboarding steps to issue the login.`, type: 'success' }); }} className="px-3 py-1.5 bg-aims-green text-white text-[10px] font-bold rounded-lg hover:bg-aims-green/90">Verify &amp; start onboarding</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {onboardees.length === 0 && (
+            <div className="bg-white rounded-xl border border-dashed border-slate-200 p-10 text-center">
+              <span className="material-symbols-outlined text-[36px] text-slate-300 block mb-2">person_add</span>
+              <p className="text-sm font-bold text-slate-700">Nobody in the pipeline yet</p>
+              <p className="text-xs text-slate-500 mt-1">Send the form link to a new hire, or add them yourself with “Add New Hire”.</p>
+            </div>
+          )}
+
           {onboardees.map((ob) => {
             const { done, total, pct } = stepCount(ob.steps);
+            const complete = done >= total;
             return (
-              <div key={ob.id} className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+              <div key={ob.id} className={cn('bg-white rounded-xl border p-5 shadow-sm', complete ? 'border-aims-green/40' : 'border-slate-200')}>
                 <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-aims-green text-white flex items-center justify-center font-bold text-sm">{ob.name[0]}</div>
-                    <div><p className="text-base font-extrabold text-slate-900">{ob.name}</p><p className="text-xs text-slate-500">Hired: {ob.hired}{ob.role ? ` · ${ROLE_LABELS[ob.role as Role] ?? ob.role}` : ''}{ob.email ? ` · ${ob.email}` : ''}</p></div>
+                    <div className={cn('w-10 h-10 rounded-full text-white flex items-center justify-center font-bold text-sm', complete ? 'bg-aims-green' : 'bg-aims-navy')}>{ob.name[0]}</div>
+                    <div>
+                      <p className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                        {ob.name}
+                        {complete && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-aims-green/15 text-aims-green uppercase">Onboarded</span>}
+                        {ob.source === 'employee-form' && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-aims-orange/15 text-aims-orange uppercase">Self-submitted</span>}
+                      </p>
+                      <p className="text-xs text-slate-500">Hired: {ob.hired}{ob.role ? ` · ${ROLE_LABELS[ob.role as Role] ?? ob.role}` : ''}{ob.account?.loginEmail ? ` · ${ob.account.loginEmail}` : ob.email ? ` · ${ob.email}` : ''}</p>
+                      <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                        {ob.account ? <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-aims-green/10 text-aims-green">Login issued</span> : <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">No login yet</span>}
+                        {ob.account?.mfaEnabled && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-aims-navy/10 text-aims-navy">2FA on</span>}
+                        {ob.account?.apiKey && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">API key</span>}
+                        {(ob.assets?.length ?? 0) > 0 && ob.steps.find((s) => s.id === 's4')?.done && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-aims-mint/40 text-aims-navy">{ob.assets?.length} asset(s)</span>}
+                      </div>
+                    </div>
                   </div>
-                  <div className="w-32"><div className="flex justify-between text-[10px] mb-0.5"><span className="font-semibold text-slate-500">Timeline</span><span className="font-bold text-slate-900">{done}/{total} ({pct}%)</span></div><div className="w-full bg-slate-100 rounded-full h-1.5"><div className="h-1.5 rounded-full bg-aims-green" style={{ width: `${pct}%` }} /></div></div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-32"><div className="flex justify-between text-[10px] mb-0.5"><span className="font-semibold text-slate-500">Timeline</span><span className="font-bold text-slate-900">{done}/{total} ({pct}%)</span></div><div className="w-full bg-slate-100 rounded-full h-1.5"><div className={cn('h-1.5 rounded-full', complete ? 'bg-aims-green' : 'bg-aims-navy')} style={{ width: `${pct}%` }} /></div></div>
+                    <button onClick={() => removeOnboardee(ob.id, actor)} title="Remove from pipeline" className="text-slate-300 hover:text-red-500"><span className="material-symbols-outlined text-[18px]">delete</span></button>
+                  </div>
                 </div>
                 <div className="space-y-2">
-                  {ob.steps.map((s, i) => (
-                    <div key={s.id} className={cn('flex items-start gap-3 p-3 rounded-lg border', s.done ? 'bg-aims-green/5 border-aims-green/20' : 'bg-slate-50 border-slate-100')}>
-                      <div className={cn('w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0', s.done ? 'bg-aims-green text-white' : 'bg-slate-200 text-slate-500')}>
-                        <span className="material-symbols-outlined text-[14px]">{s.done ? 'check' : i === 0 ? '1' : i + 1}</span>
+                  {ob.steps.map((s, i) => {
+                    const actionLabel = s.id === 's1' ? 'Provision login' : s.id === 's2' ? 'Assign role' : s.id === 's3' ? 'Issue 2FA & credentials' : 'Issue assets';
+                    return (
+                      <div key={s.id} className={cn('flex items-start gap-3 p-3 rounded-lg border', s.done ? 'bg-aims-green/5 border-aims-green/20' : 'bg-slate-50 border-slate-100')}>
+                        <div className={cn('w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0', s.done ? 'bg-aims-green text-white' : 'bg-slate-200 text-slate-500')}>
+                          <span className="material-symbols-outlined text-[14px]">{s.done ? 'check' : i + 1}</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className={cn('text-sm font-bold', s.done ? 'text-slate-500 line-through' : 'text-slate-900')}>{s.label}</p>
+                          {s.detail && <p className="text-[10px] text-slate-500 mt-0.5">{s.detail}</p>}
+                          {s.done && s.completedBy && <p className="text-[9px] text-slate-400 mt-0.5">by {s.completedBy}{s.completedAt ? ` · ${new Date(s.completedAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}` : ''}</p>}
+                        </div>
+                        {!s.done && (
+                          <div className="flex items-center gap-2 shrink-0">
+                            <button onClick={() => advanceOnboard(ob.id, s.id, actor)} title="Mark complete without recording details" className="text-[10px] font-bold text-slate-400 hover:text-slate-600">Skip</button>
+                            <button onClick={() => setStepModal({ obId: ob.id, stepId: s.id })} className="px-3 py-1.5 bg-aims-green text-white text-[10px] font-bold rounded-lg hover:bg-aims-green/90 flex items-center gap-1">
+                              <span className="material-symbols-outlined text-[12px]">{s.id === 's1' ? 'key' : s.id === 's2' ? 'admin_panel_settings' : s.id === 's3' ? 'verified_user' : 'inventory_2'}</span>{actionLabel}
+                            </button>
+                          </div>
+                        )}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className={cn('text-sm font-bold', s.done ? 'text-slate-500 line-through' : 'text-slate-900')}>{s.label}</p>
-                        {s.detail && <p className="text-[10px] text-slate-500 mt-0.5">{s.detail}</p>}
-                      </div>
-                      {!s.done && (
-                        <button onClick={() => { advanceOnboard(ob.id, s.id, actor); showToast({ title: 'Step Completed', message: `${s.label} recorded for ${ob.name}.`, type: 'success' }); }} className="text-[10px] font-bold text-aims-green hover:underline shrink-0">Mark Complete</button>
-                      )}
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
+                {complete && (
+                  <p className="mt-3 text-[10px] text-aims-green flex items-center gap-1"><span className="material-symbols-outlined text-[13px]">how_to_reg</span>Login, role, 2FA and equipment are all in place — the employee record is now active.</p>
+                )}
               </div>
             );
           })}
           <div className="flex gap-2 flex-wrap">
-            <button onClick={() => { onboardees.forEach((ob) => ob.steps.forEach((s) => { if (!s.done) advanceOnboard(ob.id, s.id, actor); })); showToast({ title: 'Checklist Complete', message: 'All onboarding steps completed.', type: 'success' }); }} className="px-4 py-2 bg-aims-green text-white text-xs font-bold rounded-lg hover:bg-aims-green/90">Complete All Steps</button>
+            <button onClick={() => { onboardees.forEach((ob) => ob.steps.forEach((s) => { if (!s.done) advanceOnboard(ob.id, s.id, actor); })); showToast({ title: 'Checklist Complete', message: 'All onboarding steps marked complete.', type: 'info' }); }} className="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50">Mark all steps complete</button>
             <button onClick={() => setShowTemplate(true)} className="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50">View Checklist Template</button>
           </div>
         </div>
@@ -378,10 +468,76 @@ export function UserManagement() {
                 </div>
               ))}
             </div>
-            <div className="flex justify-end pt-4"><button onClick={() => setShowTemplate(false)} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg">Close</button></div>
+            <div className="flex justify-end gap-2 pt-4">
+              <button onClick={printBlankEmployeeForm} className="px-4 py-2 border border-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50 flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">print</span>Blank form template</button>
+              <button onClick={() => setShowTemplate(false)} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg">Close</button>
+            </div>
           </div>
         </div>
       )}
+
+      {/* Executable onboarding step (provision / role / 2FA / assets) */}
+      {stepModal && (() => {
+        const ob = onboardees.find((o) => o.id === stepModal.obId) as Onboardee | undefined;
+        if (!ob) return null;
+        return <OnboardStepModal onboardee={ob} stepId={stepModal.stepId} actor={actor} onClose={() => setStepModal(null)} />;
+      })()}
+
+      {/* Read-only view of an employee-submitted form */}
+      {submittedById && (() => {
+        const rec = listOnboarding().find((r) => r.id === submittedById);
+        if (!rec) return null;
+        const name = [rec.personal.firstName, rec.personal.surname].filter(Boolean).join(' ');
+        const rows: [string, string][] = [
+          ['Reference', rec.employeeId],
+          ['Submitted', new Date(rec.submittedAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })],
+          ['Submitted by', rec.submittedBy ?? '—'],
+          ['Position / Department', `${rec.position} · ${rec.department}`],
+          ['Date of birth', rec.personal.dob || '—'],
+          ['Gender / Marital status', `${rec.personal.gender || '—'} · ${rec.personal.maritalStatus || '—'}`],
+          ['Nationality', rec.personal.nationality || '—'],
+          ['NIN / NSSF / TIN', `${rec.personal.nin || '—'} · ${rec.personal.nssf || '—'} · ${rec.personal.tin || '—'}`],
+          ['Phone', rec.contact.primaryPhone || '—'],
+          ['Email', rec.contact.personalEmail || '—'],
+          ['Address', [rec.contact.village, rec.contact.subCounty, rec.contact.district, rec.contact.country].filter(Boolean).join(', ') || '—'],
+          ['Next of kin', `${rec.nextOfKin.name || '—'} (${rec.nextOfKin.relationship || '—'}) · ${rec.nextOfKin.phone || '—'}`],
+          ['Education rows', `${rec.education.schools.length} school · ${rec.education.tertiary.length} tertiary · ${rec.education.certs.length} certification`],
+          ['Work history', `${rec.employment.history.length} role(s)`],
+          ['References', `${rec.references.length}`],
+          ['Bank', `${rec.banking.bank || '—'} · ${rec.banking.accountNumber || '—'}`],
+          ['Documents ticked', rec.documentsSubmitted.length > 0 ? rec.documentsSubmitted.join(', ') : 'None ticked'],
+          ['CV on file', rec.cvFile ? rec.cvFile.name : 'Not uploaded'],
+        ];
+        return (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={() => setSubmittedById(null)}>
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[88vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
+              <div className="px-5 py-4 bg-aims-navy text-white flex items-start justify-between gap-3 shrink-0">
+                <div>
+                  <h3 className="text-sm font-bold">{name || 'Employee submission'}</h3>
+                  <p className="text-[11px] text-white/70">FORM-HR-02 · Employee Information Form · submitted by the employee</p>
+                </div>
+                <button onClick={() => setSubmittedById(null)} className="text-white/80 hover:text-white"><span className="material-symbols-outlined text-[20px]">close</span></button>
+              </div>
+              <div className="p-5 overflow-y-auto">
+                <table className="w-full text-xs">
+                  <tbody className="divide-y divide-slate-100">
+                    {rows.map(([k, v]) => (
+                      <tr key={k}><td className="py-2 pr-3 font-bold text-slate-500 align-top w-44">{k}</td><td className="py-2 text-slate-800">{v}</td></tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="px-5 py-3 border-t border-slate-200 bg-slate-50 flex items-center justify-end gap-2 shrink-0">
+                <button onClick={() => setSubmittedById(null)} className="px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100 rounded-lg">Close</button>
+                <button
+                  onClick={() => { const r = approveSubmission(rec.id, actor); if (r) showToast({ title: 'Form Verified', message: `${name} is verified — issue the login, role, 2FA and assets in the pipeline.`, type: 'success' }); setSubmittedById(null); }}
+                  className="px-4 py-2 bg-aims-green text-white text-xs font-bold rounded-lg hover:bg-aims-green/90"
+                >Verify &amp; start onboarding</button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

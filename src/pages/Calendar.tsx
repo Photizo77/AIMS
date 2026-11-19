@@ -67,17 +67,15 @@ export function Calendar() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">Org Calendar</h1>
-            <p className="text-base font-medium text-white">Grant deadlines, project milestones, leave & reorders — one view</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button onClick={() => setMonthOffset((o) => o - 1)} className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-white text-xs font-bold">‹ Prev</button>
-            <span className="text-sm font-bold text-white px-2">{viewDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}</span>
-            <button onClick={() => setMonthOffset((o) => o + 1)} className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-white text-xs font-bold">Next ›</button>
-          </div>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-xl font-extrabold text-slate-900">Org Calendar</h1>
+          <p className="text-xs text-slate-500 mt-0.5">Grant deadlines, project milestones, leave &amp; reorders — one view</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setMonthOffset((o) => o - 1)} className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-slate-700 text-xs font-bold">‹ Prev</button>
+          <span className="text-sm font-bold text-slate-900 px-2">{viewDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}</span>
+          <button onClick={() => setMonthOffset((o) => o + 1)} className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-slate-700 text-xs font-bold">Next ›</button>
         </div>
       </div>
 

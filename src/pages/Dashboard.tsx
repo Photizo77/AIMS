@@ -23,6 +23,8 @@ import { openGrantsAssistant } from '@/components/grants/GrantsAssistant';
 import { openFlagForED } from '@/components/grants/FlagForEDModal';
 import { flagService } from '@/services/flagService';
 import { SharedLibraryWidget } from '@/components/dashboard/SharedLibraryWidget';
+import { DashboardAiInsights } from '@/components/dashboard/DashboardAiInsights';
+import { KanbanCard, KanbanColumnBody, KanbanColumnHeader } from '@/components/ui/KanbanBoard';
 import { innovationService, isExecutingProject } from '@/services/innovationService'; // Importing our centralized service
 import { grantService } from '@/services/grantService';
 import { financeService } from '@/services/financeService';
@@ -45,10 +47,6 @@ function readFeedPosts(): FeedPost[] {
     { id: 'f2', author: 'HR Admin', content: 'New leave policy updated in the Documents hub. Please review.', time: new Date(Date.now() - 10800000).toISOString() },
     { id: 'f3', author: 'Grants Manager', content: 'USAID submission confirmed. Tracking number: AID-2026-UG-0441.', time: new Date(Date.now() - 21600000).toISOString() },
   ];
-}
-
-function DashHeader({ gradient, title, subtitle }: { gradient: string; title: string; subtitle: string }) {
-  return (<div className={cn('rounded-2xl p-7 text-white shadow-lg', gradient)}><h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">{title}</h1><p className="text-base font-medium text-white">{subtitle}</p></div>);
 }
 
 function StatCard({ title, value, icon, color }: { title: string; value: string; icon: string; color: ColorKey }) {
@@ -323,10 +321,7 @@ function CDDashboard() {
   });
   return (
     <div className="space-y-6">
-      <DashHeader gradient="bg-grad-navy" title="Country Director Dashboard" subtitle="Strategic oversight, governance & organizational leadership — view everything, flag for ED, approve nothing" />
-      <SharedLibraryWidget />
-
-      {/* At a Glance strip — live values from attendance & finance stores */}
+      {/* At a Glance strip — stat cards lead the page (no hero banner) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <button onClick={() => navigate('/attendance')} className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-green p-4 shadow-sm text-left hover:shadow-md transition-shadow group">
           <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Attendance Today</p>
@@ -350,24 +345,10 @@ function CDDashboard() {
         </button>
       </div>
 
-      {/* AI Insight block */}
-      <div className="bg-white rounded-xl border border-slate-200 border-l-4 border-l-aims-navy p-5 shadow-sm">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="w-8 h-8 rounded-lg bg-aims-navy/10 flex items-center justify-center"><span className="material-symbols-outlined text-aims-navy text-[20px]">auto_awesome</span></span>
-          <div>
-            <h3 className="text-sm font-extrabold text-slate-900">System Summary (AI-Generated)</h3>
-            <p className="text-[10px] font-bold text-aims-navy uppercase tracking-wider">Powered by Tier 1 AI — Insights</p>
-          </div>
-        </div>
-        <div className="bg-slate-50 rounded-lg border border-slate-100 p-4">
-          <p className="text-sm text-slate-700 leading-relaxed">
-            {finIncome === 0 && finExpense === 0
-              ? 'The system is clean — no cash-flow records have been entered yet. Income and expenditure appear here automatically (USD) once Finance records them in aims_finance.'
-              : `Live cash position: income ${usd(finIncome)} vs expenditure ${usd(finExpense)} (net ${usd(finNet)}). ${flagService.getOpenFlags().length} open CD flag(s) · ${queueReqs.length} requisition(s) in the pipeline · ${stalledCount} stalled project(s) · ${grantsDue7d} grant(s) due within 7 days.`}
-          </p>
-        </div>
-      </div>
-      <ExecutiveBrief />
+      {/* AI insight strip — compact, immediately after the stats */}
+      <DashboardAiInsights scope="exec" title="AI Insights — Oversight" />
+
+      <SharedLibraryWidget />
 
       <Section title="Approvals in Progress" subtitle="Visibility into ED's review pipeline — read only">
         <AdvancedFilterBar dateLabel="Submitted" statusOptions={['ED Review', 'Awaiting Finance', 'Awaiting HR', 'Disbursed']} onFilterChange={setApprovalFilters} ownerOptions={['Finance Dept', 'HR Admin', 'Grants Team', 'Procurement']} showAmountRange exportRows={filteredCdApprovals} exportFileName="cd-approvals-in-progress" />
@@ -406,7 +387,7 @@ function CDDashboard() {
           <div className="p-4 bg-slate-50 rounded-lg border border-slate-100"><p className="text-xs text-slate-500 mb-1">Present Today</p><p className="text-2xl font-extrabold text-aims-navy">{presentToday}/{headcount}</p></div>
         </div>
       </Section>
-      <Section title="Innovations & Tasks" subtitle="View-only access to innovation pipeline — live from aims_projects">
+      <Section title="Innovations & Tasks" subtitle={`View-only access to innovation pipeline — live from aims_projects${stalledCount > 0 ? ` · ${stalledCount} stalled` : ''}`}>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead><tr className="border-b border-slate-200"><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Project</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Stage</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Lead</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider">Progress</th><th className="pb-2 font-bold text-slate-500 text-xs uppercase tracking-wider text-right">Action</th></tr></thead>
@@ -424,6 +405,9 @@ function CDDashboard() {
             </tbody>
           </table>
         </div>
+      </Section>
+      <Section title="Ask the AI" subtitle="Natural-language questions over live grants, finance, HR and innovation data">
+        <ExecutiveBrief />
       </Section>
       <Section title="Executive Feed" subtitle="Institutional announcements & governance communication">
         <div className="space-y-3">
@@ -505,10 +489,7 @@ function EDDashboard() {
 
   return (
     <div className="space-y-6">
-      <DashHeader gradient="bg-grad-navy" title="Executive Director Dashboard" subtitle="Operational execution, team leadership & daily management — sole approval authority" />
-      <CheckInCard />
-
-      {/* At a Glance strip — live counts */}
+      {/* At a Glance strip — stat cards lead the page (no hero banner) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <button onClick={() => navigate('/approvals')} className="bg-white rounded-xl border border-slate-200 border-t-4 border-t-aims-orange p-4 shadow-sm text-left hover:shadow-md transition-shadow group">
           <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Approvals Pending</p>
@@ -532,7 +513,10 @@ function EDDashboard() {
         </button>
       </div>
 
-      <ExecutiveBrief />
+      {/* AI insight strip — compact, immediately after the stats */}
+      <DashboardAiInsights scope="exec" title="AI Insights — Your Decision Queue" />
+
+      <CheckInCard />
 
       {/* CD Flags — priority interrupts */}
       {flagService.getOpenFlags().length > 0 && (
@@ -680,6 +664,10 @@ function EDDashboard() {
         </div>
       </Section>
 
+      <Section title="Ask the AI" subtitle="Natural-language questions over live grants, finance, HR and innovation data">
+        <ExecutiveBrief />
+      </Section>
+
       <Section title="Company Feed" subtitle="Post institutional updates across departments">
         <div className="space-y-3">
           <div className="flex gap-2 mb-2"><input type="text" placeholder="Share an update with all departments…" value={feedDraft} onChange={(e) => setFeedDraft(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') postFeed(); }} className="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-aims-navy/30" /><button onClick={postFeed} className="px-4 py-2 bg-aims-navy text-white text-xs font-bold rounded-lg hover:bg-aims-navy/90 transition-colors">Post</button></div>
@@ -723,13 +711,7 @@ function AdminDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Welcome header */}
-      <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
-        <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">Admin Dashboard</h1>
-        <p className="text-base font-medium text-white">Welcome back, {user.name} | Last login: Today 9:15 AM</p>
-      </div>
-
-      {/* At a Glance strip — clickable, deep-links to source module */}
+      {/* At a Glance strip — stat cards lead the page (no hero banner) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {atAGlance.map((s) => (
           <button key={s.key} onClick={s.onClick} className={cn('bg-white rounded-xl border border-slate-200 border-t-4 p-4 shadow-sm text-left hover:shadow-md transition-shadow group', s.color === 'red' ? 'border-t-red-500' : s.color === 'orange' ? 'border-t-aims-orange' : s.color === 'green' ? 'border-t-aims-green' : 'border-t-aims-navy')}>
@@ -759,21 +741,8 @@ function AdminDashboard() {
         ))}
       </div>
 
-      {/* AI Insight block */}
-      <div className="bg-white rounded-xl border border-slate-200 border-l-4 border-l-aims-navy p-5 shadow-sm">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="w-8 h-8 rounded-lg bg-aims-navy/10 flex items-center justify-center"><span className="material-symbols-outlined text-aims-navy text-[20px]">auto_awesome</span></span>
-          <div>
-            <h3 className="text-sm font-extrabold text-slate-900">System Summary (AI-Generated)</h3>
-            <p className="text-[10px] font-bold text-aims-navy uppercase tracking-wider">Powered by Tier 1 AI — Insights</p>
-          </div>
-        </div>
-        <div className="bg-slate-50 rounded-lg border border-slate-100 p-4">
-          <p className="text-sm text-slate-700 leading-relaxed">
-            "3 employment contracts expire this month with no renewal documentation drafted yet. Recommend immediate engagement with affected employees. Additionally, attendance anomalies are up 40% week-on-week, with 5 geofence failures recorded today. Consider a comms reminder on check-in procedures."
-          </p>
-        </div>
-      </div>
+      {/* AI insight strip — compact, immediately after the stats */}
+      <DashboardAiInsights scope="admin" title="AI Insights — People & Admin" />
 
       {/* Quick action links */}
       <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
@@ -835,9 +804,6 @@ function FinanceDashboard() {
 
   return (
     <div className="space-y-6">
-      <DashHeader gradient="bg-grad-navy" title="Finance Operational Center" subtitle={`Department: Finance | Reports to: ED — ${user?.name ?? ''}`} />
-      {showCheckIn && <CheckInCard />}
-
       {/* Headline stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {headline.map((s) => (
@@ -854,6 +820,11 @@ function FinanceDashboard() {
           </button>
         ))}
       </div>
+
+      {/* AI insight strip — compact, immediately after the stats */}
+      <DashboardAiInsights scope="finance" title="AI Insights — Cash & Budgets" />
+
+      {showCheckIn && <CheckInCard />}
 
       {/* At a Glance strip */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -973,10 +944,10 @@ function FinanceDashboard() {
           </button>
         </Section>
 
-        <Section title="AI Insight" subtitle="Auto-generated from live finance & requisition data">
+        <Section title="Budget Risk" subtitle="Auto-generated from live finance & requisition data">
           <div className="space-y-3">
             {budgets.length === 0 && returnedCount === 0 && disbursed.length === 0 && (
-              <div className="p-6 text-center text-sm text-slate-400 italic bg-slate-50 rounded-xl border border-slate-100">No anomalies yet — insights appear automatically as real finance and requisition data is entered.</div>
+              <div className="p-6 text-center text-sm text-slate-400 italic bg-slate-50 rounded-xl border border-slate-100">No anomalies yet — risk flags appear automatically as real finance and requisition data is entered.</div>
             )}
             {hotBudget && (hotBudget.forecastPct ?? 0) >= 90 && (
               <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
@@ -1037,9 +1008,7 @@ function GrantDashboard() {
   const pipelineLabel = pipelineTotal >= 1000000000 ? `UGX ${(pipelineTotal / 1000000000).toFixed(1)}B` : `UGX ${(pipelineTotal / 1000000).toFixed(0)}M`;
   return (
     <div className="space-y-6">
-      <DashHeader gradient="bg-grad-navy" title="Grants & Proposals" subtitle="Discover, claim and track grants — AI-assisted drafting & deadline tracking" />
-      {showCheckIn && <CheckInCard />}
-      {/* Stage counts — whole organizational pipeline */}
+      {/* Stage counts — stat cards lead the page (no hero banner) */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         {GRANT_STAGES.map((s) => {
           const count = grants.filter((g) => g.stage === s.key).length;
@@ -1057,6 +1026,12 @@ function GrantDashboard() {
         <StatCard title="Pipeline (Active)" value={pipelineLabel} icon="workspace_premium" color="green" />
         <StatCard title="AI Assists" value="28" icon="smart_toy" color="mint" />
       </div>
+
+      {/* AI insight strip — compact, immediately after the stats */}
+      <DashboardAiInsights scope="grants" title="AI Insights — Grants & Funders" />
+
+      {showCheckIn && <CheckInCard />}
+
       <SharedLibraryWidget />
       <Section title="Grants Assistant" subtitle="Fine-tuned on ARDHI's documents & the grants tracker — ask about history, missed deadlines and live opportunities">
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -1121,17 +1096,20 @@ function InnovatorDashboard() {
 
   return (
     <div className="space-y-6">
-      <DashHeader gradient="bg-grad-navy" title="Innovation Pipeline" subtitle="Research execution, prototyping & production tracking" />
-      {showCheckIn && <CheckInCard />}
-      <SharedLibraryWidget />
-      
-      {/* Stats for ALL projects */}
+      {/* Stage counts — stat cards lead the page (no hero banner) */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         {STAGES.map((s) => {
           const count = projects.filter((p) => p.stage === s.key).length;
           return (<div key={s.key} className={cn('bg-white rounded-xl border border-slate-200 border-t-4 p-4 shadow-sm text-center', ACCENT[s.color])}><p className="text-2xl font-extrabold text-slate-900">{count}</p><p className="text-xs font-semibold text-slate-500 mt-1">{s.label}</p></div>);
         })}
       </div>
+
+      {/* AI insight strip — compact, immediately after the stats */}
+      <DashboardAiInsights scope="innovations" title="AI Insights — Pipeline Readiness" />
+
+      {showCheckIn && <CheckInCard />}
+
+      <SharedLibraryWidget />
 
       {user && (user.role === 'CD' || user.role === 'ED') && (
         <Section title="Oversight by Persona" subtitle="Strategic view — workload and stage distribution across every innovation team">
@@ -1164,21 +1142,22 @@ function InnovatorDashboard() {
             const stageProjects = projects.filter((p) => p.stage === stage.key);
             return (
               <div key={stage.key} className="flex flex-col">
-                <div className={cn('rounded-t-xl px-3 py-2.5 flex items-center justify-between', CHIP[stage.color])}><span className="text-xs font-bold uppercase tracking-wider text-white">{stage.label}</span><span className="text-xs font-extrabold text-white bg-white/20 px-2 py-0.5 rounded-full">{stageProjects.length}</span></div>
-                <div className="bg-slate-50 rounded-b-xl border border-slate-200 border-t-0 p-2 space-y-2 min-h-[200px]">
-                  {stageProjects.length === 0 && <p className="text-xs text-slate-400 text-center py-8 italic">No projects</p>}
+                <KanbanColumnHeader label={stage.label} count={stageProjects.length} chipClass={CHIP[stage.color]} />
+                <KanbanColumnBody count={stageProjects.length} emptyLabel="No projects">
                   {stageProjects.map((p) => (
-                    <div key={p.id} onClick={() => navigate(`/innovations/${p.id}`)} className="bg-white rounded-lg border border-slate-200 p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
-                      <p className="text-sm font-bold text-slate-900 mb-1 group-hover:text-aims-navy transition-colors">{p.title}</p>
-                      <p className="text-[10px] text-slate-500 mb-1">Lead: {p.leadName} • {p.contributorNames.length > 0 ? `${p.contributorNames.join(', ')}` : 'no contributors'}</p>
-                      <div className="mb-2"><div className="w-full bg-slate-100 rounded-full h-1.5"><div className="h-1.5 rounded-full bg-aims-green" style={{ width: `${p.progressPercent}%` }} /></div></div>
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-[10px] font-semibold text-slate-500">{p.milestones?.filter(m => m.completed).length || 0}/{p.milestones?.length || 0} milestones</span>
-                        <div className={cn('flex items-center gap-1.5 px-2 py-1 rounded border text-[10px] font-bold', getAgingColor(p.daysInStage))}><span className={cn('w-1.5 h-1.5 rounded-full', getAgingDot(p.daysInStage))} />{p.daysInStage}d</div>
+                    <KanbanCard key={p.id} onClick={() => navigate(`/innovations/${p.id}`)}>
+                      <p className="text-sm font-bold text-slate-900 mb-1 line-clamp-2 group-hover:text-aims-navy transition-colors">{p.title}</p>
+                      <p className="text-[10px] text-slate-500 truncate">Lead: {p.leadName} • {p.contributorNames.length > 0 ? `${p.contributorNames.join(', ')}` : 'no contributors'}</p>
+                      <div className="mt-auto">
+                        <div className="mb-2"><div className="w-full bg-slate-100 rounded-full h-1.5"><div className="h-1.5 rounded-full bg-aims-green" style={{ width: `${p.progressPercent}%` }} /></div></div>
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[10px] font-semibold text-slate-500">{p.milestones?.filter(m => m.completed).length || 0}/{p.milestones?.length || 0} milestones</span>
+                          <div className={cn('flex items-center gap-1.5 px-2 py-1 rounded border text-[10px] font-bold shrink-0', getAgingColor(p.daysInStage))}><span className={cn('w-1.5 h-1.5 rounded-full', getAgingDot(p.daysInStage))} />{p.daysInStage}d</div>
+                        </div>
                       </div>
-                    </div>
+                    </KanbanCard>
                   ))}
-                </div>
+                </KanbanColumnBody>
               </div>
             );
           })}
@@ -1224,14 +1203,18 @@ function SysAdminDashboard() {
   ];
   return (
     <div className="space-y-6">
-      <DashHeader gradient="bg-grad-navy" title="System Telemetry" subtitle="Platform stability, security & configuration" />
-      <CheckInCard />
+      {/* Stat cards lead the page (no hero banner) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <StatCard title="Uptime" value="99.9%" icon="check_circle" color="green" />
         <StatCard title="Error Rate" value="0.4%" icon="bug_report" color="orange" />
         <StatCard title="API Latency" value="182ms" icon="speed" color="navy" />
         <StatCard title="Sessions" value="47" icon="group" color="mint" />
       </div>
+
+      {/* AI insight strip — compact, immediately after the stats */}
+      <DashboardAiInsights scope="system" title="AI Insights — Security & Accounts" />
+
+      <CheckInCard />
 
       {/* System status — all systems operational */}
       <div className="rounded-xl border border-aims-green/30 bg-aims-green/5 p-4 flex items-center justify-between flex-wrap gap-3">
@@ -1366,15 +1349,18 @@ function HRDashboard() {
 
   return (
     <div className="space-y-6">
-      <DashHeader gradient="bg-grad-navy" title="HR & People Management" subtitle="Workforce administration, contracts, and performance" />
-      <CheckInCard />
-      
+      {/* Stat cards lead the page (no hero banner) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <StatCard title="Total Headcount" value="142" icon="people" color="navy" />
         <StatCard title="Present Today" value="128" icon="check_circle" color="green" />
         <StatCard title="Expiring Contracts (30d)" value="3" icon="description" color="orange" />
         <StatCard title="Pending Appraisals" value="12" icon="fact_check" color="mint" />
       </div>
+
+      {/* AI insight strip — compact, immediately after the stats */}
+      <DashboardAiInsights scope="hr" title="AI Insights — Workforce" />
+
+      <CheckInCard />
 
       <Section title="Quick Actions" subtitle="Manage workforce operations">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -1508,15 +1494,18 @@ function InventoryDashboard() {
 
   return (
     <div className="space-y-6">
-      <DashHeader gradient="bg-grad-navy" title="Inventory Management" subtitle="Track assets, equipment, and supplies" />
-      <CheckInCard />
-      
+      {/* Stat cards lead the page (no hero banner) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <StatCard title="Total Assets" value="284" icon="inventory_2" color="navy" />
         <StatCard title="In Use" value="241" icon="check_circle" color="green" />
         <StatCard title="Under Maintenance" value="12" icon="build" color="orange" />
         <StatCard title="Low Stock Items" value="8" icon="warning" color="mint" />
       </div>
+
+      {/* AI insight strip — compact, immediately after the stats */}
+      <DashboardAiInsights scope="inventory" title="AI Insights — Assets & Stock" />
+
+      <CheckInCard />
 
       <Section title="Inventory Overview" subtitle="Current asset status and alerts">
         <div className="space-y-3">

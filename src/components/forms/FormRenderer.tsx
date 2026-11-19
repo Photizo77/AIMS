@@ -108,7 +108,7 @@ export function FormRenderer({ form, onSubmit, onClose }: FormRendererProps) {
       case 'checkbox':
         return (
           <label className="flex items-center gap-2 text-xs text-slate-700">
-            <input type="checkbox" checked={value === 'true'} onChange={(e) => handleChange(field.key, e.target.checked ? 'true' : 'false')} className="rounded border-slate-300 accent-aims-navy" />
+            <input type="checkbox" checked={value === 'true'} onChange={(e) => handleChange(field.key, e.target.checked ? 'true' : 'false')} className="rounded border-slate-300 accent-aims-green" />
             {field.label}
           </label>
         );

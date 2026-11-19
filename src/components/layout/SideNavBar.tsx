@@ -1,4 +1,7 @@
 // src/components/layout/SideNavBar.tsx
+// Navigation only — the account/profile card lives in the top bar
+// (TopNavBar avatar menu: photo, settings, sign out). Keeping the rail
+// free of the profile block lets the nav list use the full height.
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -6,7 +9,7 @@ import { getVisibleNavItems } from '@/config/navigation';
 import { cn } from '@/lib/utils';
 
 export function SideNavBar() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -38,14 +41,14 @@ export function SideNavBar() {
   };
 
   return (
-    <aside 
+    <aside
       className={cn(
         "h-full bg-white border-r border-slate-200 flex flex-col overflow-hidden transition-all duration-300",
         collapsed ? "w-16" : "w-64"
       )}
     >
       {/* Header / Logo Area with Toggle */}
-      <div className="flex items-center justify-between px-3 py-4 border-b border-slate-200">
+      <div className="flex items-center justify-between px-3 py-4 border-b border-slate-200 shrink-0">
         {!collapsed && (
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-[#286b25] text-white flex items-center justify-center font-bold text-sm">
@@ -65,7 +68,7 @@ export function SideNavBar() {
         </button>
       </div>
 
-      {/* Nav Items */}
+      {/* Nav Items — full remaining height, scrolls independently */}
       <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-0.5">
         {navItems.map((item) => {
           const active = isActive(item.href);
@@ -88,46 +91,6 @@ export function SideNavBar() {
           );
         })}
       </nav>
-
-      {/* User Card + Logout */}
-      <div className="px-3 py-3 border-t border-slate-200">
-        {!collapsed ? (
-          <>
-            <div className="flex items-center gap-3 px-2 py-2">
-              <div className="w-9 h-9 rounded-full bg-[#286b25] text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
-                {user.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-bold text-slate-900 truncate">{user.name}</p>
-                <p className="text-[10px] text-slate-500 truncate uppercase tracking-wide">{user.role.replace('_', ' ')}</p>
-              </div>
-            </div>
-            <button
-              onClick={() => { logout(); navigate('/login', { replace: true }); }}
-              className="w-full mt-2 flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold text-slate-500 hover:bg-red-50 hover:text-red-600 transition-colors"
-            >
-              <span className="material-symbols-outlined text-[16px]">logout</span>Sign Out
-            </button>
-          </>
-        ) : (
-          // Collapsed User View
-          <div className="flex flex-col items-center gap-3">
-            <div 
-              className="w-9 h-9 rounded-full bg-[#286b25] text-white flex items-center justify-center text-sm font-bold flex-shrink-0 cursor-pointer"
-              title={user.name}
-            >
-              {user.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}
-            </div>
-            <button
-              onClick={() => { logout(); navigate('/login', { replace: true }); }}
-              className="p-2 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-600 transition-colors"
-              title="Sign Out"
-            >
-              <span className="material-symbols-outlined text-[20px]">logout</span>
-            </button>
-          </div>
-        )}
-      </div>
     </aside>
   );
 }

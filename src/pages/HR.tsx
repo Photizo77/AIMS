@@ -89,9 +89,9 @@ export function HR() {
   if (user?.role === 'CD') {
     return (
       <div className="space-y-6">
-        <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
-          <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">HR & Admin Summary</h1>
-          <p className="text-base font-medium text-white">Consolidated workforce indicators — headcount, contracts, appraisals</p>
+        <div>
+          <h1 className="text-xl font-extrabold text-slate-900">HR &amp; Admin Summary</h1>
+          <p className="text-xs text-slate-500 mt-0.5">Consolidated workforce indicators — headcount, contracts, appraisals</p>
         </div>
         <HRSummary />
       </div>
@@ -105,9 +105,9 @@ export function HR() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-grad-navy rounded-2xl p-7 text-white shadow-lg">
-        <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">HR & People Management</h1>
-        <p className="text-base font-medium text-white">Consolidated directory, payslips, leave, contracts, appraisals and offboarding</p>
+      <div>
+        <h1 className="text-xl font-extrabold text-slate-900">HR &amp; People Management</h1>
+        <p className="text-xs text-slate-500 mt-0.5">Consolidated directory, payslips, leave, contracts, appraisals and offboarding</p>
       </div>
 
       {/* Tab bar */}
