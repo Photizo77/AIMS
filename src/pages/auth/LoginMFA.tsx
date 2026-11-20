@@ -112,11 +112,11 @@ export function LoginMFA() {
               {/* Logo + headline */}
               <div className="relative z-10 flex flex-col gap-6">
                 <div className="flex items-center justify-center">
-                  <div className="p-2 rounded-xl bg-login-surface-lowest shadow-lg inline-flex items-center">
+                  <div className="p-2.5 rounded-2xl bg-white shadow-lg inline-flex items-center">
                     <img
-                      src="https://i.postimg.cc/N0G2CsXY/Screenshot-2026-08-01-134115.png"
-                      alt="ARDHI Law and Policy Initiative"
-                      className="h-10 object-contain"
+                      src="/ardhi-logo-design.png"
+                      alt="ARDHI — Advocacy. Research. Innovation"
+                      className="h-11 w-auto object-contain"
                     />
                   </div>
                 </div>
@@ -138,8 +138,13 @@ export function LoginMFA() {
               {/* Programme highlight */}
               <div className="relative z-10 my-8 rounded-2xl overflow-hidden shadow-xl bg-white/10 backdrop-blur-md p-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0 shadow-md bg-login-primary">
-                    <img src="/login-impact.svg" alt="Climate education and school recycling programme" className="w-full h-full object-cover" />
+                  <div className="w-[76px] h-[76px] rounded-xl overflow-hidden shrink-0 shadow-md ring-1 ring-white/25">
+                    <img
+                      src="/climate-education.jpg"
+                      alt="Students and teachers from a secondary school, standing with their waste-sorting bins"
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
                   </div>
                   <div className="flex flex-col justify-center min-w-0">
                     <span className="text-[11px] leading-4 tracking-[0.06em] font-bold uppercase text-login-on-primary-container">Community &amp; Youth Dispatch</span>
